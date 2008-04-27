@@ -34,7 +34,7 @@ class testMinilays(unittest.TestCase):
     def tearDown(self):
         shutil.rmtree(os.path.expanduser(path))
 
-    def atestSearchingForMinilays(self):
+    def testSearchingForMinilays(self):
         # create minilays in the minilays dir, seeing if they get putted in
         sys.argv = [sys.argv[0], '--config', '%s/etc/minimerge.cfg'%path, 'foo']
         opts = cli.do_read_options()
