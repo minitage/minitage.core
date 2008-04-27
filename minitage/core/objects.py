@@ -25,6 +25,7 @@ class MissingFetchMethodError(MinibuildException): pass
 class MissingCategoryError(MinibuildException): pass
 class InvalidCategoryError(MinibuildException): pass
 class InvalidFetchMethodError(MinibuildException): pass
+class InvalidInstallMethodError(MinibuildException): pass
 class EmptyMinibuildError(MinibuildException): pass
 
 ''' valid categories to install into'''
@@ -139,7 +140,9 @@ class Minibuild(object):
         # our dependencies, can be empty
         self.dependencies = section.get('depends','').strip().split()
         # our install method, can be empty
-        self.install_method = section.get('install_method','').strip().split()
+        self.install_method = section.get('install_method','').strip()
+        if self.install_method and not self.install_method in VALID_INSTALL_METHODS:
+           raise InvalidInstallMethodError('The \'%s\' install method is invalid for %s' % (self.install_method, self.path))
 
         # src_uri is where we will fetch from
         self.src_uri = section.get('src_uri','').strip()
