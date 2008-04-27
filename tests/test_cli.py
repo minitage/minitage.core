@@ -18,7 +18,7 @@ import os
 import sys
 import optparse
 import ConfigParser
-from minitage.core import core, cli
+from minitage.core import core, cli, api
 
 class testCli(unittest.TestCase):
     """ test cli usage for minimerge"""
@@ -28,12 +28,12 @@ class testCli(unittest.TestCase):
         for action in actions:
             sys.argv = [sys.argv[0], action, 'foo']
             opts = cli.do_read_options()
-            minimerge = core.Minimerge(opts)
+            minimerge = api.Minimerge(opts)
             self.assertEquals(minimerge.action, opts['action'])
 
         sys.argv = [sys.argv[0], 'foo']
         opts = cli.do_read_options()
-        minimerge = core.Minimerge(opts)
+        minimerge = api.Minimerge(opts)
         self.assertEquals(minimerge.action, opts['action'])
 
         sys.argv = [sys.argv[0], '--rm']
@@ -59,7 +59,7 @@ class testCli(unittest.TestCase):
         for mode in modes:
             sys.argv = [sys.argv[0], '--%s' % mode, 'foo']
             opts = cli.do_read_options()
-            minimerge = core.Minimerge(opts)
+            minimerge = api.Minimerge(opts)
             self.assertTrue(getattr(minimerge, mode, False))
 
 if __name__ == '__main__':

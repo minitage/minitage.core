@@ -18,7 +18,7 @@ import os
 import sys
 import optparse
 import ConfigParser
-from minitage.core import core, cli
+from minitage.core  import api, cli, core
 
 class testConfig(unittest.TestCase):
     """ test cli usage for minimerge"""
@@ -37,7 +37,7 @@ EOF''' % mydict
         os.system(test1)
         sys.argv = [sys.argv[0], '--config', path, 'bar']
         opts = cli.do_read_options()
-        minimerge = core.Minimerge(opts)
+        minimerge = api.Minimerge(opts)
 
         test2 = '''
 touch %(path)s
@@ -47,7 +47,7 @@ EOF''' % mydict
         os.system(test2)
         sys.argv = [sys.argv[0], '--config', path, 'bar']
         opts = cli.do_read_options()
-        self.assertRaises(core.InvalidConfigFileError, core.Minimerge, opts) 
+        self.assertRaises(core.InvalidConfigFileError, api.Minimerge, opts) 
         # cleanup
         os.remove(path)
 

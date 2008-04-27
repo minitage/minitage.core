@@ -20,20 +20,19 @@ if os.environ.get('MINITAGE_CORE_EGG_PATH',None):
 else:
     raise Exception("Please set the 'MINITAGE_CORE_EGG_PATH' variable pointing to the setup.py file of the minitage distribution")
 
-def createMinitageEnv(dir):
-    if os.path.exists(os.path.expanduser(dir)):
-        raise Exception("Please (re)move %s before test" % dir)
+def createMinitageEnv(directory):
+    if os.path.exists(os.path.expanduser(directory)):
+        raise Exception("Please (re)move %s before test" % directory)
     os.system('''
               mkdir %(path)s
               virtualenv %(path)s
               source %(path)s/bin/activate
               # can be python-ver or python
-              $(ls %(path)s/bin/python*) %(setup)s install
+              #   failed for egg"
+              $(ls %(path)s/bin/easy_install) -H None -f "%(setup)s/tests/eggs/" zc.buildout
+              $(ls %(path)s/bin/python*) %(setup)s/setup.py install
               ''' % {
                   'setup': setup,
-                  'path': dir,
+                  'path': directory,
               }
              )
-
-
-

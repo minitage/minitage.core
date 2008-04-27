@@ -104,7 +104,7 @@ def do_read_options():
                 break
 
     # be sure to be with full path object.
-    options.config = os.path.expanduser(options.config) 
+    options.config = os.path.expanduser(options.config)
     if not os.path.isfile(options.config):
         raise core.InvalidConfigFileError('The configuration file specified does not exist')
 

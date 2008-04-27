@@ -17,13 +17,14 @@ version = '0.0.4'
 import os
 import sys
 import ConfigParser
+from minitage.core import objects
 
 class NoPackagesError(Exception): pass
 class ConflictModesError(Exception): pass
 class InvalidConfigFileError(Exception): pass
 class TooMuchActionsError(Exception): pass
 class CliError(Exception): pass
-
+ 
 class Minimerge(object):
 
     def __init__(self,options={}):
@@ -46,14 +47,14 @@ class Minimerge(object):
         # - exec_prefix
         # - ~/.minimerge.cfg
         # We have the corresponding file allready filled in option.config, see
-        # `minimerge.core.cli` 
+        # `minimerge.core.cli`
         self.config_path = os.path.expanduser(options.get('config'))
         self.config = ConfigParser.ConfigParser()
         try:
             self.config.read(self.config_path)
         except:
-            raise InvalidConfigFileError('The configuration file is invalid: %s' % self.config_path)        
-        
+            raise InvalidConfigFileError('The configuration file is invalid: %s' % self.config_path)
+
         # prefix is setted in the configuration file
         # it defaults to sys.exec_prefix
         self.prefix = self.config._sections.get('minimerge', {}).get('prefix', sys.exec_prefix)
@@ -70,19 +71,22 @@ class Minimerge(object):
 
         # what are we doing
         self.action = options.get('action', False)
-        
+
         self.minilays = []
         minilays_search_paths = []
-        # minilays can be ovvrided by env["MINILAYS"] 
+        # minilays can be ovvrided by env["MINILAYS"]
         minilays_search_paths.extend(os.environ.get('MINILAYS', '').strip().split())
-        # minilays are in minilays/ 
+        # minilays are in minilays/
         minilays_parent = '%s/%s' % (self.prefix, 'minilays')
         if os.path.isdir(minilays_parent):
             minilays_search_paths.extend(['%s/%s' % (minilays_parent, dir) for dir in os.listdir(minilays_parent)])
         # they are too in etc/minmerge.cfg[minilays]
         minilays_search_paths.extend(self.config._sections.get('minimerge', {}).get('minilays', '').strip().split())
+
         # filtering valid ones
-        self.minilays = [dir for dir in minilays_search_paths if os.path.isdir(dir)]
+        # and mutating into real Minilays objects
+        self.minilays = [objects.Minilay(path = os.path.expanduser(dir)) \
+                         for dir in minilays_search_paths if os.path.isdir(dir)]
 
     def _find_minibuild(self,package):
         ''''''
