@@ -15,9 +15,9 @@ __docformat__ = 'restructuredtext en'
 
 import os
 
-if os.environ.get('MINITAGE_CORE_EGG_PATH',None):
-    setup = os.environ.get('MINITAGE_CORE_EGG_PATH')
-else:
+eggs = os.environ.get('MINITAGE_CORE_EGG_PATH', None)
+setup = os.environ.get('MINITAGE_CORE_SETUPPY', None)
+if not setup:
     raise Exception("Please set the 'MINITAGE_CORE_EGG_PATH' variable pointing to the setup.py file of the minitage distribution")
 
 def createMinitageEnv(directory):
@@ -28,11 +28,11 @@ def createMinitageEnv(directory):
               virtualenv %(path)s
               source %(path)s/bin/activate
               # can be python-ver or python
-              #   failed for egg"
-              $(ls %(path)s/bin/easy_install) -H None -f "%(setup)s/tests/eggs/" zc.buildout
-              $(ls %(path)s/bin/python*) %(setup)s/setup.py install
+              $(ls %(path)s/bin/easy_install) -H None -f "%(eggs)s" zc.buildout
+              $(ls %(path)s/bin/python*) %(setup)s install
               ''' % {
-                  'setup': setup,
+                  'eggs': eggs,
                   'path': directory,
+                  'setup': setup,
               }
              )
