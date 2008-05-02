@@ -121,7 +121,7 @@ class Minimerge(object):
             # test if we have not already the package in our dependency list, then
             # ...
             # if we have no ancestor, the end of the list is fine.
-            index = len(ancestors) 
+            index = len(ancestors)
             # if we have ancestors
             if ancestors:
                 # we must check ancestor installation priority:
@@ -137,10 +137,10 @@ class Minimerge(object):
             # unconditionnaly parsing dependencies, even if the package is
             # already there to detect circular dependencies
             try:
-                ancestors = self._compute_dependencies(mb.dependencies,ancestors=ancestors)  
+                ancestors = self._compute_dependencies(mb.dependencies,ancestors=ancestors)
             except RuntimeError,e:
                 if str(e) == 'maximum recursion depth exceeded in cmp':
-                    message = 'Circular dependency detected around %s and ancestors: \'%s\'' 
+                    message = 'Circular dependency detected around %s and ancestors: \'%s\''
                     raise CircurlarDependencyError(message % (mb.name, [m.name for m in ancestors]))
         return ancestors
 

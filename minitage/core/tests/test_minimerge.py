@@ -100,7 +100,7 @@ src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewrit
 src_type=hg
 install_method=buildout
 category=eggs
-'''       
+'''
         minibuild9='''
 [minibuild]
 depends=minibuild-0 minibuild-3
@@ -108,7 +108,7 @@ src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewrit
 src_type=hg
 install_method=buildout
 category=eggs
-'''  
+'''
         minibuild10='''
 [minibuild]
 depends=minibuild-11
@@ -116,7 +116,7 @@ src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewrit
 src_type=hg
 install_method=buildout
 category=eggs
-'''   
+'''
         minibuild11='''
 [minibuild]
 depends=minibuild-12
@@ -124,7 +124,7 @@ src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewrit
 src_type=hg
 install_method=buildout
 category=eggs
-'''   
+'''
         minibuild12='''
 [minibuild]
 depends=minibuild-13
@@ -140,7 +140,7 @@ src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewrit
 src_type=hg
 install_method=buildout
 category=eggs
-'''       
+'''
         for index,minibuild in enumerate((minibuild0, minibuild1, minibuild2, minibuild3,
                          minibuild4, minibuild5, minibuild6, minibuild7, minibuild8,
                          minibuild9, minibuild10, minibuild11, minibuild12, minibuild13),):
@@ -176,7 +176,7 @@ category=eggs
         mb = computed_packages[0]
         self.assertEquals(mb.name, 'minibuild-0')
         mb = computed_packages[1]
-        self.assertEquals(mb.name, 'minibuild-1') 
+        self.assertEquals(mb.name, 'minibuild-1')
 
     def testChainedandTreeDeps(self):
         ''' Will test that this tree is safe:
@@ -188,8 +188,8 @@ category=eggs
                      \/
                      m0
 
-               -   m9       
-                  / \     
+               -   m9
+                  / \
                  m0 m3'''
         sys.argv = [sys.argv[0], '--config', '%s/etc/minimerge.cfg' % path, 'foo']
         opts = cli.do_read_options()
@@ -199,7 +199,7 @@ category=eggs
         self.assertEquals([mb.name for mb in computed_packages], wanted_list)
         computed_packages = minimerge._compute_dependencies(['minibuild-9'])
         wanted_list = ['minibuild-0', 'minibuild-4', 'minibuild-1', 'minibuild-2', 'minibuild-3','minibuild-9']
-        self.assertEquals([mb.name for mb in computed_packages], wanted_list) 
+        self.assertEquals([mb.name for mb in computed_packages], wanted_list)
 
 
     def testRecursivity(self):
@@ -210,13 +210,13 @@ category=eggs
         will throw some recursity problems.'''
         sys.argv = [sys.argv[0], '--config', '%s/etc/minimerge.cfg' % path, 'foo']
         opts = cli.do_read_options()
-        
+
         minimerge = api.Minimerge(opts)
         self.assertRaises(core.CircurlarDependencyError, minimerge._compute_dependencies, ['minibuild-6'])
-        
+
         minimerge = api.Minimerge(opts)
         self.assertRaises(core.CircurlarDependencyError, minimerge._compute_dependencies, ['minibuild-8'])
-        
+
         minimerge = api.Minimerge(opts)
         self.assertRaises(core.CircurlarDependencyError, minimerge._compute_dependencies, ['minibuild-13'])
 
