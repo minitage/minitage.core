@@ -59,27 +59,28 @@ class LazyLoadedDict(dict):
 
     def __init__(self):
         '''returns True is the minilay has been loaded'''
-        self.loaded = list()
-        self.full_loaded = False
+        self.items = []
+        self.loaded = False
 
     def load(self, item = None):
         '''method for lazyloading a list'''
         # do load processing there
         # 3 = 1 + 1
         # marking as loaded
-        if item:
-            self.loaded.append(item)
-            self.full_loaded = True
+        # 0 is valid
+        if item is not None:
+            self.items.append(item)
+            self.loaded = True
 
     def __getitem__(self, item):
         '''lazy loading items'''
-        if not item in self.loaded:
+        if not item in self.items:
             self.load(item)
         return dict.__getitem__(self, item)
 
     def __contains__(self, item):
         '''lazy loading items'''
-        if not item in self.loaded:
+        if not item in self.items:
             self.load(item)
         return dict.__contains__(self, item)
 

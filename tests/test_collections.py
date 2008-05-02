@@ -68,30 +68,41 @@ class testLazyLoadedDicts(unittest.TestCase):
     def testLoadedStateChanges(self):
         '''test lazy loading of lazyLoadedLists'''
         lazyLoadedDict = LazyLoadedDict()
-        self.assertFalse(0 in lazyLoadedDict.loaded)
+        self.assertFalse(0 in lazyLoadedDict.items)
         lazyLoadedDict[0] = 'foo'
-        self.assertFalse(0 in lazyLoadedDict.loaded)
+        self.assertFalse(0 in lazyLoadedDict.items)
         item = lazyLoadedDict[0]
-        self.assertTrue(0 in lazyLoadedDict.loaded)
+        self.assertTrue(0 in lazyLoadedDict.items)
 
     def testIn(self):
         lazyLoadedDict = LazyLoadedDict()
-        self.assertFalse('foo' in lazyLoadedDict.loaded)
+        self.assertFalse('foo' in lazyLoadedDict.items)
         self.assertFalse('foo' in [key for key in lazyLoadedDict])
         lazyLoadedDict['foo'] = 'foo'
         self.assertTrue('foo' in [key for key in lazyLoadedDict])
-        self.assertFalse('foo' in lazyLoadedDict.loaded)
+        self.assertFalse('foo' in lazyLoadedDict.items)
         a = lazyLoadedDict['foo']
-        self.assertTrue('foo' in lazyLoadedDict.loaded)
+        self.assertTrue('foo' in lazyLoadedDict.items)
+
+    def testNotIn(self):
+        lazyLoadedDict = LazyLoadedDict()
+        self.assertFalse('foo' in lazyLoadedDict.items)
+        self.assertTrue('foo'  not in lazyLoadedDict.items)
+        self.assertFalse('foo' in [key for key in lazyLoadedDict])
+        lazyLoadedDict['foo'] = 'foo'
+        self.assertTrue('foo' in [key for key in lazyLoadedDict])
+        self.assertFalse('foo' in lazyLoadedDict.items)
+        a = lazyLoadedDict['foo']
+        self.assertTrue('afoo' not in lazyLoadedDict.items)
 
     def testAdd(self):
         lazyLoadedDict = LazyLoadedDict()
-        self.assertFalse(0 in lazyLoadedDict.loaded)
+        self.assertFalse(0 in lazyLoadedDict.items)
         lazyLoadedDict[0] = 0
-        keys = [ key for key in lazyLoadedDict ]
+        keys = [key for key in lazyLoadedDict]
         self.assertTrue(lazyLoadedDict.has_key(0))
         item = lazyLoadedDict[0]
-        self.assertTrue(len(lazyLoadedDict.loaded) == 1)
+        self.assertTrue(len(lazyLoadedDict.items) == 1)
 
 
 if __name__ == '__main__':
