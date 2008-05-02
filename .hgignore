@@ -1,4 +1,6 @@
 .*pyc
-build/*
 minitage.core.egg-info/*
 dist/*
+build\/
+
+
