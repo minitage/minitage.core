@@ -22,7 +22,6 @@ import unittest
 import test_common
 from minitage.core import api, objects
 
-
 mb_path = os.path.expanduser('~/iamatest-1.0')
 
 class testMinibuilds(unittest.TestCase):
@@ -69,6 +68,19 @@ class testMinibuilds(unittest.TestCase):
         mb = api.Minibuild(path=nvmbp)
         self.assertRaises(objects.InvalidMinibuildNameError,mb.load)
         os.remove(nvmbp)
+
+    def testDepends(self):
+        minibuild1='''
+[minibuild]
+depends=python
+src_type=hg
+src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
+install_method=buildout
+category=eggs
+'''
+        open(mb_path,'w').write(minibuild1)
+        mb = api.Minibuild(path=mb_path).load()
+        self.assertEquals(mb.dependencies, ['python'])
 
     def testValidMinibuilds(self):
         minibuild1='''
@@ -251,7 +263,6 @@ category=invalid
 
     def tearDown(self):
         os.remove(mb_path)
-
 
     def setUp(self):
         open(mb_path,'w').write('')
