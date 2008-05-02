@@ -19,11 +19,13 @@ import sys
 import ConfigParser
 from minitage.core import objects
 
-class NoPackagesError(Exception): pass
-class ConflictModesError(Exception): pass
-class InvalidConfigFileError(Exception): pass
-class TooMuchActionsError(Exception): pass
-class CliError(Exception): pass
+class MinimergeError(Exception): pass
+class NoPackagesError(MinimergeError): pass
+class ConflictModesError(MinimergeError): pass
+class InvalidConfigFileError(MinimergeError): pass
+class TooMuchActionsError(MinimergeError): pass
+class CliError(MinimergeError): pass
+class MinibuildNotFoundError(MinimergeError): pass
  
 class Minimerge(object):
 
@@ -64,10 +66,12 @@ class Minimerge(object):
         # configuration file
         self.jump = options.get('jump', False)
         self.nodeps = options.get('nodeps', False)
-        self.packages = options.get('packages', False)
         self.debug = options.get('debug', self.config._sections.get('minimerge', {}).get('debug', False))
         self.fetchonly = options.get('fetchonly', False)
         self.offline = options.get('offline', self.config._sections.get('minimerge', {}).get('offline', False))
+
+        self.packages = options.get('packages', False)
+        self.computed_packages = []
 
         # what are we doing
         self.action = options.get('action', False)
@@ -89,13 +93,25 @@ class Minimerge(object):
                          for dir in minilays_search_paths if os.path.isdir(dir)]
 
     def _find_minibuild(self,package):
-        ''''''
-        pass
+        '''
+        :Exceptions:
+        raises MinibuildNotFoundError if the packages is not found is any minilay.
+        :Returns
+            - The minibuild found
+        '''
+        for minilay in self.minilays:
+            if package in minilay:
+                return minilay[package]
+        raise MinibuildNotFoundError('the minibuild \'%s\' was not found' % package)
 
-    def _compute_dependencies(self):
+    def _compute_dependencies(self,packages = []):
         ''''''
-        for package in self.packages:
-            self._find_minibuild(package)
+        for package in packages:
+            mb = self._find_minibuild(package)
+            if not mb.name in [mb.name for mb in self.computed_packages]:
+                for dependency in mb.dependencies:
+                    self._compute_dependencies(dependency)
+            self.computed_packages.append(mb)
 
     def main(self,options):
         '''Main loop :
@@ -108,8 +124,8 @@ class Minimerge(object):
                   - maybe install
                   - maybe remove
         '''
-
         if not self.nodeps:
-            self._compute_dependencies()
-
+            self._compute_dependencies(self.packages)
+            # we need to merge in the reverse order that we computed deps
+            self.computed_packages.reverse()
 
