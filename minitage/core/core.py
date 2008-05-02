@@ -26,7 +26,8 @@ class InvalidConfigFileError(MinimergeError): pass
 class TooMuchActionsError(MinimergeError): pass
 class CliError(MinimergeError): pass
 class MinibuildNotFoundError(MinimergeError): pass
- 
+class CircurlarDependencyError(MinimergeError): pass
+
 class Minimerge(object):
 
     def __init__(self,options={}):
@@ -92,26 +93,56 @@ class Minimerge(object):
         self.minilays = [objects.Minilay(path = os.path.expanduser(dir)) \
                          for dir in minilays_search_paths if os.path.isdir(dir)]
 
-    def _find_minibuild(self,package):
+    def _find_minibuild(self, package):
         '''
-        :Exceptions:
-        raises MinibuildNotFoundError if the packages is not found is any minilay.
-        :Returns
+        @param package str minibuild to find
+        Exceptions
+            - raises MinibuildNotFoundError if the packages is not found is any minilay.
+        Returns
             - The minibuild found
         '''
         for minilay in self.minilays:
             if package in minilay:
                 return minilay[package]
-        raise MinibuildNotFoundError('the minibuild \'%s\' was not found' % package)
+        raise MinibuildNotFoundError('Tahe minibuild \'%s\' was not found' % package)
 
-    def _compute_dependencies(self,packages = []):
-        ''''''
+    def _compute_dependencies(self,packages = [],*kw,**kwargs):
+        '''
+        @param package list list of packages to get the deps
+        @param ancestors list list of tuple(ancestor,level of dependency)
+        Exceptions
+            - raises CircurlarDependencyError in case of curcular dependencies trees
+        Returns
+            - Nothing but self.computed_packages is filled with needed
+            dependencies. Not that this list must be reversed.'''
+        ancestors = kwargs.get('ancestors',[])
         for package in packages:
             mb = self._find_minibuild(package)
-            if not mb.name in [mb.name for mb in self.computed_packages]:
-                for dependency in mb.dependencies:
-                    self._compute_dependencies(dependency)
-            self.computed_packages.append(mb)
+            # test if we have not already the package in our dependency list, then
+            # ...
+            # if we have no ancestor, the end of the list is fine.
+            index = len(ancestors) 
+            # if we have ancestors
+            if ancestors:
+                # we must check ancestor installation priority:
+                #  we must install dependencies prior to the first
+                #  package which have the dependency in its list
+                for ancestor in ancestors:
+                    if mb.name in ancestor.dependencies:
+                        index = ancestors.index(ancestor)
+                        break
+            # last check if package is not already there.
+            if not mb in ancestors:
+                ancestors.insert(index, mb)
+            # unconditionnaly parsing dependencies, even if the package is
+            # already there to detect circular dependencies
+            try:
+                ancestors = self._compute_dependencies(mb.dependencies,ancestors=ancestors)  
+            except RuntimeError,e:
+                if str(e) == 'maximum recursion depth exceeded in cmp':
+                    message = 'Circular dependency detected around %s and ancestors: \'%s\'' 
+                    raise CircurlarDependencyError(message % (mb.name, [m.name for m in ancestors]))
+        return ancestors
 
     def main(self,options):
         '''Main loop :
@@ -119,13 +150,12 @@ class Minimerge(object):
           Here executing the minimerge tasks:
               - calculate dependencies
               - for each dependencies:
-                  - maybe fetch
-                  - maybe update
+                  - maybe fetch / update
                   - maybe install
                   - maybe remove
         '''
         if not self.nodeps:
-            self._compute_dependencies(self.packages)
+            self.computed_packages = self._compute_dependencies(self.packages)
             # we need to merge in the reverse order that we computed deps
             self.computed_packages.reverse()
 
