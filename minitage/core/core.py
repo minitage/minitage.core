@@ -106,7 +106,7 @@ class Minimerge(object):
                 return minilay[package]
         raise MinibuildNotFoundError('Tahe minibuild \'%s\' was not found' % package)
 
-    def _compute_dependencies(self,packages = [],*kw,**kwargs):
+    def _compute_dependencies(self,packages = None, ancestors = None):
         '''
         @param package list list of packages to get the deps
         @param ancestors list list of tuple(ancestor,level of dependency)
@@ -115,7 +115,11 @@ class Minimerge(object):
         Returns
             - Nothing but self.computed_packages is filled with needed
             dependencies. Not that this list must be reversed.'''
-        ancestors = kwargs.get('ancestors',[])
+        if packages is None:
+            packages = []
+        if ancestors is None:
+            ancestors = []
+
         for package in packages:
             mb = self._find_minibuild(package)
             # test if we have not already the package in our dependency list, then
