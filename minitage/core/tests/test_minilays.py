@@ -19,8 +19,9 @@ import sys
 import shutil
 import optparse
 import ConfigParser
+
 from minitage.core import api, cli, objects
-import test_common
+from minitage.core.tests import test_common
 
 path = os.path.expanduser('~/iamauniquetestdirformatiwillberemoveafterthetest')
 testopts = dict(path=path)

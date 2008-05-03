@@ -19,8 +19,9 @@ import os
 import shutil
 import sys
 import unittest
-import test_common
+
 from minitage.core import api, objects
+from minitage.core.tests import test_common
 
 mb_path = os.path.expanduser('~/iamatest-1.0')
 

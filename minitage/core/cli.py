@@ -16,6 +16,7 @@ __docformat__ = 'restructuredtext en'
 import os
 import sys
 import optparse
+
 from minitage.core import core
 
 

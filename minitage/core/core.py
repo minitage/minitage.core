@@ -17,6 +17,7 @@ version = '0.0.4'
 import os
 import sys
 import ConfigParser
+
 from minitage.core import objects
 
 class MinimergeError(Exception): pass

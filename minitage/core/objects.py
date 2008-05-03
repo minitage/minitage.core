@@ -14,10 +14,11 @@
 
 __docformat__ = 'restructuredtext en'
 
-from minitage.core import collections
 import os
 import ConfigParser
 import re
+
+from minitage.core import collections
 
 class MinibuildException(Exception):pass
 class InvalidConfigFileError(MinibuildException): pass

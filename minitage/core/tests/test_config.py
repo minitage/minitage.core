@@ -18,6 +18,7 @@ import os
 import sys
 import optparse
 import ConfigParser
+
 from minitage.core  import api, cli, core
 
 class testConfig(unittest.TestCase):
