@@ -21,7 +21,7 @@ import optparse
 import ConfigParser
 
 from minitage.core.collections import LazyLoadedList, LazyLoadedDict
-from minitage.core.tests importtest_common
+from minitage.core.tests import test_common
 
 class testLazyLoadedLists(unittest.TestCase):
 
