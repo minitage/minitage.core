@@ -45,7 +45,7 @@ VALID_FETCH_METHODS = ['svn', 'hg']
 
 # minibuilds name checkers
 supp_sufix = '(_(((tag|branch)([A-Z]|\d)(\.|[A-Z]|\d)*)|(r(HEAD|TIP|\d+))|((pre|p|beta|alpha|rc)\d*)))'
-versioned_regexp = '^([a-zA-Z]|\d)+(-([a-za-z]|\d)+)*(-\d+)((\.\d+)*)([a-z]?)(%s)*$'%supp_sufix
+versioned_regexp = '^([a-zA-Z]|\d)+(-([a-zA-Z]|\d)+)*(-\d+)((\.\d+)*)([a-z]?)(%s)*$'%supp_sufix
 meta_regexp = '^((meta-[a-zA-Z0-9]+)(-([a-za-z]|\d)+)*)$'
 packageversion_re = re.compile('((%s|%s))' % (meta_regexp, versioned_regexp))
 
