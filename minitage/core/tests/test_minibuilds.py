@@ -39,6 +39,12 @@ class testMinibuilds(unittest.TestCase):
         valid_names.append('test-1.0_alpha44')
         valid_names.append('test-1.0_alpha44_pre20071024')
         valid_names.append('test-1.0_pre20071024')
+        valid_names.append('test-1.0_branch10')
+        valid_names.append('test-1.0_branchHEAD10')
+        valid_names.append('test-1.0_tagHEAD10')
+        valid_names.append('test-1.0_r1')
+        valid_names.append('test-1.0_rHEAD')
+        valid_names.append('test-1.0_rTIP')
         valid_names.append('meta-toto')
         for i in valid_names:
             # will fail if raise error anyway
@@ -52,6 +58,9 @@ class testMinibuilds(unittest.TestCase):
         invalid_names.append('test-test-')
         invalid_names.append('meta')
         invalid_names.append('meta-meta-')
+        valid_names.append('test-1.0_brancha10')
+        valid_names.append('test-1.0_branch.10')
+        valid_names.append('test-1.0_rnot')
         invalid_names.append('meta-')
         for i in invalid_names:
             # will fail if raise error anyway
