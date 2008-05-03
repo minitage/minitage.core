@@ -45,8 +45,8 @@ VALID_FETCH_METHODS = ['svn', 'hg']
 
 # minibuilds name checkers
 versioned_regexp = '^([a-zA-Z]|\d)+(-([a-za-z]|\d)+)*(-\d+)((\.\d+)*)([a-z]?)((_(pre|p|beta|alpha|rc)\d*)*)$'
-meta_regepx = '^((meta-[a-zA-Z0-9]+)(-([a-za-z]|\d)+)*)$'
-packageversion_re = re.compile('((%s|%s))' % (meta_regepx, versioned_regexp))
+meta_regexp = '^((meta-[a-zA-Z0-9]+)(-([a-za-z]|\d)+)*)$'
+packageversion_re = re.compile('((%s|%s))' % (meta_regexp, versioned_regexp))
 
 class Minilay(collections.LazyLoadedDict):
     """minilays are list of minibuilds.
