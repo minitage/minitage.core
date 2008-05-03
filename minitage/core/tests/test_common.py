@@ -23,14 +23,14 @@ if not setup:
 def createMinitageEnv(directory):
     if os.path.exists(os.path.expanduser(directory)):
         raise Exception("Please (re)move %s before test" % directory)
-    os.system('''
+    os.system("""
               mkdir %(path)s
               virtualenv %(path)s
               source %(path)s/bin/activate
               # can be python-ver or python
               $(ls %(path)s/bin/easy_install) -H None -f "%(eggs)s" zc.buildout
               $(ls %(path)s/bin/python*) %(setup)s install
-              ''' % {
+              """ % {
                   'eggs': eggs,
                   'path': directory,
                   'setup': setup,

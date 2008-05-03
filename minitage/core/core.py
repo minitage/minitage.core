@@ -30,10 +30,10 @@ class CircurlarDependencyError(MinimergeError): pass
 
 class Minimerge(object):
 
-    def __init__(self,options={}):
-        '''Options are taken from the section 'minimerge' in the configuration file
+    def __init__(self,options=None):
+        """Options are taken from the section 'minimerge' in the configuration file
         then can be overriden in the input dictionnary.
-        :Parameters:
+        Parameters:
             - options:
                 - jump: package in the dependency tree to jump to
                 - packages: packages list to handle *mandatory*
@@ -44,13 +44,16 @@ class Minimerge(object):
                 - action: what to do *mandatory*
                 - sync: sync mode
                 - config: configuration file path *mandatory*
-        '''
+        """
+        if options is None:
+            options = {}
         # first try to read the config in
         # - command line
         # - exec_prefix
         # - ~/.minimerge.cfg
         # We have the corresponding file allready filled in option.config, see
         # `minimerge.core.cli`
+        #
         self.config_path = os.path.expanduser(options.get('config'))
         self.config = ConfigParser.ConfigParser()
         try:
@@ -94,27 +97,28 @@ class Minimerge(object):
                          for dir in minilays_search_paths if os.path.isdir(dir)]
 
     def _find_minibuild(self, package):
-        '''
+        """
         @param package str minibuild to find
         Exceptions
-            - raises MinibuildNotFoundError if the packages is not found is any minilay.
+            - MinibuildNotFoundError if the packages is not found is any minilay.
         Returns
             - The minibuild found
-        '''
+        """
         for minilay in self.minilays:
             if package in minilay:
                 return minilay[package]
         raise MinibuildNotFoundError('Tahe minibuild \'%s\' was not found' % package)
 
     def _compute_dependencies(self,packages = None, ancestors = None):
-        '''
+        """
         @param package list list of packages to get the deps
         @param ancestors list list of tuple(ancestor,level of dependency)
         Exceptions
-            - raises CircurlarDependencyError in case of curcular dependencies trees
+            - CircurlarDependencyError in case of curcular dependencies trees
         Returns
             - Nothing but self.computed_packages is filled with needed
-            dependencies. Not that this list must be reversed.'''
+            dependencies. Not that this list must be reversed.
+        """
         if packages is None:
             packages = []
         if ancestors is None:
@@ -141,15 +145,24 @@ class Minimerge(object):
             # unconditionnaly parsing dependencies, even if the package is
             # already there to detect circular dependencies
             try:
-                ancestors = self._compute_dependencies(mb.dependencies,ancestors=ancestors)
+                ancestors = self._compute_dependencies(mb.dependencies, ancestors=ancestors)
             except RuntimeError,e:
                 if str(e) == 'maximum recursion depth exceeded in cmp':
                     message = 'Circular dependency detected around %s and ancestors: \'%s\''
                     raise CircurlarDependencyError(message % (mb.name, [m.name for m in ancestors]))
         return ancestors
 
+    def _fetch(self,package):
+        """
+        @param param minitage.core.objects.Minibuid the minibuild to fetch
+        Exceptions
+           - MinimergeFetchComponentError if we do not found any component to
+           fetch the package.
+           - The fetcher exception.
+        """
+
     def main(self,options):
-        '''Main loop :
+        """Main loop :
           ------------
           Here executing the minimerge tasks:
               - calculate dependencies
@@ -157,9 +170,11 @@ class Minimerge(object):
                   - maybe fetch / update
                   - maybe install
                   - maybe remove
-        '''
+        """
+        packages = self.packages
         if not self.nodeps:
-            self.computed_packages = self._compute_dependencies(self.packages)
-            # we need to merge in the reverse order that we computed deps
-            self.computed_packages.reverse()
+            packages = self._compute_dependencies(self.packages)
+
+#        for package in packages:
+#            self._fetch(package)
 

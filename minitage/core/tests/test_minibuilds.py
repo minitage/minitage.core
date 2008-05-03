@@ -55,14 +55,14 @@ class testMinibuilds(unittest.TestCase):
         for i in invalid_names:
             # will fail if raise error anyway
             self.assertFalse(mb.check_minibuild_name(i))
-        minibuild1='''
+        minibuild1="""
         [minibuild]
         depends=python
         src_type=hg
         src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
         install_method=buildout
         category=eggs
-        '''
+        """
         nvmbp = 'notvalidminibuildnamewhichisuniquetothistestforminitage'
         open(nvmbp,'w').write(minibuild1)
         mb = api.Minibuild(path=nvmbp)
@@ -70,81 +70,81 @@ class testMinibuilds(unittest.TestCase):
         os.remove(nvmbp)
 
     def testDepends(self):
-        minibuild1='''
+        minibuild1="""
 [minibuild]
 depends=python
 src_type=hg
 src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
 install_method=buildout
 category=eggs
-'''
+"""
         open(mb_path,'w').write(minibuild1)
         mb = api.Minibuild(path=mb_path).load()
         self.assertEquals(mb.dependencies, ['python'])
 
     def testValidMinibuilds(self):
-        minibuild1='''
+        minibuild1="""
 [minibuild]
 depends=python
 src_type=hg
 src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
 install_method=buildout
 category=eggs
-'''
+"""
         open(mb_path,'w').write(minibuild1)
         mb = api.Minibuild(path=mb_path).load()
 
     def testNoMinibuildSection(self):
-        minibuild2='''
+        minibuild2="""
 [iamnotcalledminibuild]
 depends=python
 src_type=hg
 src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
 install_method=buildout
 category=eggs
-'''
+"""
         open(mb_path,'w').write(minibuild2)
         mb = api.Minibuild(path=mb_path)
         self.assertRaises(objects.NoMinibuildSectionError, mb.load)
 
     def testInvalidConfig(self):
-        minibuild3='''
+        minibuild3="""
 depends=python
 src_type=hg
 src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
 install_method=buildout
 category=eggs
-'''
+"""
         open(mb_path,'w').write(minibuild3)
         mb = api.Minibuild(path=mb_path)
         self.assertRaises(objects.InvalidConfigFileError, mb.load)
 
     def testUriWithoutFetchMethod(self):
-        minibuild='''
+        minibuild="""
 [minibuild]
 category=eggs
 depends=python
 install_method=buildout
 src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
-'''
+"""
         open(mb_path,'w').write(minibuild)
         mb = api.Minibuild(path=mb_path)
         self.assertRaises(objects.MissingFetchMethodError, mb.load)
 
     def testInvalidSrcType(self):
-        minibuild='''
+        minibuild="""
 [minibuild]
 category=eggs
 depends=python
 install_method=buildout
 src_type=invalid
 src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
-'''
+"""
         open(mb_path,'w').write(minibuild)
         mb = api.Minibuild(path=mb_path)
         self.assertRaises(objects.InvalidFetchMethodError, mb.load)
     def testSrcOpts(self):
-        minibuild='''
+        minibuild="""
 [minibuild]
 category=eggs
 depends=python
@@ -152,109 +152,109 @@ install_method=buildout
 src_type=invalid
 src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
 src_opts=-r666
-'''
+"""
         open(mb_path,'w').write(minibuild)
         mb = api.Minibuild(path=mb_path)
         self.assertEquals('-r666',mb.src_opts)
 
     def testMeta(self):
-        minibuild='''
+        minibuild="""
 [minibuild]
 depends=python
-'''
+"""
         open(mb_path,'w').write(minibuild)
         # no tests there, if it has errors in loading, it will fail anyway...
         mb = api.Minibuild(path=mb_path).load()
         self.failUnless('python' in mb.dependencies)
 
     def testDefaults(self):
-        minibuild='''
+        minibuild="""
 [minibuild]
 depends=python
-'''
+"""
         open(mb_path,'w').write(minibuild)
         mb = api.Minibuild(path=mb_path).load()
 
     def testCategory(self):
-        minibuild='''
+        minibuild="""
 [minibuild]
 depends=python
 src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
 src_type=hg
 install_method=buildout
 category=eggs
-'''
+"""
         open(mb_path,'w').write(minibuild)
         mb = api.Minibuild(path=mb_path).load()
         self.assertEquals(mb.category,'eggs')
 
-        minibuild='''
+        minibuild="""
 [minibuild]
 depends=python
 src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
 src_type=hg
 install_method=buildout
 category=invalid
-'''
+"""
         mb = None
         open(mb_path,'w').write(minibuild)
         mb = api.Minibuild(path=mb_path)
         self.assertRaises(objects.InvalidCategoryError, mb.load)
-        minibuild='''
+        minibuild="""
 [minibuild]
 src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
 src_type=hg
 install_method=buildout
-'''
+"""
         mb = None
         open(mb_path,'w').write(minibuild)
         mb = api.Minibuild(path=mb_path)
         self.assertRaises(objects.MissingCategoryError, mb.load)
 
     def testMinibuildWithoutInstallMethodNeitherDependencies(self):
-        minibuild='''
+        minibuild="""
 [minibuild]
 url=prout
-'''
+"""
         open(mb_path,'w').write(minibuild)
         mb = api.Minibuild(path=mb_path)
         self.assertRaises(objects.EmptyMinibuildError, mb.load)
 
 
     def testLazyLoad(self):
-        minibuild='''
+        minibuild="""
 [minibuild]
 depends=python
 src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
 src_type=hg
 install_method=buildout
 category=eggs
-'''
+"""
         # minibuild is ok, just trying to get the catgory.
         open(mb_path,'w').write(minibuild)
         mb = api.Minibuild(path=mb_path)
         self.assertEquals(mb.category,'eggs')
 
-        minibuild='''
+        minibuild="""
 [minibuild]
 src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
 src_type=hg
 install_method=buildout
 category=eggs
-'''
+"""
         # minibuild is ok, just trying to get the catgory.
         open(mb_path,'w').write(minibuild)
         mbd = api.Minibuild(path=mb_path)
         self.assertEquals(mbd.dependencies,[])
 
-        minibuild='''
+        minibuild="""
 [minibuild]
 depends=python
 src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
 src_type=hg
 install_method=buildout
 category=invalid
-'''
+"""
         mb = None
         open(mb_path,'w').write(minibuild)
         mb = api.Minibuild(path=mb_path)

@@ -26,24 +26,24 @@ class testConfig(unittest.TestCase):
     def testConfig(self):
         path = '%s/iamauniqueminiermgeconfigtest' % sys.exec_prefix
         mydict = {'path': path}
-        test1 = '''
+        test1 = """
 touch %(path)s
 cat << EOF > %(path)s
 [minimerge]
 minilays =
     dir1
     $HOME/test_minimerge1
-EOF''' % mydict
+EOF""" % mydict
         os.system(test1)
         sys.argv = [sys.argv[0], '--config', path, 'bar']
         opts = cli.do_read_options()
         minimerge = api.Minimerge(opts)
 
-        test2 = '''
+        test2 = """
 touch %(path)s
 cat << EOF > %(path)s
 i am not a config file
-EOF''' % mydict 
+EOF""" % mydict 
         os.system(test2)
         sys.argv = [sys.argv[0], '--config', path, 'bar']
         opts = cli.do_read_options()

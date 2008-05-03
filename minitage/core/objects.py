@@ -33,13 +33,13 @@ class InvalidMinibuildNameError(MinibuildException): pass
 class MinilayException(Exception):pass
 class InvalidMinilayPath(MinilayException): pass
 
-''' valid categories to install into'''
+""" valid categories to install into"""
 VALID_CATEGORIES = ['instances', 'eggs', 'dependencies', 'zope', 'django', 'tg']
-''' valud install methods to use'''
+""" valud install methods to use"""
 VALID_INSTALL_METHODS = ['buildout']
-'''valid fetch methods to use:
+"""valid fetch methods to use:
  - hg: mercurial
- - svn: subversion'''
+ - svn: subversion"""
 VALID_FETCH_METHODS = ['svn', 'hg']
 
 # minibuilds name checkers
@@ -48,13 +48,14 @@ meta_regepx = '^((meta-[a-zA-Z0-9]+)(-([a-za-z]|\d)+)*)$'
 packageversion_re = re.compile('((%s|%s))' % (meta_regepx, versioned_regexp))
 
 class Minilay(collections.LazyLoadedDict):
-    '''minilays are list of minibuilds.
+    """minilays are list of minibuilds.
     they have a special loaded attribute to lazy load them.
     They store minibuilds in a dictionnary:
-        self[minibuildName][instance] -> minibuild instance
-        self[minibuildName][error] -> exception instance if any
-    :Parameters
-    - path: path to the minilay'''
+        -  self[minibuildName][instance] : minibuild instance
+        -  self[minibuildName][error] : exception instance if any
+    Parameters
+        - path: path to the minilay
+    """
 
     def __init__(self, path=None, *kw, **kwargs):
         collections.LazyLoadedDict.__init__(self,*kw,**kwargs)
@@ -63,7 +64,7 @@ class Minilay(collections.LazyLoadedDict):
             raise InvalidMinilayPath('This is an invalid directory: \'%s\'' % self.path)
 
     def load(self, item=None):
-        '''walk the minilay and load everything wich seems to be a minibuild inside'''
+        """walk the minilay and load everything wich seems to be a minibuild inside"""
         if not self.loaded and not item in self.items:
             minibuilds = []
             # 0 is valid
@@ -80,7 +81,7 @@ class Minilay(collections.LazyLoadedDict):
                     self.items.append(minibuild)
 
 class Minibuild(object):
-    '''minibuild object.
+    """minibuild object.
     Contains all package metadata including
      - dependenciess
      - url
@@ -103,16 +104,18 @@ class Minibuild(object):
       - depends : which minibuilds we are relying to as prior dependencies
       - url : project's homepage
       - description : a short description
-      - install_method : how to install (valid methods are 'buildout')'''
+      - install_method : how to install (valid methods are 'buildout')
+      """
 
     def __init__(self, path, *kw, **kwargs):
-        '''
+        """
         Parameters
             path: path to the minibuild file. This minibuild file is pytthon
               configparser like object with a minibuild section which will
               define all the metadate:
         Misc
-            Thus we can lazy load minibuilds and save performance.'''
+            Thus we can lazy load minibuilds and save performance.
+        """
         self.path = path
         self.name = self.path.split('/').pop()
         self.state = None
@@ -127,14 +130,16 @@ class Minibuild(object):
         self.loaded = None
 
     def check_minibuild_name(self, name):
-        '''throws InvalidMinibuildNameError
-        if self.name is not a valid minibuild filename.'''
+        """
+        Exceptions:
+            - InvalidMinibuildNameError if self.name is not a valid minibuild filename.
+        """
         if packageversion_re.match(name):
             return True
         return False
 
     def __getattribute__(self, attr):
-        '''lazyload stuff'''
+        """lazyload stuff"""
         lazyloaded = ['config', 'url', 'category',
                       'dependencies', 'description','src_opts',
                       'src_type', 'install_method', 'src_type']
@@ -148,8 +153,10 @@ class Minibuild(object):
         return object.__getattribute__(self, attr)
 
     def load(self):
-        '''try to load a minibuild
-        Throws MinibuildException in error'''
+        """try to load a minibuild
+        Exceptions
+            - MinibuildException
+        """
         if not self.check_minibuild_name(self.name):
             raise InvalidMinibuildNameError('Invalid minibuild name : \'%s\'' % self.name)
 

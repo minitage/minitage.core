@@ -19,14 +19,14 @@ import optparse
 from minitage.core import core
 
 
-usage = '''
+usage = """
 %(arg)s [Options] [ -j minibuild ]  minibuild ... minibuildn  : Installs  package(s)."
 %(arg)s [Options] -rm minibuild ... minibuildn  : Uninstall package(s)"
-'''%{'arg': sys.argv[0]}
+"""%{'arg': sys.argv[0]}
 
 
 def do_read_options():
-    '''Parse the command line thought arguments and throws CliError if any error.
+    """Parse the command line thought arguments and throws CliError if any error.
     :Returns:
         - `options` : the options to give to minimerge
             They are cli parsed but action [string] is added to the oject.
@@ -35,7 +35,7 @@ def do_read_options():
                 - remove
                 - rebuild
         - `args` [list] : cli left args, in fact these are the packages to deal with.
-    '''
+    """
 
     default_action = 'install'
     path = sys.exec_prefix

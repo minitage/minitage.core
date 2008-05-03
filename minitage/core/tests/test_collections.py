@@ -25,7 +25,7 @@ import test_common
 class testLazyLoadedLists(unittest.TestCase):
 
     def testLoadedStateChanges(self):
-        '''test lazy loading of lazyLoadedLists'''
+        """test lazy loading of lazyLoadedLists"""
         lazyLoadedList = LazyLoadedList()
         self.assertFalse(lazyLoadedList.isLoaded())
         lazyLoadedList.append('foo')
@@ -66,7 +66,7 @@ class testLazyLoadedLists(unittest.TestCase):
 class testLazyLoadedDicts(unittest.TestCase):
 
     def testLoadedStateChanges(self):
-        '''test lazy loading of lazyLoadedLists'''
+        """test lazy loading of lazyLoadedLists"""
         lazyLoadedDict = LazyLoadedDict()
         self.assertFalse(0 in lazyLoadedDict.items)
         lazyLoadedDict[0] = 'foo'

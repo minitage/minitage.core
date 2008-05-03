@@ -59,10 +59,10 @@ class testMinilays(unittest.TestCase):
         minilays = []
         minilays.append('%(path)s/minilays_alternate2/myminilay1' % testopts)
         for minilay in minilays:
-            os.system('''
+            os.system("""
                       echo 'minilays=%s' >> %s/etc/minimerge.cfg
                       mkdir -p %s
-                     ''' % (minilay, path, minilay))
+                     """ % (minilay, path, minilay))
         sys.argv = [sys.argv[0], '--config', '%s/etc/minimerge.cfg' % path, 'foo']
         opts = cli.do_read_options()
         minimerge = api.Minimerge(opts)
@@ -71,28 +71,28 @@ class testMinilays(unittest.TestCase):
 
     def testLoadingBrokenMinibuild(self):
         # create minilays in the minilays dir, seeing if they get putted in
-        minibuild='''
+        minibuild="""
 [minibuild]
 depends=python
 src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
 src_type=hg
 install_method=buildout
 category=invalid
-'''
+"""
         open('%s/minibuild-1' % minilay1, 'w').write(minibuild)
         minilay = api.Minilay(path=minilay1)
         self.assertTrue( None == minilay['minibuild-1'].loaded)
         self.assertRaises(objects.InvalidCategoryError, minilay['minibuild-1'].load)
         self.assertTrue(isinstance(minilay['minibuild-1'].loaded, objects.InvalidCategoryError))
 
-        minibuild='''
+        minibuild="""
 [minibuild]
 depends=python
 src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
 src_type=hg
 install_method=buildout
 category=eggs
-'''
+"""
         open('%s/minibuild-1' % minilay1, 'w').write(minibuild)
         minilay = api.Minilay(path=minilay1)
         self.assertTrue(isinstance(minilay['minibuild-1'], objects.Minibuild))
@@ -102,14 +102,14 @@ category=eggs
         self.assertRaises(objects.InvalidMinilayPath, api.Minilay, path='notexistingpath')
  
     def testLazyLoad(self):
-        minibuild='''
+        minibuild="""
 [minibuild]
 depends=python
 src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
 src_type=hg
 install_method=buildout
 category=eggs
-'''
+"""
         open('%s/minibuild-1' % minilay1, 'w').write(minibuild)
         minilay = api.Minilay(path=minilay1)
         self.assertFalse('minibuild-1' in minilay.keys())
@@ -126,14 +126,14 @@ category=eggs
         self.assertTrue('minibuild-1' not in minilay)
 
     def testMinibuildInMinilay(self):
-         minibuild='''
+         minibuild="""
 [minibuild]
 depends=python
 src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
 src_type=hg
 install_method=buildout
 category=eggs
-'''
+"""
          open('%s/minibuild-1' % minilay1, 'w').write(minibuild)
          minilay = api.Minilay(path=minilay1)
          minilay.load()
@@ -141,14 +141,14 @@ category=eggs
          self.assertTrue('minibuild-2' not in minilay)
 
     def testLoad(self):
-         minibuild='''
+         minibuild="""
 [minibuild]
 depends=python
 src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
 src_type=hg
 install_method=buildout
 category=eggs
-'''
+"""
          l = ['minibuild-1', 'minibuild-2', 'minibuild-3', 'minibuild-4']
          for m in l:
              open('%s/%s' % (minilay1,m), 'w').write(minibuild)
