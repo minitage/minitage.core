@@ -28,10 +28,11 @@ usage = """
 
 def do_read_options():
     """Parse the command line thought arguments and throws CliError if any error.
-    :Returns:
+    Returns
         - `options` : the options to give to minimerge
             They are cli parsed but action [string] is added to the oject.
             action can be one of these :
+
                 - install
                 - remove
                 - rebuild

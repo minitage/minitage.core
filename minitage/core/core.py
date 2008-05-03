@@ -36,6 +36,7 @@ class Minimerge(object):
         then can be overriden in the input dictionnary.
         Parameters:
             - options:
+
                 - jump: package in the dependency tree to jump to
                 - packages: packages list to handle *mandatory*
                 - debug: debug mode
@@ -102,6 +103,7 @@ class Minimerge(object):
         @param package str minibuild to find
         Exceptions
             - MinibuildNotFoundError if the packages is not found is any minilay.
+
         Returns
             - The minibuild found
         """
@@ -116,6 +118,7 @@ class Minimerge(object):
         @param ancestors list list of tuple(ancestor,level of dependency)
         Exceptions
             - CircurlarDependencyError in case of curcular dependencies trees
+
         Returns
             - Nothing but self.computed_packages is filled with needed
             dependencies. Not that this list must be reversed.
@@ -158,7 +161,7 @@ class Minimerge(object):
         @param param minitage.core.objects.Minibuid the minibuild to fetch
         Exceptions
            - MinimergeFetchComponentError if we do not found any component to
-           fetch the package.
+             fetch the package.
            - The fetcher exception.
         """
 
@@ -168,6 +171,7 @@ class Minimerge(object):
           Here executing the minimerge tasks:
               - calculate dependencies
               - for each dependencies:
+
                   - maybe fetch / update
                   - maybe install
                   - maybe remove
