@@ -23,7 +23,7 @@ import ConfigParser
 
 from minitage.core import interfaces
 
-class test:pass
+class test(object):pass
 path = os.path.expanduser('~/iamauniquetestfileformatiwillberemoveafterthetest')
 class testInterfaces(unittest.TestCase):
 

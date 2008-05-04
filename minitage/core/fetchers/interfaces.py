@@ -30,6 +30,38 @@ class FetcherRuntimmeError(IFetcherError): pass
 
 URI_REGEX = re.compile('^((svn\+ssh|git|http|https|hg|svn|ftp|sftp|ssh|bzr|cvs|mtn|file):\/\/(.*))$')
 
+class IFetcherFactory(interfaces.IFactory):
+    def __init__(self, config=None):
+        """
+        Parameters:
+            - config: a configuration file with a self.name section
+                    containing all needed classes.
+        """
+
+        interfaces.IFactory.__init__(self,'fetchers',config)
+        self.registerDict(
+            {
+                'hg': 'minitage.core.fetchers.scm.HgFetcher',
+                'svn': 'minitage.core.fetchers.scm.SvnFetcher',
+            }
+        )
+
+    def __call__(self, switch):
+        """return a fetcher
+        Parameters:
+            - switch: fetcher type
+              Default ones:
+
+                -hg: mercurial
+                -svn: subversion
+        """
+        for key in self.products:
+            klass = self.products[key]
+            instance = klass()
+            if instance.match(switch):
+                return instance
+        return None
+
 class IFetcher(interfaces.IProduct):
     """Interface for fetching a package from somewhere"
     Basics

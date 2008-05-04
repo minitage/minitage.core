@@ -21,7 +21,7 @@ import types
 class InterfaceError(Exception): pass
 class InvalidConfigForFactoryError(InterfaceError): pass
 class NotImplementedMethodError(InterfaceError): pass
-class InvalidComponentInConfigError(InterfaceError): pass
+class InvalidComponentClassPathError(InterfaceError): pass
 class InvalidComponentClassError(InterfaceError): pass
 
 class IFactory(object):
@@ -44,29 +44,45 @@ class IFactory(object):
 
     """
 
-    def __init__(self, name, config):
+    def __init__(self, name, config=None):
         """
         Parameters:
-            - config: a mini
+            - config: a configuration file with a self.name section
+                    containing all needed classes.
         """
         self.name = name
         self.config = ConfigParser.ConfigParser()
         self.section = None
         self.products = {}
-        try:
-            self.config.read(config)
-            self.section = self.config._sections[self.name]
-            del self.section['__name__']
-        except KeyError, e:
-            message = 'You must provide a [%s] section with appropriate content for this factory.'
-            raise InvalidConfigForFactoryError(message % self.name)
+        if config:
+            try:
+                self.config.read(config)
+                self.section = self.config._sections[self.name]
+                del self.section['__name__']
+            except KeyError, e:
+                message = 'You must provide a [%s] section with appropriate content for this factory.'
+                raise InvalidConfigForFactoryError(message % self.name)
+        else:
+            self.section = {}
 
         # for each class in the config File, try to instantiate and register
         # the type/plugin in the factory dict.
-        for key in self.section:
+        self.registerDict(self.section)
+
+
+    def registerDict(self, dict):
+        """ for each item/class in the dict:
+        Try to instantiate and register
+        Parameters:
+            - dict : dictionnary {item:class}
+        Exceptions:
+            - InvalidComponentClassPathError
+        """
+        # the type/plugin in the factory dict.
+        for key in dict:
             try:
                 # we have full.qualified.module.path.ClassName
-                modules = self.section[key].strip().split('.')
+                modules = dict[key].strip().split('.')
                 klass_str = modules.pop()
                 module = None
                 # get the last inner submodule
@@ -81,7 +97,7 @@ class IFactory(object):
                 # get now the corresponding class
                 klass = getattr(module, klass_str)
             except Exception,e:
-                raise InvalidComponentInConfigError('Invalid Component: \'%s/%s\'' % (key, self.section[key]))
+                raise InvalidComponentClassPathError('Invalid Component: \'%s/%s\'' % (key, dict[key]))
             self.register(key, klass)
 
     def register(self, type, klass):
@@ -90,7 +106,9 @@ class IFactory(object):
             - type: type to register
             - klass: klass the factory must intanciate
         """
-        if isinstance(klass, types.ClassType):
+        # little check that we have instance
+        # XXX: find better.
+        if not  isinstance(klass, str):
             self.products[type] = klass
         else:
             raise InvalidComponentClassError('Invalid Component: \'%s/%s\' does not point to a valid class.' % (type, klass))

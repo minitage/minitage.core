@@ -16,6 +16,7 @@ __docformat__ = 'restructuredtext en'
 
 import unittest
 from minitage.core import interfaces, fetchers
+from minitage.core.fetchers import scm
 
 class testInterfaces(unittest.TestCase):
 
@@ -51,6 +52,15 @@ class testInterfaces(unittest.TestCase):
         f = fetchers.interfaces.IFetcher('ls','/bin/ls')
         self.assertEquals(f.executable,'/bin/ls')
         self.assertRaises(fetchers.interfaces.FetcherNotInPathError, fetchers.interfaces.IFetcher, 'ls','/bin/notfoundheh')
+
+    def testFactory(self):
+        f = fetchers.interfaces.IFetcherFactory()
+        svn = f('svn')
+        hg = f('hg')
+        self.assertEquals(svn.__class__.__name__, fetchers.scm.SvnFetcher.__name__)
+        self.assertEquals(svn.__class__.__name__, fetchers.scm.SvnFetcher.__name__)
+        self.assertEquals(hg.__module__, fetchers.scm.HgFetcher.__module__.split('.').pop())
+        self.assertEquals(hg.__module__, fetchers.scm.HgFetcher.__module__.split('.').pop())
 
 if __name__ == '__main__':
     suite = unittest.TestSuite()
