@@ -1,0 +1,122 @@
+#!/usr/bin/env python
+
+# Copyright (C) 2008, Mathieu PASQUET <kiorky@cryptelium.net>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+__docformat__ = 'restructuredtext en'
+
+import ConfigParser
+import imp
+import types
+
+class InterfaceError(Exception): pass
+class InvalidConfigForFactoryError(InterfaceError): pass
+class NotImplementedMethodError(InterfaceError): pass
+class InvalidComponentInConfigError(InterfaceError): pass
+class InvalidComponentClassError(InterfaceError): pass
+
+class IFactory(object):
+    """Interface implementing the design pattern 'factory'
+    Basics
+        To register a new fetcher to the factory you ll have 2 choices:
+            - Indicate something in a config.ini file and give it to the
+              instance initialization.
+              Example::
+                    [fetchers]
+                    type=mymodule.mysubmodule.MyFetcherClass
+
+            - register it manually with the .. function::register
+              Example::
+                >>> factory.register('svn', 'module.fetchcher.NiceSvnFetcher')
+
+    Attributes
+    - products : dictionary:
+        { src_type : IFetcher instance}
+
+    """
+
+    def __init__(self, name, config):
+        """
+        Parameters:
+            - config: a mini
+        """
+        self.name = name
+        self.config = ConfigParser.ConfigParser()
+        self.section = None
+        self.products = {}
+        try:
+            self.config.read(config)
+            self.section = self.config._sections[self.name]
+            del self.section['__name__']
+        except KeyError, e:
+            message = 'You must provide a [%s] section with appropriate content for this factory.'
+            raise InvalidConfigForFactoryError(message % self.name)
+
+        # for each class in the config File, try to instantiate and register
+        # the type/plugin in the factory dict.
+        for key in self.section:
+            try:
+                # we have full.qualified.module.path.ClassName
+                modules = self.section[key].strip().split('.')
+                klass_str = modules.pop()
+                module = None
+                # get the last inner submodule
+                for submodule in modules:
+                    if module:
+                        file, path, desc = imp.find_module(submodule, module.__path__)
+                        module = imp.load_module(submodule, file, path, desc)
+                    else:
+                        file, path, desc = imp.find_module(submodule)
+                        module = imp.load_module(submodule, file, path, desc)
+
+                # get now the corresponding class
+                klass = getattr(module, klass_str)
+            except Exception,e:
+                raise InvalidComponentInConfigError('Invalid Component: \'%s/%s\'' % (key, self.section[key]))
+            self.register(key, klass)
+
+    def register(self, type, klass):
+        """register a possible product with it s factory
+        Parameters
+            - type: type to register
+            - klass: klass the factory must intanciate
+        """
+        if isinstance(klass, types.ClassType):
+            self.products[type] = klass
+        else:
+            raise InvalidComponentClassError('Invalid Component: \'%s/%s\' does not point to a valid class.' % (type, klass))
+
+    def __call__(self, switch):
+        """possibly instanciate and return a product
+        Implementation Exameple::
+            for key in self.products:
+                 klass = self.products[key]
+                 instance = klass()
+                 if instance.match(switch):
+                     return instance
+        """
+        raise NotImplementedMethodError('The method is not implemented')
+
+class IProduct(object):
+    """factory result"""
+
+    def match(self, switch):
+        """
+        Parameters:
+            - switch: parameter which will be used to know if the component can
+            handle the request.
+        Return:
+            - boolean: wheither the product can be used.
+        """
+        raise NotImplementedMethodError('The method is not implemented')
+
+# vim:set et sts=4 ts=4 tw=80:
