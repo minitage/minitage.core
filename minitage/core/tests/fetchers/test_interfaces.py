@@ -41,6 +41,7 @@ class testInterfaces(unittest.TestCase):
         self.assertEquals(re.match('ssh://tld').groups()[1], 'ssh')
         self.assertEquals(re.match('sftp://tld').groups()[1], 'sftp')
         self.assertEquals(re.match('file://tld').groups()[1], 'file')
+        self.assertEquals(re.match('svn+ssh://tld').groups()[1], 'svn+ssh')
 
     def testInit(self):
         f = fetchers.interfaces.IFetcher('ls','ls','.ls')

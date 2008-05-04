@@ -28,7 +28,7 @@ class InvalidRepositoryError(IFetcherError): pass
 class FetcherNotInPathError(IFetcherError): pass
 class FetcherRuntimmeError(IFetcherError): pass
 
-URI_REGEX = re.compile('^((git|http|https|hg|svn|ftp|sftp|ssh|bzr|cvs|mtn|file):\/\/(.*))$')
+URI_REGEX = re.compile('^((svn\+ssh|git|http|https|hg|svn|ftp|sftp|ssh|bzr|cvs|mtn|file):\/\/(.*))$')
 
 class IFetcher(interfaces.IProduct):
     """Interface for fetching a package from somewhere"

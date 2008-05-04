@@ -23,19 +23,11 @@ from minitage.core.fetchers import interfaces
 class InvalidMercurialRepositoryError(interfaces.InvalidRepositoryError): pass
 
 class HgFetcher(interfaces.IFetcher):
-    """Interface for fetching a package from somewhere"
-    Basics
-         To register a new fetcher to the factory you ll have 2 choices:
-             - Indicate something in a config.ini file and give it to the
-               instance initialization.
-               Example::
-                   [fetchers]
-                   type=mymodule.mysubmodule.MyFetcherClass
-
-             - register it manually with the .. function::register
-               Example::
-                   >>> klass = getattr(module,'superklass')
-                   >>> factory.register('svn', klass)
+    """ Mercurial Fetcher
+    Example::
+        >>> import minitage.core.fetchers.scm
+        >>> hg = scm.HgFetcher()
+        >>> hg.fetch_or_update('http://url','/dir',{revision='tip'})
     """
 
     def __init__(self):
@@ -114,7 +106,7 @@ class HgFetcher(interfaces.IFetcher):
             boolean if the url is valid or not
         """
         m = interfaces.URI_REGEX.match(uri)
-        if m and m.groups()[1] in ['file', 'hg', 'ssh', 'file', 'http', 'https']:
+        if m and m.groups()[1] in ['file', 'hg', 'ssh', 'http', 'https']:
             return True
         return False
 
@@ -122,5 +114,98 @@ class HgFetcher(interfaces.IFetcher):
         if switch == 'hg':
             return True
         return False
+
+class SvnFetcher(interfaces.IFetcher):
+    """ Subversion Fetcher
+    Example::
+        >>> import minitage.core.fetchers.scm
+        >>> svn = scm.SvnFetcher()
+        >>> svn.fetch_or_update('http://url','/dir',{revision='HEAD'})
+    """
+
+    def __init__(self):
+        interfaces.IFetcher.__init__(self, 'subversion', 'svn', '.svn')
+
+    def update(self, uri, dest, opts=None, offline = False):
+        """update a package
+        Parameters:
+            - uri : check out/update url
+            - dest: destination to fetch to
+            - opts : arguments for the fetcher
+
+                - revision: particular revision to deal with.
+
+            - offline: weither we are offline or online
+        Exceptions:
+            - InvalidMercurialRepositoryError in case of repo problems
+            - interfaces.FetchErrorin case of fetch problems
+            - interfaces.InvalidUrlError in case of uri is invalid
+        """
+        if opts is None:
+            opts = {}
+        revision = opts.get('revision','HEAD')
+        if self.is_valid_src_uri(uri):
+            self._scm_cmd('up -r %s %s 2>&1' % (revision, dest))
+            if not os.path.isdir('%s/%s' % (dest, self.metadata_directory)):
+                message = 'Unexpected fetch error on \'%s\'\n' % uri
+                message += 'The directory \'%s\' is not a valid subversion repository' % (dest, uri)
+                raise InvalidMercurialRepositoryError(message)
+        else:
+            raise interfaces.InvalidUrlError('this url \'%s\' is invalid' % uri)
+
+    def fetch(self, uri, dest, opts=None, offline = False):
+        """fetch a package
+        Parameters:
+            - uri : check out/update url
+            - dest: destination to fetch to
+            - opts : arguments for the fetcher
+
+                - revision: particular revision to deal with.
+
+            - offline: weither we are offline or online
+        Exceptions:
+            - InvalidMercurialRepositoryError in case of repo problems
+            - interfaces.FetchErrorin case of fetch problems
+            - interfaces.InvalidUrlError in case of uri is invalid
+        """
+        if opts is None:
+            opts = {}
+        revision = opts.get('revision','HEAD')
+        if self.is_valid_src_uri(uri):
+            self._scm_cmd('co -r %s %s %s 2>&1' % (revision, uri,dest))
+            if not os.path.isdir('%s/%s' % (dest, self.metadata_directory)):
+                message = 'Unexpected fetch error on \'%s\'\n' % uri
+                message += 'The directory \'%s\' is not a valid subversion repository' % (dest, uri)
+                raise InvalidMercurialRepositoryError(message)
+        else:
+            raise interfaces.InvalidUrlError('this url \'%s\' is invalid' % uri)
+
+    def fetch_or_update(self, uri, dest, opts = None, offline = False):
+        """fetch or update a package
+        Parameters:
+            - uri : check out/update url
+            - opts : arguments for the fetcher
+            - offline: weither we are offline or online
+        """
+        if os.path.isdir(dest):
+           self.update(uri, dest, opts, offline)
+        else:
+           self.fetch(uri, dest, opts, offline)
+
+    def is_valid_src_uri(self, uri):
+        """Valid an url
+        Return:
+            boolean if the url is valid or not
+        """
+        m = interfaces.URI_REGEX.match(uri)
+        if m and m.groups()[1] in ['file', 'svn', 'svn+ssh', 'http', 'https']:
+            return True
+        return False
+
+    def match(self, switch):
+        if switch == 'svn':
+            return True
+        return False
+ 
 
 # vim:set et sts=4 ts=4 tw=80:
