@@ -61,9 +61,12 @@ setup(
 )
 
 
-config = '%s/etc/minimerge.cfg' % prefix
+# path to setup.py
+path = '/'.join(os.path.abspath(__file__).split('/')[:-1])
+config = '%s/etc/minimerge.cfg' % path
+p_config = '%s/etc/minimerge.cfg' % prefix
 prefixed = re.sub('%PREFIX%',prefix,open(config,'r').read())
-open(config,'w').write(prefixed)
+open(p_config,'w').write(prefixed)
 
 
 
