@@ -10,11 +10,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; see the file COPYING. If not, write to the
 # Free Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-from setuptools import setup, find_packages
 import os
 import sys
 import re
-prefix = sys.exec_prefix
+
+
+from setuptools import setup, find_packages
+prefix = os.path.abspath(sys.exec_prefix)
 
 version = '0.0.4'
 name = 'minitage.core'
