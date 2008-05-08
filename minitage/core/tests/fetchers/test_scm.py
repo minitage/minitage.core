@@ -26,10 +26,12 @@ opts = dict(
     wc=os.path.expanduser('~/minitagerepodestwc'),
 )
 
+prefix = os.getcwd()
+
 class testHg(unittest.TestCase):
 
     def setUp(self):
-        # make an hg repo
+        os.chdir(prefix)
         os.system("""
                  mkdir -p  %(path)s         2>&1 >> /dev/null
                  cd %(path)s                2>&1 >> /dev/null
@@ -46,6 +48,25 @@ class testHg(unittest.TestCase):
         for dir in [ opts['path'], opts['dest']]:
             if os.path.isdir(dir):
                 shutil.rmtree(dir)
+
+    def testUrlChanged(self):
+        hg = scm.HgFetcher()
+        hg.fetch('file://%s' % opts['path'], opts['dest'])
+        self.assertTrue(os.path.isdir('%s/%s' % (opts['dest'], '.hg')))
+        self.assertFalse(hg._has_uri_changed(opts['dest'],'file://%s' % opts['path']))
+        self.assertTrue(hg._has_uri_changed(opts['dest'],'hehe_changed'))
+
+    def testRemoveVersionnedDirs(self):
+        hg = scm.HgFetcher()
+        hg.fetch('file://%s' % opts['path'], opts['dest'])
+        self.assertTrue(os.path.isdir('%s/%s' % (opts['dest'], '.hg')))
+        os.mkdir('%s/%s' % (opts['dest'],'part'))
+        hg._remove_versionned_directories(opts['dest'])
+        self.assertTrue(os.path.isdir('%s/%s' % (opts['dest'],'part')))
+        self.assertFalse(os.path.isdir('%s/%s' % (opts['dest'],'.hg')))
+        self.assertFalse(os.path.isfile('%s/%s' % (opts['dest'],'file2')))
+        hg.update('file://%s' % opts['path'], opts['dest'])
+        self.assertTrue(os.path.isdir('%s/%s' % (opts['dest'], '.hg')))
 
     def testScmInvalidUri(self):
         hg = scm.HgFetcher()
@@ -102,6 +123,7 @@ class testHg(unittest.TestCase):
 class testSvn(unittest.TestCase):
 
     def setUp(self):
+        os.chdir(prefix)
         # make an svn repo
         os.system("""
                  mkdir -p  %(path)s                  2>&1 >> /dev/null
@@ -113,7 +135,7 @@ class testSvn(unittest.TestCase):
                  echo '666'>file                     2>&1 >> /dev/null
                  svn add file                        2>&1 >> /dev/null
                  svn ci -m 'initial import'          2>&1 >> /dev/null
-                 echo '666'>file2                    2>&1 >> /dev/null
+                 cho '666'>file2                    2>&1 >> /dev/null
                  svn add file2                       2>&1 >> /dev/null
                  svn ci -m 'second revision'         2>&1 >> /dev/null
                  svn up                              2>&1 >> /dev/null
@@ -123,6 +145,25 @@ class testSvn(unittest.TestCase):
         for dir in [opts['wc'], opts['path'], opts['dest']]:
             if os.path.isdir(dir):
                 shutil.rmtree(dir)
+
+    def testUrlChanged(self):
+        svn = scm.SvnFetcher()
+        svn.fetch('file://%s' % opts['path'], opts['wc'])
+        self.assertTrue(os.path.isdir('%s/%s' % (opts['wc'], '.svn')))
+        self.assertFalse(svn._has_uri_changed(opts['wc'],'file://%s' % opts['path']))
+        self.assertTrue(svn._has_uri_changed(opts['wc'],'hehe_changed'))
+
+    def testRemoveVersionnedDirs(self):
+        svn = scm.SvnFetcher()
+        svn.fetch('file://%s' % opts['path'], opts['wc'])
+        self.assertTrue(os.path.isdir('%s/%s' % (opts['wc'], '.svn')))
+        svn._has_uri_changed(opts['wc'], 'file://%s' % opts['path'])
+        os.mkdir('%s/%s' % (opts['wc'],'part'))
+        svn._remove_versionned_directories(opts['wc'])
+        self.assertTrue(os.path.isdir('%s/%s' % (opts['wc'],'part')))
+        self.assertFalse(os.path.isfile('%s/%s' % (opts['wc'],'file2')))
+        svn.fetch('file://%s' % opts['path'], opts['wc'])
+        self.assertTrue(os.path.isdir('%s/%s' % (opts['wc'], '.svn')))
 
     def testScmInvalidUri(self):
         svn = scm.SvnFetcher()

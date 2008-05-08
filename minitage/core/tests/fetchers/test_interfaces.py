@@ -27,6 +27,8 @@ class testInterfaces(unittest.TestCase):
         self.assertRaises(interfaces.NotImplementedMethodError, i.fetch, 'foo', 'bar')
         self.assertRaises(interfaces.NotImplementedMethodError, i.is_valid_src_uri, 'foo')
         self.assertRaises(interfaces.NotImplementedMethodError, i.match, 'foo')
+        self.assertRaises(interfaces.NotImplementedMethodError, i._has_url_changed, 'foo', 'bar')
+        self.assertRaises(interfaces.NotImplementedMethodError, i._remove_versionned_directories, 'foo')
 
     def testURI(self):
         re = fetchers.interfaces.URI_REGEX

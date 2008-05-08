@@ -17,6 +17,7 @@ __docformat__ = 'restructuredtext en'
 import re
 import os
 import subprocess
+import shutil
 
 from minitage.core import interfaces
 
@@ -108,7 +109,7 @@ class IFetcher(interfaces.IProduct):
         Exceptions:
             - InvalidUrlError
         Parameters:
-            - uri : check out/update url
+            - uri : check out/update uri
             - opts : arguments for the fetcher
             - offline: weither we are offline or online
         """
@@ -119,7 +120,7 @@ class IFetcher(interfaces.IProduct):
         Exceptions:
             - InvalidUrlError
         Parameters:
-            - uri : check out/update url
+            - uri : check out/update uri
             - opts : arguments for the fetcher
             - offline: weither we are offline or online
         """
@@ -128,16 +129,16 @@ class IFetcher(interfaces.IProduct):
     def fetch_or_update(self, uri, dest, opts = None, offline = False):
         """fetch or update a package (call the one of those 2 methods)
         Parameters:
-            - uri : check out/update url
+            - uri : check out/update uri
             - opts : arguments for the fetcher
             - offline: weither we are offline or online
         """
         raise interfaces.NotImplementedMethodError('The method is not implemented')
 
     def is_valid_src_uri(self, uri):
-        """Valid an url
+        """Valid an uri
         Return:
-            boolean if the url is valid or not
+            boolean if the uri is valid or not
         """
         raise interfaces.NotImplementedMethodError('The method is not implemented')
 
@@ -150,5 +151,31 @@ class IFetcher(interfaces.IProduct):
         ret = p.wait()
         if ret != 0:
             raise FetcherRuntimmeError('%s failed to achieve correctly.' % self.name)
+
+    def _has_uri_changed(self, dest, uri):
+        """Does the uri we fetch from in the working changed or not.
+        Parameters
+            - dest the working copy
+            - uri the uri to fetch from
+        Return
+            - True if the uri in the working copy changed
+        """
+
+        raise interfaces.NotImplementedMethodError('The method is not implemented')
+
+    def _remove_versionned_directories(self, dest):
+        """remove all directories which contains history
+        part is a special directory, that s where we make install, we will not remove it !
+        Parameters
+            - dest the working copy
+        """
+        not_versionned = ['part']
+        for file in os.listdir(dest):
+            if not file in not_versionned:
+                path = '%s/%s' % (dest, file)
+                if os.path.isdir(path):
+                    shutil.rmtree(path)
+                else:
+                    os.remove(path)
 
 # vim:set et sts=4 ts=4 tw=80:
