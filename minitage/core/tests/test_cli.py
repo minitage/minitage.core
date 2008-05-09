@@ -49,7 +49,7 @@ class testCli(unittest.TestCase):
         sys.argv = [sys.argv[0],'--fetchonly', '--offline', 'foo']
         self.assertRaises(core.ConflictModesError, cli.do_read_options)
 
-        sys.argv = [sys.argv[0],'--jump', '--nodeps', 'foo']
+        sys.argv = [sys.argv[0],'--jump', 'foo', '--nodeps', 'foo']
         self.assertRaises(core.ConflictModesError, cli.do_read_options)
 
         sys.argv = [sys.argv[0],'--rebuild', '--config', 'iamafilewhichdoesnotexist', 'foo']
