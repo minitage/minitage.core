@@ -250,7 +250,6 @@ category=eggs
         self.assertFalse(minimerge._offline)
         minimerge._fetch(minimerge._find_minibuild('minibuild-0'))
         self.assertTrue(os.path.isdir('%s/eggs/minibuild-0/.hg' % path))        
-        import pdb;pdb.set_trace()  ## Breakpoint ##
 
 if __name__ == '__main__':
     suite = unittest.TestSuite()
