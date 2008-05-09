@@ -59,7 +59,7 @@ def do_read_options():
         optparse.make_option('-o', '--offline', action='store_true', dest='offline',help = offline_help),
         optparse.make_option('-c', '--config', action='store', dest='config',help = config_help),
         optparse.make_option('-d', '--debug', action='store_true', dest='debug',help = debug_help),
-        optparse.make_option('-j', '--jump', action='store_true', dest='jump',help = jump_help),
+        optparse.make_option('-j', '--jump', action='store', dest='jump',help = jump_help),
         optparse.make_option('-f', '--fetchonly', action='store_true', dest='fetchonly',help = fetchonly_help),
         optparse.make_option('-R', '--rebuild', action='store_true', dest='rebuild',help = rebuild_help),
         optparse.make_option('-N', '--nodeps', action='store_true', dest='nodeps',help = nodeps_help),
@@ -117,6 +117,7 @@ def do_read_options():
             'fetchonly': options.fetchonly,
             'nodeps': options.nodeps,
             'offline': options.offline,
+            'jump': options.jump,
             'action': options.action,
             'config': options.config,
     }
