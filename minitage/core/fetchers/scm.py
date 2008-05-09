@@ -37,7 +37,7 @@ class HgFetcher(interfaces.IFetcher):
 
     def update(self, uri, dest, opts=None):
         """update a package
-        Parameters:
+        Arguments:
             - uri : check out/update uri
             - dest: destination to fetch to
             - opts : arguments for the fetcher
@@ -71,7 +71,7 @@ class HgFetcher(interfaces.IFetcher):
 
     def fetch(self, uri, dest, opts=None):
         """fetch a package
-        Parameters:
+        Arguments:
             - uri : check out/update uri
             - dest: destination to fetch to
             - opts : arguments for the fetcher
@@ -154,7 +154,7 @@ class SvnFetcher(interfaces.IFetcher):
 
     def update(self, uri, dest, opts=None):
         """update a package
-        Parameters:
+        Arguments:
             - uri : check out/update uri
             - dest: destination to fetch to
             - opts : arguments for the fetcher
@@ -182,7 +182,7 @@ class SvnFetcher(interfaces.IFetcher):
 
     def fetch(self, uri, dest, opts=None):
         """fetch a package
-        Parameters:
+        Arguments:
             - uri : check out/update uri
             - dest: destination to fetch to
             - opts : arguments for the fetcher

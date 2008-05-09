@@ -34,7 +34,7 @@ URI_REGEX = re.compile('^((svn\+ssh|git|http|https|hg|svn|ftp|sftp|ssh|bzr|cvs|m
 class IFetcherFactory(interfaces.IFactory):
     def __init__(self, config=None):
         """
-        Parameters:
+        Arguments:
             - config: a configuration file with a self.name section
                     containing all needed classes.
         """
@@ -49,7 +49,7 @@ class IFetcherFactory(interfaces.IFactory):
 
     def __call__(self, switch):
         """return a fetcher
-        Parameters:
+        Arguments:
             - switch: fetcher type
               Default ones:
 
@@ -61,7 +61,6 @@ class IFetcherFactory(interfaces.IFactory):
             instance = klass()
             if instance.match(switch):
                 return instance
-        return None
 
 class IFetcher(interfaces.IProduct):
     """Interface for fetching a package from somewhere"
@@ -117,7 +116,7 @@ class IFetcher(interfaces.IProduct):
         """update a package
         Exceptions:
             - InvalidUrlError
-        Parameters:
+        Arguments:
             - uri : check out/update uri
             - opts : arguments for the fetcher
             - offline: weither we are offline or online
@@ -128,7 +127,7 @@ class IFetcher(interfaces.IProduct):
         """fetch a package
         Exceptions:
             - InvalidUrlError
-        Parameters:
+        Arguments:
             - uri : check out/update uri
             - opts : arguments for the fetcher
             - offline: weither we are offline or online
@@ -137,7 +136,7 @@ class IFetcher(interfaces.IProduct):
 
     def fetch_or_update(self, uri, dest, opts = None, offline = False):
         """fetch or update a package (call the one of those 2 methods)
-        Parameters:
+        Arguments:
             - uri : check out/update uri
             - opts : arguments for the fetcher
             - offline: weither we are offline or online
@@ -163,7 +162,7 @@ class IFetcher(interfaces.IProduct):
 
     def _has_uri_changed(self, uri, dest):
         """Does the uri we fetch from in the working changed or not.
-        Parameters
+        Arguments
             - dest the working copy
             - uri the uri to fetch from
         Return
@@ -175,7 +174,7 @@ class IFetcher(interfaces.IProduct):
     def _remove_versionned_directories(self, dest):
         """remove all directories which contains history
         part is a special directory, that s where we make install, we will not remove it !
-        Parameters
+        Arguments
             - dest the working copy
         """
         not_versionned = ['part']

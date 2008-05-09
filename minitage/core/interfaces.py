@@ -46,7 +46,7 @@ class IFactory(object):
 
     def __init__(self, name, config=None):
         """
-        Parameters:
+        Arguments:
             - config: a configuration file with a self.name section
                     containing all needed classes.
         """
@@ -73,7 +73,7 @@ class IFactory(object):
     def registerDict(self, dict):
         """ for each item/class in the dict:
         Try to instantiate and register
-        Parameters:
+        Arguments:
             - dict : dictionnary {item:class}
         Exceptions:
             - InvalidComponentClassPathError
@@ -102,7 +102,7 @@ class IFactory(object):
 
     def register(self, type, klass):
         """register a possible product with it s factory
-        Parameters
+        Arguments
             - type: type to register
             - klass: klass the factory must intanciate
         """
@@ -129,7 +129,7 @@ class IProduct(object):
 
     def match(self, switch):
         """
-        Parameters:
+        Arguments:
             - switch: parameter which will be used to know if the component can
             handle the request.
         Return:

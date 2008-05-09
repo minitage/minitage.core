@@ -55,7 +55,7 @@ class Minilay(collections.LazyLoadedDict):
     They store minibuilds in a dictionnary:
         -  self[minibuildName][instance] : minibuild instance
         -  self[minibuildName][error] : exception instance if any
-    Parameters
+    Arguments
         - path: path to the minilay
     """
 
@@ -111,7 +111,7 @@ class Minibuild(object):
 
     def __init__(self, path, *kw, **kwargs):
         """
-        Parameters
+        Arguments
             path: path to the minibuild file. This minibuild file is pytthon
               configparser like object with a minibuild section which will
               define all the metadate:

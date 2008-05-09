@@ -35,7 +35,7 @@ class Minimerge(object):
     def __init__(self,options=None):
         """Options are taken from the section 'minimerge' in the configuration file
         then can be overriden in the input dictionnary.
-        Parameters:
+        Arguments:
             - options:
 
                 - jump: package in the dependency tree to jump to
