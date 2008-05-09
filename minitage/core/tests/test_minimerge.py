@@ -26,7 +26,7 @@ from minitage.core.tests import test_common
 path = os.path.expanduser('~/iamauniquetestdirformatiwillberemoveafterthetest')
 testopts = dict(path=path)
 minilay = '%(path)s/minilays/myminilay1' % testopts
-class testMinilays(unittest.TestCase):
+class testMinimerge(unittest.TestCase):
 
     def setUp(self):
         test_common.createMinitageEnv(path)
@@ -150,7 +150,7 @@ category=eggs
     def tearDown(self):
         shutil.rmtree(os.path.expanduser(path))
 
-    def testFindMinibuild(self):
+    def atestFindMinibuild(self):
         """find m0?"""
         # create minilays in the minilays dir, seeing if they get putted in
         sys.argv = [sys.argv[0], '--config', '%s/etc/minimerge.cfg' % path, 'foo']
@@ -159,7 +159,7 @@ category=eggs
         mb = minimerge._find_minibuild('minibuild-0')
         self.assertEquals('minibuild-0', mb.name)
 
-    def testComputeDepsWithNoDeps(self):
+    def atestComputeDepsWithNoDeps(self):
         """m0 depends on nothing"""
         sys.argv = [sys.argv[0], '--config', '%s/etc/minimerge.cfg' % path, 'foo']
         opts = cli.do_read_options()
@@ -168,7 +168,7 @@ category=eggs
         mb = computed_packages[0]
         self.assertEquals('minibuild-0', mb.name)
 
-    def testSimpleDeps(self):
+    def atestSimpleDeps(self):
         """ test m1 -> m0"""
         sys.argv = [sys.argv[0], '--config', '%s/etc/minimerge.cfg' % path, 'foo']
         opts = cli.do_read_options()
@@ -179,7 +179,7 @@ category=eggs
         mb = computed_packages[1]
         self.assertEquals(mb.name, 'minibuild-1')
 
-    def testChainedandTreeDeps(self):
+    def atestChainedandTreeDeps(self):
         """ Will test that this tree is safe:
               -       m3
                       /
@@ -203,8 +203,7 @@ category=eggs
         wanted_list = ['minibuild-0', 'minibuild-4', 'minibuild-1', 'minibuild-2', 'minibuild-3','minibuild-9']
         self.assertEquals([mb.name for mb in computed_packages], wanted_list)
 
-
-    def testRecursivity(self):
+    def atestRecursivity(self):
         """check that:
              - m5  -> m6 -> m7
              - m8  -> m8
@@ -223,16 +222,39 @@ category=eggs
         minimerge = api.Minimerge(opts)
         self.assertRaises(core.CircurlarDependencyError, minimerge._compute_dependencies, ['minibuild-13'])
 
-    def testMinibuildNotFound(self):
+    def atestMinibuildNotFound(self):
         """ INOTINANYMINILAY does not exist"""
         sys.argv = [sys.argv[0], '--config', '%s/etc/minimerge.cfg' % path, 'foo']
         opts = cli.do_read_options()
         minimerge = api.Minimerge(opts)
         self.assertRaises(core.MinibuildNotFoundError, minimerge._find_minibuild, 'INOTINANYMINILAY')
 
+    def atestCutDeps(self):
+        sys.argv = [sys.argv[0], '--config', '%s/etc/minimerge.cfg' % path, '--jump', 'minibuild-2', 'minibuild-1', 'minibuild-2', 'minibuild-3']
+        opts = cli.do_read_options()
+        minimerge = api.Minimerge(opts) 
+        p =  minimerge._cut_jumped_packages(['minibuild-1', 'minibuild-2', 'minibuild-3'])
+        self.assertEquals(p, ['minibuild-2', 'minibuild-3'])
+
+
+    def atestFetchOffline(self):
+        sys.argv = [sys.argv[0], '--config', '%s/etc/minimerge.cfg' % path, '--offline', 'minibuild-0']
+        opts = cli.do_read_options()
+        minimerge = api.Minimerge(opts) 
+        self.assertTrue(minimerge._offline)
+    
+    def testFetchOnline(self):
+        sys.argv = [sys.argv[0], '--config', '%s/etc/minimerge.cfg' % path, 'minibuild-0']
+        opts = cli.do_read_options()
+        minimerge = api.Minimerge(opts) 
+        self.assertFalse(minimerge._offline)
+        minimerge._fetch(minimerge._find_minibuild('minibuild-0'))
+        self.assertTrue(os.path.isdir('%s/eggs/minibuild-0/.hg' % path))        
+        import pdb;pdb.set_trace()  ## Breakpoint ##
+
 if __name__ == '__main__':
     suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(testMinilays))
+    suite.addTest(unittest.makeSuite(testMinimerge))
     unittest.TextTestRunner(verbosity=2).run(suite)
 
 

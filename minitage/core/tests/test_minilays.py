@@ -37,7 +37,7 @@ class testMinilays(unittest.TestCase):
 
     def testSearchingForMinilays(self):
         # create minilays in the minilays dir, seeing if they get putted in
-        sys.argv = [sys.argv[0], '--config', '%s/etc/minimerge.cfg'%path, 'foo']
+        sys.argv = [sys.executable, '--config', '%s/etc/minimerge.cfg'%path, 'foo']
         opts = cli.do_read_options()
         minimerge = api.Minimerge(opts)
         self.failUnless(minilay1 in [minilay.path for minilay in minimerge.minilays])
