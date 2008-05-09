@@ -53,8 +53,8 @@ class testHg(unittest.TestCase):
         hg = scm.HgFetcher()
         hg.fetch('file://%s' % opts['path'], opts['dest'])
         self.assertTrue(os.path.isdir('%s/%s' % (opts['dest'], '.hg')))
-        self.assertFalse(hg._has_uri_changed(opts['dest'],'file://%s' % opts['path']))
-        self.assertTrue(hg._has_uri_changed(opts['dest'],'hehe_changed'))
+        self.assertFalse(hg._has_uri_changed('file://%s' % opts['path'], opts['dest']))
+        self.assertTrue(hg._has_uri_changed('hehe_changed',opts['dest']))
 
     def testRemoveVersionnedDirs(self):
         hg = scm.HgFetcher()
@@ -150,9 +150,9 @@ class testSvn(unittest.TestCase):
         svn = scm.SvnFetcher()
         svn.fetch('file://%s' % opts['path'], opts['wc'])
         self.assertTrue(os.path.isdir('%s/%s' % (opts['wc'], '.svn')))
-        self.assertFalse(svn._has_uri_changed(opts['wc'],'file://%s' % opts['path']))
-        self.assertTrue(svn._has_uri_changed(opts['wc'],'hehe_changed'))
-
+        self.assertFalse(svn._has_uri_changed('file://%s' % opts['path'], opts['wc']))
+        self.assertTrue(svn._has_uri_changed('hehe_changed', opts['wc']))
+                                               
     def testRemoveVersionnedDirs(self):
         svn = scm.SvnFetcher()
         svn.fetch('file://%s' % opts['path'], opts['wc'])

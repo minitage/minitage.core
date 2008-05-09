@@ -77,6 +77,15 @@ class IFetcher(interfaces.IProduct):
                Example::
                    >>> klass = getattr(module,'superklass')
                    >>> factory.register('svn', klass)
+    What a fetcher needs to be a fetcher
+        Locally, the methods in the interfaces ;)
+        Basically, it must implement
+            - fetch, update, fetch_or_update to get the source
+            - is_valid_src_uri to know if the src url is good
+            - _remove_versionned_directories to remove the metadatas from the
+              previous co
+            - _has_uri_changed to know if we get the source from the last repo
+              we got from or a new one.
     """
 
     def __init__(self, name, executable, metadata_directory = None):
@@ -152,7 +161,7 @@ class IFetcher(interfaces.IProduct):
         if ret != 0:
             raise FetcherRuntimmeError('%s failed to achieve correctly.' % self.name)
 
-    def _has_uri_changed(self, dest, uri):
+    def _has_uri_changed(self, uri, dest):
         """Does the uri we fetch from in the working changed or not.
         Parameters
             - dest the working copy

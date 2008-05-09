@@ -53,7 +53,7 @@ class HgFetcher(interfaces.IFetcher):
             opts = {}
         revision = opts.get('revision','tip')
         if self.is_valid_src_uri(uri):
-            if self._has_uri_changed(dest, uri):
+            if self._has_uri_changed(uri, dest):
                 self._remove_versionned_directories(dest)
                 self._scm_cmd('init %s' % (dest))
                 if not os.path.isdir('%s/%s' % (dest, self.metadata_directory)):
@@ -87,7 +87,8 @@ class HgFetcher(interfaces.IFetcher):
             opts = {}
         revision = opts.get('revision','tip')
         if self.is_valid_src_uri(uri):
-            self._scm_cmd('clone -r %s %s %s' % (revision, uri,dest))
+            self._scm_cmd('clone %s %s' % (uri, dest))
+            self._scm_cmd('up  -r %s -R %s' % (revision, dest))
             if not os.path.isdir('%s/%s' % (dest, self.metadata_directory)):
                 message = 'Unexpected fetch error on \'%s\'\n' % uri
                 message += 'The directory \'%s\' is not a valid mercurial repository' % (dest, uri)
@@ -115,7 +116,7 @@ class HgFetcher(interfaces.IFetcher):
             return True
         return False
 
-    def _has_uri_changed(self, dest, uri):
+    def _has_uri_changed(self, uri, dest):
         """see interface"""
         # file is removed on the local uris
         uri= uri.replace('file://','')
@@ -169,7 +170,7 @@ class SvnFetcher(interfaces.IFetcher):
             opts = {}
         revision = opts.get('revision','HEAD')
         if self.is_valid_src_uri(uri):
-            if self._has_uri_changed(dest, uri):
+            if self._has_uri_changed(uri, dest):
                 self._remove_versionned_directories(dest)
             self._scm_cmd('up -r %s %s' % (revision, dest))
             if not os.path.isdir('%s/%s' % (dest, self.metadata_directory)):
@@ -225,7 +226,7 @@ class SvnFetcher(interfaces.IFetcher):
             return True
         return False
 
-    def _has_uri_changed(self, dest, uri):
+    def _has_uri_changed(self, uri, dest):
         """see interface"""
         pr = subprocess.Popen('%s %s' % (self.executable, 'info %s|grep -i url' % dest), shell = True, stdout=subprocess.PIPE)
         ret = pr.wait()
