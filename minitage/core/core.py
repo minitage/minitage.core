@@ -19,6 +19,7 @@ import sys
 import ConfigParser
 
 from minitage.core import objects
+from minitage.core.fetchers.interfaces import IFetcherFactory
 
 class MinimergeError(Exception): pass
 class NoPackagesError(MinimergeError): pass
@@ -53,49 +54,48 @@ class Minimerge(object):
         # - command line
         # - exec_prefix
         # - ~/.minimerge.cfg
-        # We have the corresponding file allready filled in option.config, see
+        # We have the corresponding file allready filled in option._config, see
         # `minimerge.core.cli`
         #
-        self.config_path = os.path.expanduser(options.get('config'))
-        self.config = ConfigParser.ConfigParser()
+        self._config_path = os.path.expanduser(options.get('config'))
+        self._config = ConfigParser.ConfigParser()
         try:
-            self.config.read(self.config_path)
+            self._config.read(self._config_path)
         except:
             raise InvalidConfigFileError('The configuration file is invalid: %s' % self.config_path)
 
         # prefix is setted in the configuration file
         # it defaults to sys.exec_prefix
-        self.prefix = self.config._sections.get('minimerge', {}).get('prefix', sys.exec_prefix)
+        self._prefix = self._config._sections.get('minimerge', {}).get('prefix', sys.exec_prefix)
 
         # modes
         # for offline and debug mode, we see too if the flag is not set in the
         # configuration file
-        self.jump = options.get('jump', False)
-        self.nodeps = options.get('nodeps', False)
-        self.debug = options.get('debug', self.config._sections.get('minimerge', {}).get('debug', False))
-        self.fetchonly = options.get('fetchonly', False)
-        self.offline = options.get('offline', self.config._sections.get('minimerge', {}).get('offline', False))
+        self._jump = options.get('jump', False)
+        self._nodeps = options.get('nodeps', False)
+        self._debug = options.get('debug', self._config._sections.get('minimerge', {}).get('debug', False))
+        self._fetchonly = options.get('fetchonly', False)
+        self._offline = options.get('offline', self._config._sections.get('minimerge', {}).get('offline', False))
 
-        self.packages = options.get('packages', False)
-        self.computed_packages = []
+        self._packages = options.get('packages', False)
 
         # what are we doing
-        self.action = options.get('action', False)
+        self._action = options.get('action', False)
 
-        self.minilays = []
+        self._minilays = []
         minilays_search_paths = []
         # minilays can be ovvrided by env["MINILAYS"]
         minilays_search_paths.extend(os.environ.get('MINILAYS', '').strip().split())
         # minilays are in minilays/
-        minilays_parent = '%s/%s' % (self.prefix, 'minilays')
+        minilays_parent = '%s/%s' % (self._prefix, 'minilays')
         if os.path.isdir(minilays_parent):
             minilays_search_paths.extend(['%s/%s' % (minilays_parent, dir) for dir in os.listdir(minilays_parent)])
         # they are too in etc/minmerge.cfg[minilays]
-        minilays_search_paths.extend(self.config._sections.get('minimerge', {}).get('minilays', '').strip().split())
+        minilays_search_paths.extend(self._config._sections.get('minimerge', {}).get('minilays', '').strip().split())
 
         # filtering valid ones
         # and mutating into real Minilays objects
-        self.minilays = [objects.Minilay(path = os.path.expanduser(dir)) \
+        self._minilays = [objects.Minilay(path = os.path.expanduser(dir)) \
                          for dir in minilays_search_paths if os.path.isdir(dir)]
 
     def _find_minibuild(self, package):
@@ -107,7 +107,7 @@ class Minimerge(object):
         Returns
             - The minibuild found
         """
-        for minilay in self.minilays:
+        for minilay in self._minilays:
             if package in minilay:
                 return minilay[package]
         raise MinibuildNotFoundError('Tahe minibuild \'%s\' was not found' % package)
@@ -151,12 +151,11 @@ class Minimerge(object):
             try:
                 ancestors = self._compute_dependencies(mb.dependencies, ancestors=ancestors)
             except RuntimeError,e:
-                if str(e) == 'maximum recursion depth exceeded in cmp':
-                    message = 'Circular dependency detected around %s and ancestors: \'%s\''
-                    raise CircurlarDependencyError(message % (mb.name, [m.name for m in ancestors]))
+                message = 'Circular dependency detected around %s and ancestors: \'%s\''
+                raise CircurlarDependencyError(message % (mb.name, [m.name for m in ancestors]))
         return ancestors
 
-    def _fetch(self,package):
+    def _fetch(self, package):
         """
         @param param minitage.core.objects.Minibuid the minibuild to fetch
         Exceptions
@@ -164,8 +163,26 @@ class Minimerge(object):
              fetch the package.
            - The fetcher exception.
         """
+        dest_container = '%s/%s' % (self._prefix, package.category)
+        fetcherFactory = IFetcherFactory(self._config_path)
+        if not os.path.isdir(dest_container):
+            os.makedirs(dest_container)
+        fetcherFactory(package.src_type).fetch_or_update(package.src_uri, '%s/%s' % (dest_container, package.name))
 
-    def main(self,options):
+    def _do_action(self, package):
+        pass
+
+
+    def _cut_jumped_packages(self, packages):
+        """remove jumped packages"""
+        try:
+            i = packages.index(self._jump)
+            packages = packages[i:]
+        except:
+            pass
+        return packages
+
+    def main(self):
         """Main loop :
           ------------
           Here executing the minimerge tasks:
@@ -176,10 +193,21 @@ class Minimerge(object):
                   - maybe install
                   - maybe remove
         """
-        packages = self.packages
-        if not self.nodeps:
+        packages = self._packages
+        # compute dependencies
+        if not self._nodeps:
             packages = self._compute_dependencies(self.packages)
 
-#        for package in packages:
-#            self._fetch(package)
+        if self._jump:
+            packages = self._cut_jumped_packages(packages)
+
+        # fetch if not offline
+        if not self._offline:
+            for package in packages:
+                self._fetch(package)
+
+        # if we do not want just to fetch, let's go , (install|delete|reinstall) baby.
+        if not self._fetchonly:
+            for package in package:
+                self._do_action(package)
 
