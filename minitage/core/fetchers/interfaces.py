@@ -58,7 +58,7 @@ class IFetcherFactory(interfaces.IFactory):
         """
         for key in self.products:
             klass = self.products[key]
-            instance = klass()
+            instance = klass(config = self.section)
             if instance.match(switch):
                 return instance
 
@@ -87,7 +87,7 @@ class IFetcher(interfaces.IProduct):
               we got from or a new one.
     """
 
-    def __init__(self, name, executable, metadata_directory = None):
+    def __init__(self, name, executable, config = None, metadata_directory = None):
         """
         Attributes:
             - name : name of the fetcher
@@ -97,6 +97,9 @@ class IFetcher(interfaces.IProduct):
         self.name = name
         self.executable = None
         self.metadata_directory = metadata_directory
+        if not config:
+            config = {}
+        self.config = config
         if executable is None:
             executable = ''
         if not '/' in executable:

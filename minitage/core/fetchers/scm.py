@@ -32,8 +32,10 @@ class HgFetcher(interfaces.IFetcher):
         >>> hg.fetch_or_update('http://uri','/dir',{revision='tip'})
     """
 
-    def __init__(self):
-        interfaces.IFetcher.__init__(self, 'mercurial', 'hg', '.hg')
+    def __init__(self, config = None):
+        if not config:
+            config = None
+        interfaces.IFetcher.__init__(self, 'mercurial', 'hg', config, '.hg')
 
     def update(self, uri, dest, opts=None):
         """update a package
@@ -149,8 +151,10 @@ class SvnFetcher(interfaces.IFetcher):
         >>> svn.fetch_or_update('http://uri','/dir',{revision='HEAD'})
     """
 
-    def __init__(self):
-        interfaces.IFetcher.__init__(self, 'subversion', 'svn', '.svn')
+    def __init__(self, config = None):
+        if not config:
+            config = {}
+        interfaces.IFetcher.__init__(self, 'subversion', 'svn', config, '.svn')
 
     def update(self, uri, dest, opts=None):
         """update a package

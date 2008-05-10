@@ -52,23 +52,23 @@ class IFactory(object):
         """
         self.name = name
         self.config = ConfigParser.ConfigParser()
-        self.section = None
+        self.section = {}
+        self.sections = {}
         self.products = {}
         if config:
             try:
                 self.config.read(config)
+                self.sections = self.config._sections
+                for section in self.sections:
+                    del self.sections[section]['__name__'] 
                 self.section = self.config._sections[self.name]
-                del self.section['__name__']
             except KeyError, e:
                 message = 'You must provide a [%s] section with appropriate content for this factory.'
                 raise InvalidConfigForFactoryError(message % self.name)
-        else:
-            self.section = {}
 
         # for each class in the config File, try to instantiate and register
         # the type/plugin in the factory dict.
         self.registerDict(self.section)
-
 
     def registerDict(self, dict):
         """ for each item/class in the dict:
@@ -118,7 +118,7 @@ class IFactory(object):
         Implementation Exameple::
             for key in self.products:
                  klass = self.products[key]
-                 instance = klass()
+                 instance = klass(self.sections.get(switch, {}))
                  if instance.match(switch):
                      return instance
         """
