@@ -15,17 +15,21 @@
 __docformat__ = 'restructuredtext en'
 
 import os
-import shutil
 import subprocess
 import re
 
 from minitage.core.fetchers import interfaces
 
-class InvalidMercurialRepositoryError(interfaces.InvalidRepositoryError): pass
-class OfflineModeRestrictionError(interfaces.IFetcherError): pass
+class InvalidMercurialRepositoryError(interfaces.InvalidRepositoryError):
+    """Mercurial repository is invalid."""
+
+
+class OfflineModeRestrictionError(interfaces.IFetcherError):
+    """Restriction error in offline mode."""
+
 
 class HgFetcher(interfaces.IFetcher):
-    """ Mercurial Fetcher
+    """ Mercurial Fetcher.
     Example::
         >>> import minitage.core.fetchers.scm
         >>> hg = scm.HgFetcher()
@@ -38,7 +42,7 @@ class HgFetcher(interfaces.IFetcher):
         interfaces.IFetcher.__init__(self, 'mercurial', 'hg', config, '.hg')
 
     def update(self, uri, dest, opts=None):
-        """update a package
+        """Update a package.
         Arguments:
             - uri : check out/update uri
             - dest: destination to fetch to
@@ -60,19 +64,21 @@ class HgFetcher(interfaces.IFetcher):
                 self._scm_cmd('init %s' % (dest))
                 if not os.path.isdir('%s/%s' % (dest, self.metadata_directory)):
                     message = 'Unexpected fetch error on \'%s\'\n' % uri
-                    message += 'The directory \'%s\' is not a valid mercurial repository' % (dest)
+                    message += 'The directory \'%s\' is not '
+                    message += 'a valid mercurial repository' % (dest)
                     raise InvalidMercurialRepositoryError(message)
             self._scm_cmd('pull -f -r %s %s -R %s' % (revision, uri, dest))
             self._scm_cmd('  up -r %s -R %s ' % (revision, dest))
             if not os.path.isdir('%s/%s' % (dest, self.metadata_directory)):
                 message = 'Unexpected fetch error on \'%s\'\n' % uri
-                message += 'The directory \'%s\' is not a valid mercurial repository' % (dest, uri)
+                message += 'The directory \'%s\' is not '
+                message += 'a valid mercurial repository' % (dest, uri)
                 raise InvalidMercurialRepositoryError(message)
         else:
             raise interfaces.InvalidUrlError('this uri \'%s\' is invalid' % uri)
 
     def fetch(self, uri, dest, opts=None):
-        """fetch a package
+        """Fetch a package.
         Arguments:
             - uri : check out/update uri
             - dest: destination to fetch to
@@ -93,35 +99,38 @@ class HgFetcher(interfaces.IFetcher):
             self._scm_cmd('up  -r %s -R %s' % (revision, dest))
             if not os.path.isdir('%s/%s' % (dest, self.metadata_directory)):
                 message = 'Unexpected fetch error on \'%s\'\n' % uri
-                message += 'The directory \'%s\' is not a valid mercurial repository' % (dest, uri)
+                message += 'The directory \'%s\' is not '
+                message += 'a valid mercurial repository' % (dest, uri)
                 raise InvalidMercurialRepositoryError(message)
         else:
             raise interfaces.InvalidUrlError('this uri \'%s\' is invalid' % uri)
 
     def fetch_or_update(self, uri, dest, opts = None):
-        """see interface"""
+        """See interface."""
         if os.path.isdir('%s/%s' % (dest, self.metadata_directory)):
-           self.update(uri, dest, opts)
+            self.update(uri, dest, opts)
         else:
-           self.fetch(uri, dest, opts)
+            self.fetch(uri, dest, opts)
 
     def is_valid_src_uri(self, uri):
-        """see interface"""
-        m = interfaces.URI_REGEX.match(uri)
-        if m and m.groups()[1] in ['file', 'hg', 'ssh', 'http', 'https']:
+        """See interface."""
+        match = interfaces.URI_REGEX.match(uri)
+        if match \
+           and match.groups()[1] \
+           in ['file', 'hg', 'ssh', 'http', 'https']:
             return True
         return False
 
     def match(self, switch):
-        """see interface"""
+        """See interface."""
         if switch == 'hg':
             return True
         return False
 
     def _has_uri_changed(self, uri, dest):
-        """see interface"""
+        """See interface."""
         # file is removed on the local uris
-        uri= uri.replace('file://','')
+        uri = uri.replace('file://', '')
         # in case we were not hg before
         if not os.path.isdir('%s/%s' % (dest, self.metadata_directory)):
             return True
@@ -129,22 +138,32 @@ class HgFetcher(interfaces.IFetcher):
             try:
                 cwd = os.getcwd()
                 os.chdir(dest)
-                pr = subprocess.Popen('%s %s' % (self.executable, 'showconfig |grep paths.default'), shell = True, stdout=subprocess.PIPE)
-                ret = pr.wait()
+                process = subprocess.Popen(
+                    '%s %s' % (
+                        self.executable,
+                        'showconfig |grep paths.default'
+                    ),
+                    shell = True, stdout=subprocess.PIPE
+                )
+                ret = process.wait()
                 if ret != 0:
-                    raise interfaces.FetcherRuntimmeError('%s failed to achieve correctly.' % self.name)
-                dest_uri = re.sub('([^=]*=)\s*(.*)', '\\2', pr.stdout.read().strip())
+                    message = '%s failed to achieve correctly.' % self.name
+                    raise interfaces.FetcherRuntimmeError(message)
+                dest_uri = re.sub('([^=]*=)\s*(.*)',
+                                  '\\2',
+                                  process.stdout.read().strip()
+                                 )
                 os.chdir(cwd)
                 if uri != dest_uri:
                     return True
-            except Exception, e:
+            except Exception, instance:
                 os.chdir(cwd)
-                raise e
+                raise instance
         return False
 
 
 class SvnFetcher(interfaces.IFetcher):
-    """ Subversion Fetcher
+    """Subversion Fetcher.
     Example::
         >>> import minitage.core.fetchers.scm
         >>> svn = scm.SvnFetcher()
@@ -157,7 +176,7 @@ class SvnFetcher(interfaces.IFetcher):
         interfaces.IFetcher.__init__(self, 'subversion', 'svn', config, '.svn')
 
     def update(self, uri, dest, opts=None):
-        """update a package
+        """Update a package.
         Arguments:
             - uri : check out/update uri
             - dest: destination to fetch to
@@ -179,13 +198,14 @@ class SvnFetcher(interfaces.IFetcher):
             self._scm_cmd('up -r %s %s' % (revision, dest))
             if not os.path.isdir('%s/%s' % (dest, self.metadata_directory)):
                 message = 'Unexpected fetch error on \'%s\'\n' % uri
-                message += 'The directory \'%s\' is not a valid subversion repository' % (dest, uri)
+                message += 'The directory \'%s\' is not '
+                message += 'a valid subversion repository' % (dest, uri)
                 raise InvalidMercurialRepositoryError(message)
         else:
             raise interfaces.InvalidUrlError('this uri \'%s\' is invalid' % uri)
 
     def fetch(self, uri, dest, opts=None):
-        """fetch a package
+        """Fetch a package.
         Arguments:
             - uri : check out/update uri
             - dest: destination to fetch to
@@ -202,42 +222,53 @@ class SvnFetcher(interfaces.IFetcher):
             opts = {}
         revision = opts.get('revision','HEAD')
         if self.is_valid_src_uri(uri):
-            self._scm_cmd('co -r %s %s %s' % (revision, uri,dest))
+            self._scm_cmd('co -r %s %s %s' % (revision, uri, dest))
             if not os.path.isdir('%s/%s' % (dest, self.metadata_directory)):
                 message = 'Unexpected fetch error on \'%s\'\n' % uri
-                message += 'The directory \'%s\' is not a valid subversion repository' % (dest, uri)
+                message += 'The directory \'%s\' is not '
+                message += 'a valid subversion repository' % (dest, uri)
                 raise InvalidMercurialRepositoryError(message)
         else:
             raise interfaces.InvalidUrlError('this uri \'%s\' is invalid' % uri)
 
     def fetch_or_update(self, uri, dest, opts = None):
-        """see interface"""
+        """See interface."""
         if os.path.isdir(dest):
-           self.update(uri, dest, opts)
+            self.update(uri, dest, opts)
         else:
-           self.fetch(uri, dest, opts)
+            self.fetch(uri, dest, opts)
 
     def is_valid_src_uri(self, uri):
-        """see interface"""
-        m = interfaces.URI_REGEX.match(uri)
-        if m and m.groups()[1] in ['file', 'svn', 'svn+ssh', 'http', 'https']:
+        """See interface."""
+        match = interfaces.URI_REGEX.match(uri)
+        if match \
+           and match.groups()[1] \
+           in ['file', 'svn', 'svn+ssh', 'http', 'https']:
             return True
         return False
 
     def match(self, switch):
-        """see interface"""
+        """See interface."""
         if switch == 'svn':
             return True
         return False
 
     def _has_uri_changed(self, uri, dest):
-        """see interface"""
-        pr = subprocess.Popen('%s %s' % (self.executable, 'info %s|grep -i url' % dest), shell = True, stdout=subprocess.PIPE)
-        ret = pr.wait()
+        """See interface."""
+        process = subprocess.Popen(
+            '%s %s' % (
+                self.executable,
+                'info %s|grep -i url' % dest
+            ),
+            shell = True, stdout=subprocess.PIPE
+        )
+        ret = process.wait()
         # we werent svn
         if ret != 0:
             return True
-        dest_uri = re.sub('([^:]*:)\s*(.*)', '\\2', pr.stdout.read().strip())
+        dest_uri = re.sub('([^:]*:)\s*(.*)', '\\2',
+                          process.stdout.read().strip()
+                         )
         if uri != dest_uri:
             return True
         return False

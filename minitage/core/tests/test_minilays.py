@@ -19,6 +19,7 @@ import sys
 import shutil
 import optparse
 import ConfigParser
+import re
 
 from minitage.core import api, cli, objects
 from minitage.core.tests import test_common
@@ -40,7 +41,7 @@ class testMinilays(unittest.TestCase):
         sys.argv = [sys.executable, '--config', '%s/etc/minimerge.cfg'%path, 'foo']
         opts = cli.do_read_options()
         minimerge = api.Minimerge(opts)
-        self.failUnless(minilay1 in [minilay.path for minilay in minimerge.minilays])
+        self.failUnless(minilay1 in [minilay.path for minilay in minimerge._minilays])
 
         # create minilays in env. seeing if they get putted in
         minilays = []
@@ -52,23 +53,23 @@ class testMinilays(unittest.TestCase):
         opts = cli.do_read_options()
         minimerge = api.Minimerge(opts)
         for dir in minilays:
-            self.failUnless(dir in [minilay.path for minilay in minimerge.minilays])
+            self.failUnless(dir in [minilay.path for minilay in minimerge._minilays])
         # reset env
         os.environ['MINILAYS'] = ''
 
         # create minilays in the config. seeing if they get putted in
         minilays = []
         minilays.append('%(path)s/minilays_alternate2/myminilay1' % testopts)
+        f = open('%s/etc/minimerge.cfg' % path,'r').read()
         for minilay in minilays:
-            os.system("""
-                      echo 'minilays=%s' >> %s/etc/minimerge.cfg
-                      mkdir -p %s
-                     """ % (minilay, path, minilay))
+            f = re.sub('(#\s*minilays\s*=)(.*)', 'minilays= \\2 %s' % minilay, f)
+            os.system("mkdir -p %s" % (minilay))
+        open('%s/etc/minimerge.cfg'%path,'w').write(f)
         sys.argv = [sys.argv[0], '--config', '%s/etc/minimerge.cfg' % path, 'foo']
         opts = cli.do_read_options()
         minimerge = api.Minimerge(opts)
         for dir in minilays:
-            self.failUnless(dir in [minilay.path for minilay in minimerge.minilays])
+            self.failUnless(dir in [minilay.path for minilay in minimerge._minilays])
 
     def testLoadingBrokenMinibuild(self):
         # create minilays in the minilays dir, seeing if they get putted in

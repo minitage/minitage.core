@@ -21,20 +21,45 @@ import ConfigParser
 from minitage.core import objects
 from minitage.core.fetchers.interfaces import IFetcherFactory
 
-class MinimergeError(Exception): pass
-class NoPackagesError(MinimergeError): pass
-class ConflictModesError(MinimergeError): pass
-class InvalidConfigFileError(MinimergeError): pass
-class TooMuchActionsError(MinimergeError): pass
-class CliError(MinimergeError): pass
-class MinibuildNotFoundError(MinimergeError): pass
-class CircurlarDependencyError(MinimergeError): pass
+class MinimergeError(Exception):
+    """General Minimerge Error"""
+
+
+class NoPackagesError(MinimergeError):
+    """No packages are given to merge"""
+
+
+class ConflictModesError(MinimergeError):
+    """Minimerge used without arguments."""
+
+
+class InvalidConfigFileError(MinimergeError): 
+    """Minimerge config file is not valid."""
+
+
+class TooMuchActionsError(MinimergeError): 
+    """Too much actions are given to do"""
+
+
+class CliError(MinimergeError): 
+    """General command line error"""
+
+
+class MinibuildNotFoundError(MinimergeError): 
+    """Minibuild is not found."""
+
+
+class CircurlarDependencyError(MinimergeError): 
+    """There are circular dependencies in the dependency tree"""
+
 
 class Minimerge(object):
+    """Minimerge object."""
 
-    def __init__(self,options=None):
-        """Options are taken from the section 'minimerge' in the configuration file
-        then can be overriden in the input dictionnary.
+    def __init__(self, options=None):
+        """Options are taken from the section 'minimerge'
+        in the configuration file  then can be overriden
+        in the input dictionnary.
         Arguments:
             - options:
 
@@ -62,20 +87,24 @@ class Minimerge(object):
         try:
             self._config.read(self._config_path)
         except:
-            raise InvalidConfigFileError('The configuration file is invalid: %s' % self.config_path)
+            message = 'The configuration file is invalid: %s' % self._config_path
+            raise InvalidConfigFileError(message)
 
         # prefix is setted in the configuration file
         # it defaults to sys.exec_prefix
-        self._prefix = self._config._sections.get('minimerge', {}).get('prefix', sys.exec_prefix)
+        self._prefix = self._config._sections.get('minimerge', {}) \
+                                .get('prefix', sys.exec_prefix)
 
         # modes
         # for offline and debug mode, we see too if the flag is not set in the
         # configuration file
         self._jump = options.get('jump', False)
         self._nodeps = options.get('nodeps', False)
-        self._debug = options.get('debug', self._config._sections.get('minimerge', {}).get('debug', False))
+        self._debug = options.get('debug', self._config._sections\
+                                  .get('minimerge', {}).get('debug', False))
         self._fetchonly = options.get('fetchonly', False)
-        self._offline = options.get('offline', self._config._sections.get('minimerge', {}).get('offline', False))
+        self._offline = options.get('offline', self._config._sections\
+                                    .get('minimerge', {}).get('offline', False))
 
         self._packages = options.get('packages', False)
 
@@ -85,13 +114,18 @@ class Minimerge(object):
         self._minilays = []
         minilays_search_paths = []
         # minilays can be ovvrided by env["MINILAYS"]
-        minilays_search_paths.extend(os.environ.get('MINILAYS', '').strip().split())
+        minilays_search_paths.extend(
+            os.environ.get('MINILAYS', '').strip().split()
+        )
         # minilays are in minilays/
         minilays_parent = '%s/%s' % (self._prefix, 'minilays')
         if os.path.isdir(minilays_parent):
-            minilays_search_paths.extend(['%s/%s' % (minilays_parent, dir) for dir in os.listdir(minilays_parent)])
+            minilays_search_paths.extend(['%s/%s' % (minilays_parent, dir)
+                                        for dir in os.listdir(minilays_parent)])
         # they are too in etc/minmerge.cfg[minilays]
-        minilays_search_paths.extend(self._config._sections.get('minimerge', {}).get('minilays', '').strip().split())
+        minimerge_section = self._config._sections.get('minimerge', {})
+        minilays_section = minimerge_section.get('minilays', '')
+        minilays_search_paths.extend(minilays_section.strip().split())
 
         # filtering valid ones
         # and mutating into real Minilays objects
@@ -110,9 +144,10 @@ class Minimerge(object):
         for minilay in self._minilays:
             if package in minilay:
                 return minilay[package]
-        raise MinibuildNotFoundError('Tahe minibuild \'%s\' was not found' % package)
+        message = 'Tahe minibuild \'%s\' was not found' % package
+        raise MinibuildNotFoundError(message)
 
-    def _compute_dependencies(self,packages = None, ancestors = None):
+    def _compute_dependencies(self, packages = None, ancestors = None):
         """
         @param package list list of packages to get the deps
         @param ancestors list list of tuple(ancestor,level of dependency)
@@ -130,7 +165,7 @@ class Minimerge(object):
 
         for package in packages:
             mb = self._find_minibuild(package)
-            # test if we have not already the package in our dependency list, then
+            # test if we have not already the package in our deps list, then
             # ...
             # if we have no ancestor, the end of the list is fine.
             index = len(ancestors)
@@ -149,10 +184,12 @@ class Minimerge(object):
             # unconditionnaly parsing dependencies, even if the package is
             # already there to detect circular dependencies
             try:
-                ancestors = self._compute_dependencies(mb.dependencies, ancestors=ancestors)
+                ancestors = self._compute_dependencies(mb.dependencies,
+                                                       ancestors=ancestors)
             except RuntimeError,e:
-                message = 'Circular dependency detected around %s and ancestors: \'%s\''
-                raise CircurlarDependencyError(message % (mb.name, [m.name for m in ancestors]))
+                message = 'Circular dependency around %s and ancestors: \'%s\''
+                raise CircurlarDependencyError(message %
+                                         (mb.name, [m.name for m in ancestors]))
         return ancestors
 
     def _fetch(self, package):
@@ -167,14 +204,18 @@ class Minimerge(object):
         fetcherFactory = IFetcherFactory(self._config_path)
         if not os.path.isdir(dest_container):
             os.makedirs(dest_container)
-        fetcherFactory(package.src_type).fetch_or_update(package.src_uri, '%s/%s' % (dest_container, package.name))
+        fetcherFactory(package.src_type).fetch_or_update(
+            package.src_uri,
+            '%s/%s' % (dest_container, package.name)
+        )
 
     def _do_action(self, package):
+        """Do action."""
         pass
 
 
     def _cut_jumped_packages(self, packages):
-        """remove jumped packages"""
+        """Remove jumped packages."""
         try:
             i = packages.index(self._jump)
             packages = packages[i:]
@@ -183,8 +224,7 @@ class Minimerge(object):
         return packages
 
     def main(self):
-        """Main loop :
-          ------------
+        """Main loop.
           Here executing the minimerge tasks:
               - calculate dependencies
               - for each dependencies:
@@ -206,7 +246,8 @@ class Minimerge(object):
             for package in packages:
                 self._fetch(package)
 
-        # if we do not want just to fetch, let's go , (install|delete|reinstall) baby.
+        # if we do not want just to fetch, let's go ,
+        # (install|delete|reinstall) baby.
         if not self._fetchonly:
             for package in package:
                 self._do_action(package)

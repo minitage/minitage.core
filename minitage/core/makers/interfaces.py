@@ -19,12 +19,26 @@ import shutil
 
 from minitage.core import interfaces
 
-class IMakerError(Exception): pass
-class MakeError(IMakerError): pass
-class DeleteError(IMakerError): pass
-class ReinstallError(IMakerError): pass
+class IMakerError(Exception): 
+    """General Maker Error."""
+
+
+class MakeError(IMakerError): 
+    """Make runtime error."""
+
+
+class DeleteError(IMakerError): 
+    """Delete runtime error."""
+
+
+class ReinstallError(IMakerError): 
+    """Reinstall runtime error."""
+
+
 
 class IMakerFactory(interfaces.IFactory):
+    """Factory for makers utilities."""
+
     def __init__(self, config=None):
         """
         Arguments:
@@ -40,7 +54,7 @@ class IMakerFactory(interfaces.IFactory):
         )
 
     def __call__(self, switch):
-        """return a maker
+        """Return a maker.
         Arguments:
             - switch: maker type
               Default ones:
@@ -55,7 +69,7 @@ class IMakerFactory(interfaces.IFactory):
 
 
 class IMaker(interfaces.IProduct):
-    """Interface for making a package from somewhere"
+    """Interface for making a package from somewhere.
     Basics
          To register a new maker to the factory you ll have 2 choices:
              - Indicate something in a config.ini file and give it to the
@@ -75,41 +89,42 @@ class IMaker(interfaces.IProduct):
             - make, delete, reinstall, match
     """
 
-    def delete(self, dir, opts=None):
-        """delete a package
+    def delete(self, directory, opts=None):
+        """Delete a package.
         Exceptions:
             - DeleteError
         Arguments:
             - dir : directory where the packge is
             - opts : arguments for the maker
         """
-        if os.path.isdir(dir):
+        if os.path.isdir(directory):
             try:
-                shutil.rmtree(dir)
+                shutil.rmtree(directory)
             except:
-                raise DeleteError('Cannot remove \'%s\'' % dir)
+                raise DeleteError('Cannot remove \'%s\'' % directory)
 
-    def reinstall(self, dir, opts):
-        """rebuild a package
+    def reinstall(self, directory, opts):
+        """Rebuild a package.
         Exceptions:
             - ReinstallError
         Arguments:
-            - dir : directory where the packge is
+            - directory : directory where the packge is
             - opts : arguments for the maker
         """
-        raise interfaces.NotImplementedMethodError('The method is not implemented')
+        raise interfaces.NotImplementedError('The method is not implemented')
 
-    def make(self, dir, ops=None):
-        """make a package
+    def make(self, directory, ops=None):
+        """Make a package.
         Exceptions:
             - MakeError
         Arguments:
             - dir : directory where the packge is
             - opts : arguments for the maker
         """
-        raise interfaces.NotImplementedMethodError('The method is not implemented')
+        raise interfaces.NotImplementedError('The method is not implemented')
 
     def match(self, switch):
-        raise interfaces.NotImplementedMethodError('The method is not implemented')
+        """Return true if the product match the switch."""
+        raise interfaces.NotImplementedError('The method is not implemented')
 
 # vim:set et sts=4 ts=4 tw=80:

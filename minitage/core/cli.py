@@ -23,11 +23,11 @@ from minitage.core import core
 usage = """
 %(arg)s [Options] [ -j minibuild ]  minibuild ... minibuildn  : Installs  package(s)."
 %(arg)s [Options] -rm minibuild ... minibuildn  : Uninstall package(s)"
-"""%{'arg': sys.argv[0]}
+""" % {'arg': sys.argv[0]}
 
 
 def do_read_options():
-    """Parse the command line thought arguments 
+    """Parse the command line thought arguments
        and throws CliError if any error.
     Returns
         - `options` : the options to give to minimerge
@@ -56,34 +56,34 @@ def do_read_options():
     config_help += '%s/etc/minimerge.cfg and ~/.minimerge.cfg' % sys.exec_prefix
 
     option_list = [
-        optparse.make_option('-s', '--sync', 
+        optparse.make_option('-s', '--sync',
                              action='store_true', dest='sync',
                              help = nodeps_help),
-        optparse.make_option('--rm', 
+        optparse.make_option('--rm',
                              action='store_true', dest='remove',
                              help = remove_help),
-        optparse.make_option('-i', '--install', 
+        optparse.make_option('-i', '--install',
                              action='store_true', dest='install',
                              help = install_help),
-        optparse.make_option('-o', '--offline', 
+        optparse.make_option('-o', '--offline',
                              action='store_true', dest='offline',
                              help = offline_help),
-        optparse.make_option('-c', '--config', 
+        optparse.make_option('-c', '--config',
                              action='store', dest='config',
                              help = config_help),
-        optparse.make_option('-d', '--debug', 
+        optparse.make_option('-d', '--debug',
                              action='store_true', dest='debug',
                              help = debug_help),
-        optparse.make_option('-j', '--jump', 
+        optparse.make_option('-j', '--jump',
                              action='store', dest='jump',
                              help = jump_help),
-        optparse.make_option('-f', '--fetchonly', 
+        optparse.make_option('-f', '--fetchonly',
                              action='store_true', dest='fetchonly',
                              help = fetchonly_help),
-        optparse.make_option('-R', '--rebuild', 
+        optparse.make_option('-R', '--rebuild',
                              action='store_true', dest='rebuild',
                              help = rebuild_help),
-        optparse.make_option('-N', '--nodeps', 
+        optparse.make_option('-N', '--nodeps',
                              action='store_true', dest='nodeps',
                              help = nodeps_help),
     ]
@@ -126,7 +126,7 @@ def do_read_options():
         options.action = default_action
 
     if not options.config:
-        for file in ['~/.minimerge.cfg','%s/etc/minimerge.cfg'% path]:
+        for file in ['~/.minimerge.cfg', '%s/etc/minimerge.cfg' % path]:
             file = os.path.expanduser(file)
             if os.path.isfile(file):
                 options.config = file

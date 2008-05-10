@@ -22,12 +22,12 @@ class testInterfaces(unittest.TestCase):
 
     def testIFetcher(self):
         i = fetchers.interfaces.IFetcher('ls', 'ls')
-        self.assertRaises(interfaces.NotImplementedMethodError, i.update, 'foo', 'bar')
-        self.assertRaises(interfaces.NotImplementedMethodError, i.fetch_or_update, 'foo', 'bar')
-        self.assertRaises(interfaces.NotImplementedMethodError, i.fetch, 'foo', 'bar')
-        self.assertRaises(interfaces.NotImplementedMethodError, i.is_valid_src_uri, 'foo')
-        self.assertRaises(interfaces.NotImplementedMethodError, i.match, 'foo')
-        self.assertRaises(interfaces.NotImplementedMethodError, i._has_uri_changed, 'foo', 'bar')
+        self.assertRaises(interfaces.NotImplementedError, i.update, 'foo', 'bar')
+        self.assertRaises(interfaces.NotImplementedError, i.fetch_or_update, 'foo', 'bar')
+        self.assertRaises(interfaces.NotImplementedError, i.fetch, 'foo', 'bar')
+        self.assertRaises(interfaces.NotImplementedError, i.is_valid_src_uri, 'foo')
+        self.assertRaises(interfaces.NotImplementedError, i.match, 'foo')
+        self.assertRaises(interfaces.NotImplementedError, i._has_uri_changed, 'foo', 'bar')
 
     def testURI(self):
         re = fetchers.interfaces.URI_REGEX

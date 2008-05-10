@@ -21,17 +21,43 @@ import shutil
 
 from minitage.core import interfaces
 
-class IFetcherError(Exception): pass
-class InvalidUrlError(IFetcherError): pass
-class UpdateError(IFetcherError): pass
-class FetchError(IFetcherError): pass
-class InvalidRepositoryError(IFetcherError): pass
-class FetcherNotInPathError(IFetcherError): pass
-class FetcherRuntimmeError(IFetcherError): pass
+class IFetcherError(Exception):
+    """General Fetcher Error."""
 
-URI_REGEX = re.compile('^((svn\+ssh|git|http|https|hg|svn|ftp|sftp|ssh|bzr|cvs|mtn|file):\/\/(.*))$')
+
+class InvalidUrlError(IFetcherError):
+    """Invalid url."""
+
+
+class UpdateError(IFetcherError):
+    """Update Error."""
+
+
+class FetchError(IFetcherError):
+    """Fetch Error."""
+
+
+class InvalidRepositoryError(IFetcherError):
+    """Repository is invalid."""
+
+
+class FetcherNotInPathError(IFetcherError):
+    """Fetcher was not found."""
+
+
+class FetcherRuntimmeError(IFetcherError):
+    """Unknown runtime Error."""
+
+
+
+dscms = 'git|hg|bzt|mtn'
+p = 'ssh|http|https|ftp|sftp|file'
+scms = 'svn|svn\+ssh|cvs'
+URI_REGEX = re.compile('^((%s|%s|%s):\/\/(.*))$' % (dscms, p , scms))
 
 class IFetcherFactory(interfaces.IFactory):
+    """Interface Factory."""
+
     def __init__(self, config=None):
         """
         Arguments:
@@ -39,7 +65,7 @@ class IFetcherFactory(interfaces.IFactory):
                     containing all needed classes.
         """
 
-        interfaces.IFactory.__init__(self,'fetchers',config)
+        interfaces.IFactory.__init__(self, 'fetchers', config)
         self.registerDict(
             {
                 'hg': 'minitage.core.fetchers.scm.HgFetcher',
@@ -63,7 +89,7 @@ class IFetcherFactory(interfaces.IFactory):
                 return instance
 
 class IFetcher(interfaces.IProduct):
-    """Interface for fetching a package from somewhere"
+    """Interface for fetching a package from somewhere.
     Basics
          To register a new fetcher to the factory you ll have 2 choices:
              - Indicate something in a config.ini file and give it to the
@@ -87,7 +113,8 @@ class IFetcher(interfaces.IProduct):
               we got from or a new one.
     """
 
-    def __init__(self, name, executable, config = None, metadata_directory = None):
+    def __init__(self, name, executable,
+                 config = None, metadata_directory = None):
         """
         Attributes:
             - name : name of the fetcher
@@ -112,11 +139,12 @@ class IFetcher(interfaces.IProduct):
                 self.executable = executable
 
         if self.executable is None:
-            message = '%s is not in your path, please install it or maybe get it into your PATH' % self.executable
+            message = '%s is not in your path, please install it or '
+            message += 'maybe get it into your PATH' % self.executable
             raise FetcherNotInPathError(message)
 
-    def update(self, uri, dest, opts=None, offline = False):
-        """update a package
+    def update(self, uri, dest, opts=None):
+        """Update a package.
         Exceptions:
             - InvalidUrlError
         Arguments:
@@ -124,10 +152,10 @@ class IFetcher(interfaces.IProduct):
             - opts : arguments for the fetcher
             - offline: weither we are offline or online
         """
-        raise interfaces.NotImplementedMethodError('The method is not implemented')
+        raise interfaces.NotImplementedError('The method is not implemented')
 
-    def fetch(self, uri, dest, ops=None, offline = False):
-        """fetch a package
+    def fetch(self, uri, dest, ops=None):
+        """Fetch a package.
         Exceptions:
             - InvalidUrlError
         Arguments:
@@ -135,33 +163,36 @@ class IFetcher(interfaces.IProduct):
             - opts : arguments for the fetcher
             - offline: weither we are offline or online
         """
-        raise interfaces.NotImplementedMethodError('The method is not implemented')
+        raise interfaces.NotImplementedError('The method is not implemented')
 
-    def fetch_or_update(self, uri, dest, opts = None, offline = False):
-        """fetch or update a package (call the one of those 2 methods)
+    def fetch_or_update(self, uri, dest, opts = None):
+        """Fetch or update a package (call the one of those 2 methods).
         Arguments:
             - uri : check out/update uri
             - opts : arguments for the fetcher
             - offline: weither we are offline or online
         """
-        raise interfaces.NotImplementedMethodError('The method is not implemented')
+        raise interfaces.NotImplementedError('The method is not implemented')
 
     def is_valid_src_uri(self, uri):
-        """Valid an uri
+        """Valid an uri.
         Return:
             boolean if the uri is valid or not
         """
-        raise interfaces.NotImplementedMethodError('The method is not implemented')
+        raise interfaces.NotImplementedError('The method is not implemented')
 
     def match(self, switch):
-        raise interfaces.NotImplementedMethodError('The method is not implemented')
+        """Test if the switch match the module."""
+        raise interfaces.NotImplementedError('The method is not implemented')
 
     def _scm_cmd(self, command):
-        """helper to run scm commands"""
-        p = subprocess.Popen('%s %s 2>&1' % (self.executable, command), shell = True, stdout=subprocess.PIPE)
+        """Helper to run scm commands."""
+        p = subprocess.Popen('%s %s 2>&1' % (self.executable, command),
+                             shell = True, stdout=subprocess.PIPE)
         ret = p.wait()
         if ret != 0:
-            raise FetcherRuntimmeError('%s failed to achieve correctly.' % self.name)
+            message = '%s failed to achieve correctly.' % self.name
+            raise FetcherRuntimmeError(message)
 
     def _has_uri_changed(self, uri, dest):
         """Does the uri we fetch from in the working changed or not.
@@ -172,10 +203,10 @@ class IFetcher(interfaces.IProduct):
             - True if the uri in the working copy changed
         """
 
-        raise interfaces.NotImplementedMethodError('The method is not implemented')
+        raise interfaces.NotImplementedError('The method is not implemented')
 
     def _remove_versionned_directories(self, dest):
-        """remove all directories which contains history
+        """Remove all directories which contains history.
         part is a special directory, that s where we make install, we will not remove it !
         Arguments
             - dest the working copy

@@ -21,7 +21,10 @@ import zc.buildout.buildout
 
 from minitage.core.makers import interfaces
 
-class BuildoutError(interfaces.IMakerError): pass
+class BuildoutError(interfaces.IMakerError): 
+    """General Buildout Error."""
+
+
 
 class BuildoutMaker(interfaces.IMaker):
     """Buildout Maker.
@@ -36,6 +39,7 @@ class BuildoutMaker(interfaces.IMaker):
         if not config:
             config = {}
         self.config = config
+        interfaces.IMaker.__init__(self)
 
     def match(self, switch):
         """See interface."""
@@ -43,7 +47,7 @@ class BuildoutMaker(interfaces.IMaker):
             return True
         return False
 
-    def reinstall(self, dir, opts=None):
+    def reinstall(self, directory, opts=None):
         """Rebuild a package.
         Warning this will erase .installed.cfg forcing buildout to rebuild.
         Problem is that underlying recipes must know how to handle the part
@@ -53,13 +57,13 @@ class BuildoutMaker(interfaces.IMaker):
         Exceptions
             - ReinstallError
         Arguments
-            - dir : directory where the packge is
+            - directory : directory where the packge is
             - opts : arguments for the maker
         """
-        os.remove('%s/.installed.cfg' % dir)
-        self.make(dir, opts)
+        os.remove('%s/.installed.cfg' % directory)
+        self.make(directory, opts)
 
-    def make(self, dir, opts=None):
+    def make(self, directory, opts=None):
         """Make a package.
         Exceptions
             - MakeError
@@ -68,18 +72,21 @@ class BuildoutMaker(interfaces.IMaker):
             - opts : arguments for the maker
         """
         cwd = os.getcwd()
-        os.chdir(dir)
+        os.chdir(directory)
         old_args = sys.argv[:]
         if not opts:
             opts = {}
         try:
             sys.argv[1:] = self.config.get('options',
                                            '-c -N buildout.cfg -vvvvv').split()
-            if opts.get('offline',False):            
+            if opts.get('offline', False):            
                 sys.argv.append('-o')
             zc.buildout.buildout.main()
-        except Exception, e:
-            raise BuildoutError('Buildout failed: :\n\t%s' % e)
+        except Exception, instance:
+            sys.argv = old_args
+            os.chdir(cwd)
+            raise BuildoutError('Buildout failed: :\n\t%s' % instance)
+        sys.argv = old_args
         os.chdir(cwd)
 
 # vim:set et sts=4 ts=4 tw=80:

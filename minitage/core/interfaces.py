@@ -18,14 +18,28 @@ import ConfigParser
 import imp
 import types
 
-class InterfaceError(Exception): pass
-class InvalidConfigForFactoryError(InterfaceError): pass
-class NotImplementedMethodError(InterfaceError): pass
-class InvalidComponentClassPathError(InterfaceError): pass
-class InvalidComponentClassError(InterfaceError): pass
+class InterfaceError(Exception):
+    """General Interface Error."""
+
+
+class InvalidConfigForFactoryError(InterfaceError):
+    """Invalid config file Error."""
+
+
+class NotImplementedError(InterfaceError):
+    """Method is not implemented in the child class."""
+
+
+class InvalidComponentClassPathError(InterfaceError):
+    """Component class path was not found."""
+
+
+class InvalidComponentClassError(InterfaceError):
+    """Component Class is not valid."""
+
 
 class IFactory(object):
-    """Interface implementing the design pattern 'factory'
+    """Interface implementing the design pattern 'factory'.
     Basics
         To register a new fetcher to the factory you ll have 2 choices:
             - Indicate something in a config.ini file and give it to the
@@ -60,10 +74,11 @@ class IFactory(object):
                 self.config.read(config)
                 self.sections = self.config._sections
                 for section in self.sections:
-                    del self.sections[section]['__name__'] 
+                    del self.sections[section]['__name__']
                 self.section = self.config._sections[self.name]
             except KeyError, e:
-                message = 'You must provide a [%s] section with appropriate content for this factory.'
+                message = 'You must provide a [%s] section with '
+                message += 'appropriate content for this factory.'
                 raise InvalidConfigForFactoryError(message % self.name)
 
         # for each class in the config File, try to instantiate and register
@@ -71,8 +86,8 @@ class IFactory(object):
         self.registerDict(self.section)
 
     def registerDict(self, dict):
-        """ for each item/class in the dict:
-        Try to instantiate and register
+        """For each item/class in the dict:
+        Try to instantiate and register.
         Arguments:
             - dict : dictionnary {item:class}
         Exceptions:
@@ -88,7 +103,8 @@ class IFactory(object):
                 # get the last inner submodule
                 for submodule in modules:
                     if module:
-                        file, path, desc = imp.find_module(submodule, module.__path__)
+                        file, path, desc = imp.find_module(submodule,
+                                                           module.__path__)
                         module = imp.load_module(submodule, file, path, desc)
                     else:
                         file, path, desc = imp.find_module(submodule)
@@ -97,11 +113,12 @@ class IFactory(object):
                 # get now the corresponding class
                 klass = getattr(module, klass_str)
             except Exception,e:
-                raise InvalidComponentClassPathError('Invalid Component: \'%s/%s\'' % (key, dict[key]))
+                message = 'Invalid Component: \'%s/%s\'' % (key, dict[key])
+                raise InvalidComponentClassPathError(message)
             self.register(key, klass)
 
     def register(self, type, klass):
-        """register a possible product with it s factory
+        """Register a product with its factory.
         Arguments
             - type: type to register
             - klass: klass the factory must intanciate
@@ -111,10 +128,12 @@ class IFactory(object):
         if not  isinstance(klass, str):
             self.products[type] = klass
         else:
-            raise InvalidComponentClassError('Invalid Component: \'%s/%s\' does not point to a valid class.' % (type, klass))
+            message = 'Invalid Component: \'%s/%s\' ' % (type, klass)
+            message += 'does not point to a valid class.'
+            raise InvalidComponentClassError()
 
     def __call__(self, switch):
-        """possibly instanciate and return a product
+        """Possibly instanciate and return a product.
         Implementation Exameple::
             for key in self.products:
                  klass = self.products[key]
@@ -122,19 +141,19 @@ class IFactory(object):
                  if instance.match(switch):
                      return instance
         """
-        raise NotImplementedMethodError('The method is not implemented')
+        raise NotImplementedError('The method is not implemented')
 
 class IProduct(object):
     """factory result"""
 
     def match(self, switch):
-        """
+        """Select the product if match.
         Arguments:
             - switch: parameter which will be used to know if the component can
             handle the request.
         Return:
             - boolean: wheither the product can be used.
         """
-        raise NotImplementedMethodError('The method is not implemented')
+        raise NotImplementedError('The method is not implemented')
 
 # vim:set et sts=4 ts=4 tw=80:

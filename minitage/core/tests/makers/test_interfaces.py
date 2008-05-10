@@ -22,9 +22,9 @@ class testInterfaces(unittest.TestCase):
 
     def testIMaker(self):
         i = makers.interfaces.IMaker()
-        self.assertRaises(interfaces.NotImplementedMethodError, i.make, 'foo', {'bar':'loo'})
-        self.assertRaises(interfaces.NotImplementedMethodError, i.reinstall, 'foo', {'bar':'loo'})
-        self.assertRaises(interfaces.NotImplementedMethodError, i.match, 'foo')
+        self.assertRaises(interfaces.NotImplementedError, i.make, 'foo', {'bar':'loo'})
+        self.assertRaises(interfaces.NotImplementedError, i.reinstall, 'foo', {'bar':'loo'})
+        self.assertRaises(interfaces.NotImplementedError, i.match, 'foo')
 
     def testFactory(self):
         f = makers.interfaces.IMakerFactory()

@@ -30,12 +30,12 @@ class testCli(unittest.TestCase):
             sys.argv = [sys.argv[0], action, 'foo']
             opts = cli.do_read_options()
             minimerge = api.Minimerge(opts)
-            self.assertEquals(minimerge.action, opts['action'])
+            self.assertEquals(minimerge._action, opts['action'])
 
         sys.argv = [sys.argv[0], 'foo']
         opts = cli.do_read_options()
         minimerge = api.Minimerge(opts)
-        self.assertEquals(minimerge.action, opts['action'])
+        self.assertEquals(minimerge._action, opts['action'])
 
         sys.argv = [sys.argv[0], '--rm']
         self.assertRaises(core.NoPackagesError, cli.do_read_options)
@@ -61,7 +61,7 @@ class testCli(unittest.TestCase):
             sys.argv = [sys.argv[0], '--%s' % mode, 'foo']
             opts = cli.do_read_options()
             minimerge = api.Minimerge(opts)
-            self.assertTrue(getattr(minimerge, mode, False))
+            self.assertTrue(getattr(minimerge, '_%s' % mode, False))
 
 if __name__ == '__main__':
     suite = unittest.TestSuite()
