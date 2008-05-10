@@ -27,7 +27,8 @@ usage = """
 
 
 def do_read_options():
-    """Parse the command line thought arguments and throws CliError if any error.
+    """Parse the command line thought arguments 
+       and throws CliError if any error.
     Returns
         - `options` : the options to give to minimerge
             They are cli parsed but action [string] is added to the oject.
@@ -44,27 +45,51 @@ def do_read_options():
 
     offline_help = 'Build offline, do not try to connect outside.'
     debug_help = 'Run in debug mode'
-    jump_help = 'Squizze prior dependencies to the minibuild specified in that option'
+    jump_help = 'Squizze prior dependencies to the '
+    jump_help += 'minibuild specified in that option'
     fetchonly_help = 'Fetch the packages but do not build yet'
     remove_help = 'Remove selected packages'
     rebuild_help = 'Uncondionnaly rebuild packages'
     install_help = 'Installs packages (default action)'
     nodeps_help = 'Squizzes all dependencies'
-    config_help = 'Alternate config file. By default it\'s searched in %s/etc/minimerge.cfg and ~/.minimerge.cfg' % sys.exec_prefix
+    config_help = 'Alternate config file. By default it\'s searched in '
+    config_help += '%s/etc/minimerge.cfg and ~/.minimerge.cfg' % sys.exec_prefix
 
     option_list = [
-        optparse.make_option('-s', '--sync', action='store_true', dest='sync',help = nodeps_help),
-        optparse.make_option('--rm', action='store_true', dest='remove',help = remove_help),
-        optparse.make_option('-i', '--install', action='store_true', dest='install',help = install_help),
-        optparse.make_option('-o', '--offline', action='store_true', dest='offline',help = offline_help),
-        optparse.make_option('-c', '--config', action='store', dest='config',help = config_help),
-        optparse.make_option('-d', '--debug', action='store_true', dest='debug',help = debug_help),
-        optparse.make_option('-j', '--jump', action='store', dest='jump',help = jump_help),
-        optparse.make_option('-f', '--fetchonly', action='store_true', dest='fetchonly',help = fetchonly_help),
-        optparse.make_option('-R', '--rebuild', action='store_true', dest='rebuild',help = rebuild_help),
-        optparse.make_option('-N', '--nodeps', action='store_true', dest='nodeps',help = nodeps_help),
+        optparse.make_option('-s', '--sync', 
+                             action='store_true', dest='sync',
+                             help = nodeps_help),
+        optparse.make_option('--rm', 
+                             action='store_true', dest='remove',
+                             help = remove_help),
+        optparse.make_option('-i', '--install', 
+                             action='store_true', dest='install',
+                             help = install_help),
+        optparse.make_option('-o', '--offline', 
+                             action='store_true', dest='offline',
+                             help = offline_help),
+        optparse.make_option('-c', '--config', 
+                             action='store', dest='config',
+                             help = config_help),
+        optparse.make_option('-d', '--debug', 
+                             action='store_true', dest='debug',
+                             help = debug_help),
+        optparse.make_option('-j', '--jump', 
+                             action='store', dest='jump',
+                             help = jump_help),
+        optparse.make_option('-f', '--fetchonly', 
+                             action='store_true', dest='fetchonly',
+                             help = fetchonly_help),
+        optparse.make_option('-R', '--rebuild', 
+                             action='store_true', dest='rebuild',
+                             help = rebuild_help),
+        optparse.make_option('-N', '--nodeps', 
+                             action='store_true', dest='nodeps',
+                             help = nodeps_help),
     ]
-    parser = optparse.OptionParser(version=core.version,usage=usage,option_list=option_list)
+    parser = optparse.OptionParser(version=core.version,
+                                   usage=usage,
+                                   option_list=option_list)
     (options, args) = parser.parse_args()
 
     if (options.rebuild and options.remove) or\
@@ -73,7 +98,8 @@ def do_read_options():
         raise core.ConflictModesError('You are using conflicting modes')
 
     if not args and len(sys.argv) > 1:
-        raise core.NoPackagesError('You must precise which packages you want minimerge to deal with')
+        message = 'You must precise which packages you want to deal with'
+        raise core.NoPackagesError(message)
 
     if len(sys.argv) == 1:
         print 'minimerge v%s' % parser.version
@@ -85,7 +111,8 @@ def do_read_options():
         if action:
             actionsCount += 1
     if actionsCount > 1:
-        raise core.TooMuchActionsError('You must precise only one action at a time')
+        message = 'You must precise only one action at a time'
+        raise core.TooMuchActionsError(message)
 
     if options.remove:
         options.action = 'remove'
@@ -108,7 +135,8 @@ def do_read_options():
     # be sure to be with full path object.
     options.config = os.path.expanduser(options.config)
     if not os.path.isfile(options.config):
-        raise core.InvalidConfigFileError('The configuration file specified does not exist')
+        message = 'The configuration file specified does not exist'
+        raise core.InvalidConfigFileError(message)
 
     minimerge_options = {
             'path': path,
