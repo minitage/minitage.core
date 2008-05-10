@@ -19,17 +19,26 @@ from minitage.core import interfaces, fetchers
 from minitage.core.fetchers import scm
 
 class testInterfaces(unittest.TestCase):
+    """testInterfaces"""
 
     def testIFetcher(self):
+        """testIFetcher"""
         i = fetchers.interfaces.IFetcher('ls', 'ls')
-        self.assertRaises(interfaces.NotImplementedError, i.update, 'foo', 'bar')
-        self.assertRaises(interfaces.NotImplementedError, i.fetch_or_update, 'foo', 'bar')
-        self.assertRaises(interfaces.NotImplementedError, i.fetch, 'foo', 'bar')
-        self.assertRaises(interfaces.NotImplementedError, i.is_valid_src_uri, 'foo')
-        self.assertRaises(interfaces.NotImplementedError, i.match, 'foo')
-        self.assertRaises(interfaces.NotImplementedError, i._has_uri_changed, 'foo', 'bar')
+        self.assertRaises(interfaces.NotImplementedError,
+                          i.update, 'foo', 'bar')
+        self.assertRaises(interfaces.NotImplementedError,
+                          i.fetch_or_update, 'foo', 'bar')
+        self.assertRaises(interfaces.NotImplementedError,
+                          i.fetch, 'foo', 'bar')
+        self.assertRaises(interfaces.NotImplementedError,
+                          i.is_valid_src_uri, 'foo')
+        self.assertRaises(interfaces.NotImplementedError,
+                          i.match, 'foo')
+        self.assertRaises(interfaces.NotImplementedError,
+                          i._has_uri_changed, 'foo', 'bar')
 
     def testURI(self):
+        """testURI"""
         re = fetchers.interfaces.URI_REGEX
         self.assertEquals(re.match('http://tld').groups()[1], 'http')
         self.assertEquals(re.match('mtn://tld').groups()[1], 'mtn')
@@ -46,22 +55,29 @@ class testInterfaces(unittest.TestCase):
         self.assertEquals(re.match('svn+ssh://tld').groups()[1], 'svn+ssh')
 
     def testInit(self):
-        f = fetchers.interfaces.IFetcher('ls','ls', metadata_directory='.ls')
+        """testInit"""
+        f = fetchers.interfaces.IFetcher('ls', 'ls', metadata_directory='.ls')
         self.assertEquals(f.name,'ls')
         self.assertEquals(f.executable,'/bin/ls')
         self.assertEquals(f.metadata_directory,'.ls')
         f = fetchers.interfaces.IFetcher('ls','/bin/ls')
         self.assertEquals(f.executable,'/bin/ls')
-        self.assertRaises(fetchers.interfaces.FetcherNotInPathError, fetchers.interfaces.IFetcher, 'ls','/bin/notfoundheh')
+        self.assertRaises(fetchers.interfaces.FetcherNotInPathError,
+                          fetchers.interfaces.IFetcher, 'ls','/bin/notfoundheh')
 
     def testFactory(self):
+        """testFactory"""
         f = fetchers.interfaces.IFetcherFactory()
         svn = f('svn')
         hg = f('hg')
-        self.assertEquals(svn.__class__.__name__, fetchers.scm.SvnFetcher.__name__)
-        self.assertEquals(svn.__class__.__name__, fetchers.scm.SvnFetcher.__name__)
-        self.assertEquals(hg.__module__, fetchers.scm.HgFetcher.__module__.split('.').pop())
-        self.assertEquals(hg.__module__, fetchers.scm.HgFetcher.__module__.split('.').pop())
+        self.assertEquals(svn.__class__.__name__,
+                          fetchers.scm.SvnFetcher.__name__)
+        self.assertEquals(svn.__class__.__name__,
+                          fetchers.scm.SvnFetcher.__name__)
+        self.assertEquals(hg.__module__,
+                          fetchers.scm.HgFetcher.__module__.split('.').pop())
+        self.assertEquals(hg.__module__,
+                          fetchers.scm.HgFetcher.__module__.split('.').pop())
 
 if __name__ == '__main__':
     suite = unittest.TestSuite()

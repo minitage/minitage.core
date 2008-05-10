@@ -26,9 +26,10 @@ from minitage.core.tests import test_common
 mb_path = os.path.expanduser('~/iamatest-1.0')
 
 class testMinibuilds(unittest.TestCase):
-    """ test cli usage for minimerge"""
+    """Test cli usage for minimerge."""
 
     def testValidNames(self):
+        """testValidNames"""
         mb = api.Minibuild(path=mb_path)
         valid_names = []
         valid_names.append('test-1.0')
@@ -65,7 +66,7 @@ class testMinibuilds(unittest.TestCase):
         for i in invalid_names:
             # will fail if raise error anyway
             self.assertFalse(mb.check_minibuild_name(i))
-        minibuild1="""
+        minibuild1 = """
         [minibuild]
         depends=python
         src_type=hg
@@ -76,11 +77,12 @@ class testMinibuilds(unittest.TestCase):
         nvmbp = 'notvalidminibuildnamewhichisuniquetothistestforminitage'
         open(nvmbp,'w').write(minibuild1)
         mb = api.Minibuild(path=nvmbp)
-        self.assertRaises(objects.InvalidMinibuildNameError,mb.load)
+        self.assertRaises(objects.InvalidMinibuildNameError, mb.load)
         os.remove(nvmbp)
 
     def testDepends(self):
-        minibuild1="""
+        """testDepends"""
+        minibuild1 = """
 [minibuild]
 depends=python
 src_type=hg
@@ -93,7 +95,8 @@ category=eggs
         self.assertEquals(mb.dependencies, ['python'])
 
     def testValidMinibuilds(self):
-        minibuild1="""
+        """testValidMinibuilds"""
+        minibuild1 = """
 [minibuild]
 depends=python
 src_type=hg
@@ -103,9 +106,11 @@ category=eggs
 """
         open(mb_path,'w').write(minibuild1)
         mb = api.Minibuild(path=mb_path).load()
+        self.assertTrue(True)
 
     def testNoMinibuildSection(self):
-        minibuild2="""
+        """testNoMinibuildSection"""
+        minibuild2 = """
 [iamnotcalledminibuild]
 depends=python
 src_type=hg
@@ -118,7 +123,8 @@ category=eggs
         self.assertRaises(objects.NoMinibuildSectionError, mb.load)
 
     def testInvalidConfig(self):
-        minibuild3="""
+        """testInvalidConfig"""
+        minibuild3 = """
 depends=python
 src_type=hg
 src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
@@ -130,7 +136,8 @@ category=eggs
         self.assertRaises(objects.InvalidConfigFileError, mb.load)
 
     def testUriWithoutFetchMethod(self):
-        minibuild="""
+        """testUriWithoutFetchMethod"""
+        minibuild = """
 [minibuild]
 category=eggs
 depends=python
@@ -142,7 +149,8 @@ src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewrit
         self.assertRaises(objects.MissingFetchMethodError, mb.load)
 
     def testInvalidSrcType(self):
-        minibuild="""
+        """testInvalidSrcType"""
+        minibuild = """
 [minibuild]
 category=eggs
 depends=python
@@ -154,7 +162,8 @@ src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewrit
         mb = api.Minibuild(path=mb_path)
         self.assertRaises(objects.InvalidFetchMethodError, mb.load)
     def testSrcOpts(self):
-        minibuild="""
+        """testSrcOpts"""
+        minibuild = """
 [minibuild]
 category=eggs
 depends=python
@@ -165,10 +174,11 @@ src_opts=-r666
 """
         open(mb_path,'w').write(minibuild)
         mb = api.Minibuild(path=mb_path)
-        self.assertEquals('-r666',mb.src_opts)
+        self.assertEquals('-r666', mb.src_opts)
 
     def testMeta(self):
-        minibuild="""
+        """testMeta"""
+        minibuild = """
 [minibuild]
 depends=python
 """
@@ -178,15 +188,18 @@ depends=python
         self.failUnless('python' in mb.dependencies)
 
     def testDefaults(self):
-        minibuild="""
+        """testDefaults"""
+        minibuild = """
 [minibuild]
 depends=python
 """
         open(mb_path,'w').write(minibuild)
         mb = api.Minibuild(path=mb_path).load()
+        self.assertTrue(True)
 
     def testCategory(self):
-        minibuild="""
+        """testCategory"""
+        minibuild = """
 [minibuild]
 depends=python
 src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
@@ -198,7 +211,7 @@ category=eggs
         mb = api.Minibuild(path=mb_path).load()
         self.assertEquals(mb.category,'eggs')
 
-        minibuild="""
+        minibuild = """
 [minibuild]
 depends=python
 src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
@@ -210,7 +223,7 @@ category=invalid
         open(mb_path,'w').write(minibuild)
         mb = api.Minibuild(path=mb_path)
         self.assertRaises(objects.InvalidCategoryError, mb.load)
-        minibuild="""
+        minibuild = """
 [minibuild]
 src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
 src_type=hg
@@ -222,7 +235,8 @@ install_method=buildout
         self.assertRaises(objects.MissingCategoryError, mb.load)
 
     def testMinibuildWithoutInstallMethodNeitherDependencies(self):
-        minibuild="""
+        """testMinibuildWithoutInstallMethodNeitherDependencies"""
+        minibuild = """
 [minibuild]
 url=prout
 """
@@ -232,7 +246,8 @@ url=prout
 
 
     def testLazyLoad(self):
-        minibuild="""
+        """testLazyLoad"""
+        minibuild = """
 [minibuild]
 depends=python
 src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
@@ -245,7 +260,7 @@ category=eggs
         mb = api.Minibuild(path=mb_path)
         self.assertEquals(mb.category,'eggs')
 
-        minibuild="""
+        minibuild = """
 [minibuild]
 src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
 src_type=hg
@@ -255,9 +270,9 @@ category=eggs
         # minibuild is ok, just trying to get the catgory.
         open(mb_path,'w').write(minibuild)
         mbd = api.Minibuild(path=mb_path)
-        self.assertEquals(mbd.dependencies,[])
+        self.assertEquals(mbd.dependencies, [])
 
-        minibuild="""
+        minibuild = """
 [minibuild]
 depends=python
 src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
@@ -272,9 +287,11 @@ category=invalid
         self.assertTrue( isinstance(mb.loaded, objects.MinibuildException))
 
     def tearDown(self):
+        """."""
         os.remove(mb_path)
 
     def setUp(self):
+        """."""
         open(mb_path,'w').write('')
 
 if __name__ == '__main__':

@@ -21,12 +21,20 @@ import unittest
 from minitage.core import interfaces, makers, fetchers
 from minitage.core.tests  import test_common
 
+
+
+ocwd = os.getcwd()
 path = os.path.expanduser('~/iamauniquetestdirformatiwillberemoveafterthetest')
-ipath = os.path.expanduser('~/iamauniquetestdirformatiwillberemoveafterthetest/test')
+ipath = os.path.expanduser(
+    '~/iamauniquetestdirformatiwillberemoveafterthetest/test'
+)
 testopts = dict(path=path)
-class testBuildout(unittest.TestCase):
+class TestBuildout(unittest.TestCase):
+    """testBuildout"""
 
     def setUp(self):
+        """."""
+        os.chdir(ocwd)
         test_common.createMinitageEnv(path)
         os.mkdir(ipath)
         os.chdir(ipath)
@@ -53,12 +61,15 @@ class test:
         test_common.bootstrap_buildout(ipath)
 
     def tearDown(self):
+        """."""
         if os.path.isdir(path):
             shutil.rmtree(path)
 
-    def atestDelete(self):
-        p = '%s/%s' % (path, 'test')
-        os.mkdir(p)
+    def testDelete(self):
+        """testDelete"""
+        p = '%s/%s' % (path, 'test2')
+        if not os.path.isdir(p):
+            os.mkdir(p)
         mf = makers.interfaces.IMakerFactory()
         b = mf('buildout')
         self.assertTrue(os.path.isdir(p))
@@ -66,21 +77,26 @@ class test:
         self.assertFalse(os.path.isdir(p))
 
     def testInstall(self):
+        """testInstall"""
         mf = makers.interfaces.IMakerFactory('buildout.cfg')
         buildout = mf('buildout')
         # must not die ;)
         buildout.make(ipath)
+        self.assertTrue(True)
 
-    def testInstall(self):
+    def testReInstall(self):
+        """testReInstall"""
         mf = makers.interfaces.IMakerFactory('buildout.cfg')
         buildout = mf('buildout')
         # must not die ;)
-        buildout.make(ipath) 
-        buildout.reinstall(ipath) 
+        buildout.make(ipath)
+        buildout.reinstall(ipath)
+        self.assertTrue(True)
+
 
 if __name__ == '__main__':
     suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(testBuildout))
+    suite.addTest(unittest.makeSuite(TestBuildout))
     unittest.TextTestRunner(verbosity=2).run(suite)
 
 # vim:set et sts=4 ts=4 tw=80:

@@ -14,19 +14,14 @@
 __docformat__ = 'restructuredtext en'
 
 import unittest
-import os
-import sys
-import shutil
-import optparse
-import ConfigParser
 
 from minitage.core.collections import LazyLoadedList, LazyLoadedDict
-from minitage.core.tests import test_common
 
 class testLazyLoadedLists(unittest.TestCase):
+    """LazyLoadedList tests."""
 
     def testLoadedStateChanges(self):
-        """test lazy loading of lazyLoadedLists"""
+        """Test lazy loading of lazyLoadedLists."""
         lazyLoadedList = LazyLoadedList()
         self.assertFalse(lazyLoadedList.isLoaded())
         lazyLoadedList.append('foo')
@@ -35,6 +30,7 @@ class testLazyLoadedLists(unittest.TestCase):
         self.assertTrue(lazyLoadedList.isLoaded())
 
     def testIn(self):
+        """Test insertion in list."""
         lazyLoadedList = LazyLoadedList()
         self.assertFalse(lazyLoadedList.isLoaded())
         self.assertFalse('foo' in lazyLoadedList)
@@ -43,6 +39,7 @@ class testLazyLoadedLists(unittest.TestCase):
         self.assertTrue(lazyLoadedList.isLoaded())
 
     def testAdd(self):
+        """Test append on list."""
         lazyLoadedList = LazyLoadedList()
         self.assertFalse(lazyLoadedList.isLoaded())
         lazyLoadedList.append(0)
@@ -50,6 +47,7 @@ class testLazyLoadedLists(unittest.TestCase):
         self.assertTrue(lazyLoadedList.isLoaded())
 
     def testSlices(self):
+        """Test sub slices of list."""
         lazyLoadedList = LazyLoadedList()
         self.assertFalse(lazyLoadedList.isLoaded())
         for i in range(5):
@@ -65,9 +63,10 @@ class testLazyLoadedLists(unittest.TestCase):
 
 
 class testLazyLoadedDicts(unittest.TestCase):
+    """LazyLoadedDict tests."""
 
     def testLoadedStateChanges(self):
-        """test lazy loading of lazyLoadedLists"""
+        """Test lazy loading of lazyLoadedDict."""
         lazyLoadedDict = LazyLoadedDict()
         self.assertFalse(0 in lazyLoadedDict.items)
         lazyLoadedDict[0] = 'foo'
@@ -76,6 +75,7 @@ class testLazyLoadedDicts(unittest.TestCase):
         self.assertTrue(0 in lazyLoadedDict.items)
 
     def testIn(self):
+        """Test in operator in dictonary."""
         lazyLoadedDict = LazyLoadedDict()
         self.assertFalse('foo' in lazyLoadedDict.items)
         self.assertFalse('foo' in [key for key in lazyLoadedDict])
@@ -83,9 +83,10 @@ class testLazyLoadedDicts(unittest.TestCase):
         self.assertTrue('foo' in [key for key in lazyLoadedDict])
         self.assertFalse('foo' in lazyLoadedDict.items)
         a = lazyLoadedDict['foo']
-        self.assertTrue('foo' in lazyLoadedDict.items)
+        self.assertTrue(a and 'foo' in lazyLoadedDict.items)
 
     def testNotIn(self):
+        """Test non-appartenance of an element in the dictonary."""
         lazyLoadedDict = LazyLoadedDict()
         self.assertFalse('foo' in lazyLoadedDict.items)
         self.assertTrue('foo'  not in lazyLoadedDict.items)
@@ -94,9 +95,10 @@ class testLazyLoadedDicts(unittest.TestCase):
         self.assertTrue('foo' in [key for key in lazyLoadedDict])
         self.assertFalse('foo' in lazyLoadedDict.items)
         a = lazyLoadedDict['foo']
-        self.assertTrue('afoo' not in lazyLoadedDict.items)
+        self.assertTrue(a and 'afoo' not in lazyLoadedDict.items)
 
     def testAdd(self):
+        """Test addition of an element in the dictonary."""
         lazyLoadedDict = LazyLoadedDict()
         self.assertFalse(0 in lazyLoadedDict.items)
         lazyLoadedDict[0] = 0

@@ -25,6 +25,7 @@ class testConfig(unittest.TestCase):
     """ test cli usage for minimerge"""
 
     def testConfig(self):
+        """testConfig"""
         path = '%s/iamauniqueminiermgeconfigtest' % sys.exec_prefix
         mydict = {'path': path}
         test1 = """
@@ -44,11 +45,11 @@ EOF""" % mydict
 touch %(path)s
 cat << EOF > %(path)s
 i am not a config file
-EOF""" % mydict 
+EOF""" % mydict
         os.system(test2)
         sys.argv = [sys.argv[0], '--config', path, 'bar']
         opts = cli.do_read_options()
-        self.assertRaises(core.InvalidConfigFileError, api.Minimerge, opts) 
+        self.assertRaises(core.InvalidConfigFileError, api.Minimerge, opts)
         # cleanup
         os.remove(path)
 

@@ -27,18 +27,20 @@ path = os.path.expanduser('~/iamauniquetestdirformatiwillberemoveafterthetest')
 testopts = dict(path=path)
 minilay = '%(path)s/minilays/myminilay1' % testopts
 class testMinimerge(unittest.TestCase):
+    """testMinimerge"""
 
     def setUp(self):
+        """."""
         test_common.createMinitageEnv(path)
         os.system('mkdir -p %s' % minilay)
-        minibuild0="""
+        minibuild0 = """
 [minibuild]
 src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
 src_type=hg
 install_method=buildout
 category=eggs
 """
-        minibuild1="""
+        minibuild1 = """
 [minibuild]
 depends=minibuild-0
 src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
@@ -46,7 +48,7 @@ src_type=hg
 install_method=buildout
 category=eggs
 """
-        minibuild2="""
+        minibuild2 = """
 [minibuild]
 depends=minibuild-4 minibuild-1
 src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
@@ -54,7 +56,7 @@ src_type=hg
 install_method=buildout
 category=eggs
 """
-        minibuild3="""
+        minibuild3 = """
 [minibuild]
 depends=minibuild-2
 src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
@@ -62,7 +64,7 @@ src_type=hg
 install_method=buildout
 category=eggs
 """
-        minibuild4="""
+        minibuild4 = """
 [minibuild]
 depends=minibuild-0
 src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
@@ -70,7 +72,7 @@ src_type=hg
 install_method=buildout
 category=eggs
 """
-        minibuild5="""
+        minibuild5 = """
 [minibuild]
 depends=minibuild-7
 src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
@@ -78,7 +80,7 @@ src_type=hg
 install_method=buildout
 category=eggs
 """
-        minibuild6="""
+        minibuild6 = """
 [minibuild]
 depends=minibuild-5
 src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
@@ -86,7 +88,7 @@ src_type=hg
 install_method=buildout
 category=eggs
 """
-        minibuild7="""
+        minibuild7 = """
 [minibuild]
 depends=minibuild-6
 src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
@@ -94,7 +96,7 @@ src_type=hg
 install_method=buildout
 category=eggs
 """
-        minibuild8="""
+        minibuild8 = """
 [minibuild]
 depends=minibuild-8
 src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
@@ -102,7 +104,7 @@ src_type=hg
 install_method=buildout
 category=eggs
 """
-        minibuild9="""
+        minibuild9 = """
 [minibuild]
 depends=minibuild-0 minibuild-3
 src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
@@ -110,7 +112,7 @@ src_type=hg
 install_method=buildout
 category=eggs
 """
-        minibuild10="""
+        minibuild10 = """
 [minibuild]
 depends=minibuild-11
 src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
@@ -118,7 +120,7 @@ src_type=hg
 install_method=buildout
 category=eggs
 """
-        minibuild11="""
+        minibuild11 = """
 [minibuild]
 depends=minibuild-12
 src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
@@ -126,7 +128,7 @@ src_type=hg
 install_method=buildout
 category=eggs
 """
-        minibuild12="""
+        minibuild12 = """
 [minibuild]
 depends=minibuild-13
 src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
@@ -134,7 +136,7 @@ src_type=hg
 install_method=buildout
 category=eggs
 """
-        minibuild13="""
+        minibuild13 = """
 [minibuild]
 depends=minibuild-10
 src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
@@ -142,35 +144,41 @@ src_type=hg
 install_method=buildout
 category=eggs
 """
-        for index,minibuild in enumerate((minibuild0, minibuild1, minibuild2, minibuild3,
-                         minibuild4, minibuild5, minibuild6, minibuild7, minibuild8,
-                         minibuild9, minibuild10, minibuild11, minibuild12, minibuild13),):
+        for index, minibuild in enumerate((minibuild0, minibuild1, minibuild2,
+                                          minibuild3, minibuild4, minibuild5,
+                                          minibuild6, minibuild7, minibuild8,
+                                          minibuild9, minibuild10, minibuild11,
+                                          minibuild12, minibuild13),):
             open('%s/minibuild-%s' % (minilay, index), 'w').write(minibuild)
 
     def tearDown(self):
+        """."""
         shutil.rmtree(os.path.expanduser(path))
 
-    def atestFindMinibuild(self):
+    def testFindMinibuild(self):
         """find m0?"""
         # create minilays in the minilays dir, seeing if they get putted in
-        sys.argv = [sys.argv[0], '--config', '%s/etc/minimerge.cfg' % path, 'foo']
+        sys.argv = [sys.argv[0], '--config', 
+                    '%s/etc/minimerge.cfg' % path, 'foo']
         opts = cli.do_read_options()
         minimerge = api.Minimerge(opts)
         mb = minimerge._find_minibuild('minibuild-0')
         self.assertEquals('minibuild-0', mb.name)
 
-    def atestComputeDepsWithNoDeps(self):
+    def testComputeDepsWithNoDeps(self):
         """m0 depends on nothing"""
-        sys.argv = [sys.argv[0], '--config', '%s/etc/minimerge.cfg' % path, 'foo']
+        sys.argv = [sys.argv[0], '--config', 
+                    '%s/etc/minimerge.cfg' % path, 'foo']
         opts = cli.do_read_options()
         minimerge = api.Minimerge(opts)
         computed_packages = minimerge._compute_dependencies(['minibuild-0'])
         mb = computed_packages[0]
         self.assertEquals('minibuild-0', mb.name)
 
-    def atestSimpleDeps(self):
+    def testSimpleDeps(self):
         """ test m1 -> m0"""
-        sys.argv = [sys.argv[0], '--config', '%s/etc/minimerge.cfg' % path, 'foo']
+        sys.argv = [sys.argv[0], '--config', 
+                    '%s/etc/minimerge.cfg' % path, 'foo']
         opts = cli.do_read_options()
         minimerge = api.Minimerge(opts)
         computed_packages = minimerge._compute_dependencies(['minibuild-1'])
@@ -179,7 +187,7 @@ category=eggs
         mb = computed_packages[1]
         self.assertEquals(mb.name, 'minibuild-1')
 
-    def atestChainedandTreeDeps(self):
+    def testChainedandTreeDeps(self):
         """ Will test that this tree is safe:
               -       m3
                       /
@@ -193,63 +201,82 @@ category=eggs
                   / \
                  m0 m3
         """
-        sys.argv = [sys.argv[0], '--config', '%s/etc/minimerge.cfg' % path, 'foo']
+        sys.argv = [sys.argv[0], '--config', 
+                    '%s/etc/minimerge.cfg' % path, 'foo']
         opts = cli.do_read_options()
         minimerge = api.Minimerge(opts)
         computed_packages = minimerge._compute_dependencies(['minibuild-3'])
-        wanted_list = ['minibuild-0', 'minibuild-4', 'minibuild-1', 'minibuild-2', 'minibuild-3']
+        wanted_list = ['minibuild-0', 'minibuild-4', 
+                       'minibuild-1', 'minibuild-2', 'minibuild-3']
         self.assertEquals([mb.name for mb in computed_packages], wanted_list)
         computed_packages = minimerge._compute_dependencies(['minibuild-9'])
-        wanted_list = ['minibuild-0', 'minibuild-4', 'minibuild-1', 'minibuild-2', 'minibuild-3','minibuild-9']
+        wanted_list = ['minibuild-0', 'minibuild-4', 'minibuild-1',
+                       'minibuild-2', 'minibuild-3', 'minibuild-9']
         self.assertEquals([mb.name for mb in computed_packages], wanted_list)
 
-    def atestRecursivity(self):
+    def testRecursivity(self):
         """check that:
              - m5  -> m6 -> m7
              - m8  -> m8
              - m10 -> m11 -> m12 -> m13 -> m10
         will throw some recursity problems.
         """
-        sys.argv = [sys.argv[0], '--config', '%s/etc/minimerge.cfg' % path, 'foo']
+        sys.argv = [sys.argv[0], '--config', 
+                    '%s/etc/minimerge.cfg' % path, 'foo']
         opts = cli.do_read_options()
 
         minimerge = api.Minimerge(opts)
-        self.assertRaises(core.CircurlarDependencyError, minimerge._compute_dependencies, ['minibuild-6'])
+        self.assertRaises(core.CircurlarDependencyError,
+                          minimerge._compute_dependencies, ['minibuild-6'])
 
         minimerge = api.Minimerge(opts)
-        self.assertRaises(core.CircurlarDependencyError, minimerge._compute_dependencies, ['minibuild-8'])
+        self.assertRaises(core.CircurlarDependencyError,
+                          minimerge._compute_dependencies, ['minibuild-8'])
 
         minimerge = api.Minimerge(opts)
-        self.assertRaises(core.CircurlarDependencyError, minimerge._compute_dependencies, ['minibuild-13'])
+        self.assertRaises(core.CircurlarDependencyError,
+                          minimerge._compute_dependencies, ['minibuild-13'])
 
-    def atestMinibuildNotFound(self):
+    def testMinibuildNotFound(self):
         """ INOTINANYMINILAY does not exist"""
-        sys.argv = [sys.argv[0], '--config', '%s/etc/minimerge.cfg' % path, 'foo']
+        sys.argv = [sys.argv[0], '--config', 
+                    '%s/etc/minimerge.cfg' % path, 'foo']
         opts = cli.do_read_options()
         minimerge = api.Minimerge(opts)
-        self.assertRaises(core.MinibuildNotFoundError, minimerge._find_minibuild, 'INOTINANYMINILAY')
+        self.assertRaises(core.MinibuildNotFoundError,
+                          minimerge._find_minibuild, 'INOTINANYMINILAY')
 
-    def atestCutDeps(self):
-        sys.argv = [sys.argv[0], '--config', '%s/etc/minimerge.cfg' % path, '--jump', 'minibuild-2', 'minibuild-1', 'minibuild-2', 'minibuild-3']
+    def testCutDeps(self):
+        """testCutDeps"""
+        sys.argv = [sys.argv[0], '--config',
+                    '%s/etc/minimerge.cfg' % path,
+                    '--jump', 'minibuild-2',
+                    'minibuild-1', 'minibuild-2', 'minibuild-3']
         opts = cli.do_read_options()
-        minimerge = api.Minimerge(opts) 
-        p =  minimerge._cut_jumped_packages(['minibuild-1', 'minibuild-2', 'minibuild-3'])
+        minimerge = api.Minimerge(opts)
+        p =  minimerge._cut_jumped_packages(
+            ['minibuild-1', 'minibuild-2', 'minibuild-3']
+        )
         self.assertEquals(p, ['minibuild-2', 'minibuild-3'])
 
 
-    def atestFetchOffline(self):
-        sys.argv = [sys.argv[0], '--config', '%s/etc/minimerge.cfg' % path, '--offline', 'minibuild-0']
+    def testFetchOffline(self):
+        """testFetchOffline"""
+        sys.argv = [sys.argv[0], '--config',
+                    '%s/etc/minimerge.cfg' % path, '--offline', 'minibuild-0']
         opts = cli.do_read_options()
-        minimerge = api.Minimerge(opts) 
+        minimerge = api.Minimerge(opts)
         self.assertTrue(minimerge._offline)
-    
+
     def testFetchOnline(self):
-        sys.argv = [sys.argv[0], '--config', '%s/etc/minimerge.cfg' % path, 'minibuild-0']
+        """testFetchOnline"""
+        sys.argv = [sys.argv[0], '--config',
+                    '%s/etc/minimerge.cfg' % path, 'minibuild-0']
         opts = cli.do_read_options()
-        minimerge = api.Minimerge(opts) 
+        minimerge = api.Minimerge(opts)
         self.assertFalse(minimerge._offline)
         minimerge._fetch(minimerge._find_minibuild('minibuild-0'))
-        self.assertTrue(os.path.isdir('%s/eggs/minibuild-0/.hg' % path))        
+        self.assertTrue(os.path.isdir('%s/eggs/minibuild-0/.hg' % path))
 
 if __name__ == '__main__':
     suite = unittest.TestSuite()

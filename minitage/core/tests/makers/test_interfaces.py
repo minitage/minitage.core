@@ -18,23 +18,32 @@ import unittest
 from minitage.core import interfaces, makers
 from minitage.core.makers import buildout
 
-class testInterfaces(unittest.TestCase):
+class TestInterfaces(unittest.TestCase):
+    """TestInterfaces"""
 
     def testIMaker(self):
+        """testIMaker"""
         i = makers.interfaces.IMaker()
-        self.assertRaises(interfaces.NotImplementedError, i.make, 'foo', {'bar':'loo'})
-        self.assertRaises(interfaces.NotImplementedError, i.reinstall, 'foo', {'bar':'loo'})
-        self.assertRaises(interfaces.NotImplementedError, i.match, 'foo')
+        self.assertRaises(interfaces.NotImplementedError,
+                          i.make, 'foo', {'bar':'loo'})
+        self.assertRaises(interfaces.NotImplementedError,
+                          i.reinstall, 'foo', {'bar':'loo'})
+        self.assertRaises(interfaces.NotImplementedError,
+                          i.match, 'foo')
 
     def testFactory(self):
+        """testFactory"""
         f = makers.interfaces.IMakerFactory()
         buildout = f('buildout')
-        self.assertEquals(buildout.__class__.__name__, makers.buildout.BuildoutMaker.__name__)
-        self.assertEquals(buildout.__module__, makers.buildout.BuildoutMaker.__module__.split('.').pop())
+        self.assertEquals(buildout.__class__.__name__,
+                          makers.buildout.BuildoutMaker.__name__)
+        self.assertEquals(buildout.__module__,
+                          makers.buildout.BuildoutMaker\
+                          .__module__.split('.').pop())
 
 if __name__ == '__main__':
     suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(testInterfaces))
+    suite.addTest(unittest.makeSuite(TestInterfaces))
     unittest.TextTestRunner(verbosity=2).run(suite)
 
 # vim:set et sts=4 ts=4 tw=80:

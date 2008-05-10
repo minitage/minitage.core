@@ -23,12 +23,19 @@ import ConfigParser
 
 from minitage.core import interfaces
 
-class test(object):pass
+class test(object):
+        """."""
+
+
 path = os.path.expanduser('~/iamauniquetestfileformatiwillberemoveafterthetest')
+
+
 class testInterfaces(unittest.TestCase):
+    """testInterfaces"""
 
     def testFactory(self):
-        config="""
+        """testFactory"""
+        config = """
 [minibuild]
 depends=python
 src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
@@ -43,14 +50,17 @@ item1=minitage.core.tests.test_interfaces.test
         try:
             interfaces.IFactory('not', path)
         except interfaces.InvalidConfigForFactoryError,e:
-            self.assertTrue(isinstance(e, interfaces.InvalidConfigForFactoryError))
+            self.assertTrue(isinstance(e,
+                                       interfaces.InvalidConfigForFactoryError))
 
         i = interfaces.IFactory('interface', path)
         self.assertEquals(i.products['item1'].__name__, 'test')
-        self.assertRaises(interfaces.InvalidComponentClassError, i.register, 'foo', 'foo.Bar')
+        self.assertRaises(interfaces.InvalidComponentClassError,
+                          i.register, 'foo', 'foo.Bar')
         self.assertRaises(interfaces.NotImplementedError, i.__call__, 'foo')
 
     def testProduct(self):
+        """testProduct"""
         p = interfaces.IProduct()
         self.assertRaises(interfaces.NotImplementedError, p.match, 'foo')
 

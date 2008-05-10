@@ -50,7 +50,7 @@ class FetcherRuntimmeError(IFetcherError):
 
 
 
-dscms = 'git|hg|bzt|mtn'
+dscms = 'git|hg|bzr|mtn'
 p = 'ssh|http|https|ftp|sftp|file'
 scms = 'svn|svn\+ssh|cvs'
 URI_REGEX = re.compile('^((%s|%s|%s):\/\/(.*))$' % (dscms, p , scms))
@@ -139,8 +139,8 @@ class IFetcher(interfaces.IProduct):
                 self.executable = executable
 
         if self.executable is None:
-            message = '%s is not in your path, please install it or '
-            message += 'maybe get it into your PATH' % self.executable
+            message = '%s is not in your path, ' % self.executable
+            message += 'please install it or maybe get it into your PATH'
             raise FetcherNotInPathError(message)
 
     def update(self, uri, dest, opts=None):
