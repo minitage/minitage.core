@@ -14,6 +14,7 @@
 __docformat__ = 'restructuredtext en'
 
 import os
+import sys
 
 eggs = os.environ.get('MINITAGE_CORE_EGG_PATH', None)
 setup = os.environ.get('MINITAGE_CORE_SETUPPY', None)
@@ -21,6 +22,8 @@ if not setup:
     raise Exception("Please set the 'MINITAGE_CORE_EGG_PATH' variable pointing to the setup.py file of the minitage distribution")
 
 def createMinitageEnv(directory):
+    """Initialise a minitage in a particular directory."""
+
     if os.path.exists(os.path.expanduser(directory)):
         raise Exception("Please (re)move %s before test" % directory)
     os.system("""
@@ -36,3 +39,72 @@ def createMinitageEnv(directory):
                   'setup': setup,
               }
              )
+
+def write(file, s):
+    """Write content to a file."""
+
+    f = open(file,'w')
+    f.write(s)
+    f.flush()
+    f.close()
+
+
+def bootstrap_buildout(dir):
+    """Initialise the bin/buildout file."""
+
+    template = """
+##############################################################################
+#
+# Copyright (c) 2006 Zope Corporation and Contributors.
+# All Rights Reserved.
+#
+# This software is subject to the provisions of the Zope Public License,
+# Version 2.1 (ZPL).  A copy of the ZPL should accompany this distribution.
+# THIS SOFTWARE IS PROVIDED "AS IS" AND ANY AND ALL EXPRESS OR IMPLIED
+# WARRANTIES ARE DISCLAIMED, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+# WARRANTIES OF TITLE, MERCHANTABILITY, AGAINST INFRINGEMENT, AND FITNESS
+# FOR A PARTICULAR PURPOSE.
+#
+##############################################################################
+
+import os, shutil, sys, tempfile, urllib2
+
+tmpeggs = tempfile.mkdtemp()
+
+try:
+    import pkg_resources
+except ImportError:
+    ez = {}
+    exec urllib2.urlopen('http://peak.telecommunity.com/dist/ez_setup.py'
+                         ).read() in ez
+    ez['use_setuptools'](to_dir=tmpeggs, download_delay=0)
+
+    import pkg_resources
+
+cmd = 'from setuptools.command.easy_install import main; main()'
+if sys.platform == 'win32':
+    cmd = '"%s"' % cmd # work around spawn lamosity on windows
+
+ws = pkg_resources.working_set
+assert os.spawnle(
+    os.P_WAIT, sys.executable, sys.executable,
+    '-c', cmd, '-mqNxd', tmpeggs, 'zc.buildout',
+    dict(os.environ,
+         PYTHONPATH=
+         ws.find(pkg_resources.Requirement.parse('setuptools')).location
+         ),
+    ) == 0
+
+ws.add_entry(tmpeggs)
+ws.require('zc.buildout')
+import zc.buildout.buildout
+zc.buildout.buildout.main(sys.argv[1:] + ['bootstrap'])
+shutil.rmtree(tmpeggs)
+"""
+
+    cwd = os.getcwd()
+    os.chdir(dir)
+    write('bootstrap.py', template)
+    os.system('%s bootstrap.py' % sys.executable)
+    os.chdir(cwd)
+
