@@ -100,8 +100,6 @@ category=invalid
         self.assertTrue( None == minilay['minibuild-1'].loaded)
         self.assertRaises(objects.InvalidCategoryError, 
                           minilay['minibuild-1'].load)
-        self.assertTrue(isinstance(minilay['minibuild-1'].loaded, 
-                                   objects.InvalidCategoryError))
 
         minibuild = """
 [minibuild]

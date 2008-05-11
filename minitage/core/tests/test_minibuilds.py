@@ -167,7 +167,7 @@ src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewrit
 category=eggs
 depends=python
 install_method=buildout
-src_type=invalid
+src_type=hg
 src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
 src_opts=-r666
 """
@@ -282,8 +282,7 @@ category=invalid
         mb = None
         open(mb_path,'w').write(minibuild)
         mb = api.Minibuild(path=mb_path)
-        categ = mb.category
-        self.assertTrue( isinstance(mb.loaded, objects.MinibuildException))
+        self.assertRaises(objects.MinibuildException, mb.__getattribute__, 'category')
 
     def tearDown(self):
         """."""

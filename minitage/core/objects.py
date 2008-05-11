@@ -70,7 +70,7 @@ class InvalidMinilayPath(MinilayException):
 
 
 """ valid categories to install into"""
-VALID_CATEGORIES = ['instances', 'eggs', 'dependencies', 'zope', 'django', 'tg']
+VALID_CATEGORIES = ['meta', 'instances', 'eggs', 'dependencies', 'zope', 'django', 'tg']
 """ valud install methods to use"""
 VALID_INSTALL_METHODS = ['buildout']
 """valid fetch methods to use:
@@ -145,8 +145,6 @@ class Minibuild(object):
     A minibuild has a state
      - False: not ;loaded
      - True:  loaded
-     - Exception instance: in error
-       Details in the exception
     It will read those options in the minibuild section
       - src_uri : url to fetch from
       - src_type : how to fetch (valid methods are 'svn' and 'hg')
@@ -196,12 +194,9 @@ class Minibuild(object):
                       'dependencies', 'description','src_opts',
                       'src_type', 'install_method', 'src_type']
         if attr in lazyloaded and not self.loaded:
-            try:
-                self.loaded = True
-                self.load()
-                # case we are always there, setting as loaded
-            except MinibuildException, e:
-                self.loaded = e
+            self.loaded = True
+            self.load()
+            # case we are always there, setting as loaded
         return object.__getattribute__(self, attr)
 
     def load(self):
@@ -256,7 +251,7 @@ class Minibuild(object):
             # chech that we got a valid src_type if any
             if not self.src_type in VALID_FETCH_METHODS:
                raise InvalidFetchMethodError(
-                   'The \'%s\' src_uri is invalid in \'%s\''
+                   'The \'%s\' src_type is invalid in \'%s\''
                                           % (self.src_type, self.path))
             # if we have a src_uri, we re not a meta package, so we must install
             # somehow, somewhere, so we need a category to install into
