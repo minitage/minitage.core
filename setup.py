@@ -18,6 +18,13 @@ import re
 from setuptools import setup, find_packages
 prefix = os.path.abspath(sys.exec_prefix)
 
+os.chdir(
+    os.path.dirname(
+        os.path.abspath(__file__)
+    )
+)
+
+
 version = '0.0.4'
 name = 'minitage.core'
 
