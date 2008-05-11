@@ -98,7 +98,7 @@ class BuildoutMaker(interfaces.IMaker):
         os.chdir(cwd)
 
     def get_options(self, minimerge, minibuild, **kwargs):
-        """Get options according to the minibuild and minimerge instance.
+        """Get python options according to the minibuild and minimerge instance.
         For eggs buildouts, we need to know which versions of python we
         will build site-packages for
         For parts, we force to install only the 'part' buildout part.
