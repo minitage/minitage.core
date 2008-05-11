@@ -108,3 +108,90 @@ shutil.rmtree(tmpeggs)
     os.system('%s bootstrap.py' % sys.executable)
     os.chdir(cwd)
 
+
+def make_dummy_buildoutdir(ipath):
+    os.makedirs(ipath)
+    os.chdir(ipath)
+    write('buildout.cfg', """
+[makers]
+[buildout]
+options = -c buildout.cfg  -vvvvvv
+parts = x
+        z
+develop = .
+[part]
+recipe = toto:part
+[site-packages-2.4]
+recipe = toto:py24
+[site-packages-2.5]
+recipe = toto:py25
+[z]
+recipe = toto:luu
+[y]
+recipe = toto:bar
+[x]
+recipe = toto """)
+    write('setup.py', """
+from setuptools import setup
+setup(
+          name='toto',
+          entry_points= {
+          'zc.buildout': [
+              'default = toto:test',
+              'luu = tutu:test',
+              'bar = tata:test',
+              'py25 = py25:test',
+              'py24 = py24:test',
+              'part = part:test',
+             ]
+         }
+) """)
+
+    write('toto.py', """
+class test:
+    def __init__(self,a, b, c):
+        pass
+
+    def install(a):
+        print "foo" """)
+    write('tata.py', """
+class test:
+    def __init__(self,a, b, c):
+        pass
+
+    def install(a):
+        open('testbar','w').write('foo') """)
+    write('tutu.py', """
+class test:
+    def __init__(self,a, b, c):
+        pass
+
+    def install(a):
+        open('testres','w').write('bar') """)
+
+    write('py25.py', """
+class test:
+    def __init__(self,a, b, c):
+        pass
+
+    def install(a):
+        open('testres','w').write('2.5') """)
+
+    write('py24.py', """
+class test:
+    def __init__(self,a, b, c):
+        pass
+
+    def install(a):
+        open('testres','w').write('2.4') """)
+    write('part.py', """
+class test:
+    def __init__(self,a, b, c):
+        pass
+
+    def install(a):
+        open('testres','w').write('part') """)
+    bootstrap_buildout(ipath)
+
+
+
