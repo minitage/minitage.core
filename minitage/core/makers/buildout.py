@@ -19,9 +19,9 @@ import sys
 
 import zc.buildout.buildout
 
-from minitage.core.makers import interfaces
+from minitage.core.makers  import interfaces
 
-class BuildoutError(interfaces.IMakerError): 
+class BuildoutError(interfaces.IMakerError):
     """General Buildout Error."""
 
 
@@ -61,9 +61,9 @@ class BuildoutMaker(interfaces.IMaker):
             - opts : arguments for the maker
         """
         os.remove('%s/.installed.cfg' % directory)
-        self.make(directory, opts)
+        self.install(directory, opts)
 
-    def make(self, directory, opts=None):
+    def install(self, directory, opts=None):
         """Make a package.
         Exceptions
             - MakeError
@@ -79,8 +79,16 @@ class BuildoutMaker(interfaces.IMaker):
         try:
             sys.argv[1:] = self.config.get('options',
                                            '-c -N buildout.cfg -vvvvv').split()
-            if opts.get('offline', False):            
+            if opts.get('offline', False):
                 sys.argv.append('-o')
+            parts = opts.get('parts', False)
+            if parts:
+                sys.argv.append('install')
+                if isinstance(parts, str):
+                    sys.argv.extend(parts.split())
+                else:
+                    sys.argv.extend(parts)
+
             zc.buildout.buildout.main()
         except Exception, instance:
             sys.argv = old_args
@@ -88,5 +96,36 @@ class BuildoutMaker(interfaces.IMaker):
             raise BuildoutError('Buildout failed: :\n\t%s' % instance)
         sys.argv = old_args
         os.chdir(cwd)
+
+    def get_options(self, minimerge, minibuild, **kwargs):
+        """Get options according to the minibuild and minimerge instance.
+        For eggs buildouts, we need to know which versions of python we
+        will build site-packages for
+        For parts, we force to install only the 'part' buildout part.
+        Arguments
+            - minimerge a minitage.core.Minimerge instance
+            - minibuild a minitage.core.object.Minibuild instance
+            - kwargs:
+
+                - 'python_versions' : list of major.minor versions of
+                  python to compile against.
+        """
+        options = {}
+        parts = None
+
+        # if we install dependencies, we install in /part
+        if minibuild.category == 'dependencies':
+            parts = 'part'
+
+        # if it s an egg, we must install just the needed
+        # site-minibuilds if selected
+        if minibuild.category == 'eggs':
+            parts = ['site-packages-%s' % ver \
+                     for ver in kwargs.get('python_versions', ())]
+
+        if parts:
+            options['parts'] = parts
+
+        return options
 
 # vim:set et sts=4 ts=4 tw=80:

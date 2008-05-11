@@ -19,19 +19,19 @@ import shutil
 
 from minitage.core import interfaces
 
-class IMakerError(Exception): 
+class IMakerError(Exception):
     """General Maker Error."""
 
 
-class MakeError(IMakerError): 
+class MakeError(IMakerError):
     """Make runtime error."""
 
 
-class DeleteError(IMakerError): 
+class DeleteError(IMakerError):
     """Delete runtime error."""
 
 
-class ReinstallError(IMakerError): 
+class ReinstallError(IMakerError):
     """Reinstall runtime error."""
 
 
@@ -113,7 +113,7 @@ class IMaker(interfaces.IProduct):
         """
         raise interfaces.NotImplementedError('The method is not implemented')
 
-    def make(self, directory, ops=None):
+    def install(self, directory, ops=None):
         """Make a package.
         Exceptions:
             - MakeError
@@ -125,6 +125,13 @@ class IMaker(interfaces.IProduct):
 
     def match(self, switch):
         """Return true if the product match the switch."""
+        raise interfaces.NotImplementedError('The method is not implemented')
+
+
+    def get_options(self, minimerge, minibuild, **kwargs):
+        """Return a dict of needed options
+        according to a minibuild and a minimerge instance and for the other
+        packages to be built in the session."""
         raise interfaces.NotImplementedError('The method is not implemented')
 
 # vim:set et sts=4 ts=4 tw=80:
