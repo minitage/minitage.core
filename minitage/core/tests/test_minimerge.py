@@ -23,6 +23,9 @@ import ConfigParser
 from minitage.core import api, cli, objects, core
 from minitage.core.tests import test_common
 
+__cwd__ = os.getcwd()
+
+
 path = os.path.expanduser('~/iamauniquetestdirformatiwillberemoveafterthetest')
 testopts = dict(path=path)
 minilay = '%(path)s/minilays/myminilay1' % testopts
@@ -31,134 +34,206 @@ class testMinimerge(unittest.TestCase):
 
     def setUp(self):
         """."""
+        os.chdir(__cwd__)
         test_common.createMinitageEnv(path)
-        os.system('mkdir -p %s' % minilay)
-        minibuild0 = """
+        os.makedirs(minilay)
+        minibuilds = [
+"""
 [minibuild]
 src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
 src_type=hg
 install_method=buildout
 category=eggs
+""",
 """
-        minibuild1 = """
 [minibuild]
 depends=minibuild-0
 src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
 src_type=hg
 install_method=buildout
 category=eggs
+""",
 """
-        minibuild2 = """
 [minibuild]
 depends=minibuild-4 minibuild-1
 src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
 src_type=hg
 install_method=buildout
 category=eggs
+""",
 """
-        minibuild3 = """
 [minibuild]
 depends=minibuild-2
 src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
 src_type=hg
 install_method=buildout
 category=eggs
+""",
 """
-        minibuild4 = """
 [minibuild]
 depends=minibuild-0
 src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
 src_type=hg
 install_method=buildout
 category=eggs
+""",
 """
-        minibuild5 = """
 [minibuild]
 depends=minibuild-7
 src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
 src_type=hg
 install_method=buildout
 category=eggs
+""",
 """
-        minibuild6 = """
 [minibuild]
 depends=minibuild-5
 src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
 src_type=hg
 install_method=buildout
 category=eggs
+""",
 """
-        minibuild7 = """
 [minibuild]
 depends=minibuild-6
 src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
 src_type=hg
 install_method=buildout
 category=eggs
+""",
 """
-        minibuild8 = """
 [minibuild]
 depends=minibuild-8
 src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
 src_type=hg
 install_method=buildout
 category=eggs
+""",
 """
-        minibuild9 = """
 [minibuild]
 depends=minibuild-0 minibuild-3
 src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
 src_type=hg
 install_method=buildout
 category=eggs
+""",
 """
-        minibuild10 = """
 [minibuild]
 depends=minibuild-11
 src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
 src_type=hg
 install_method=buildout
 category=eggs
+""",
 """
-        minibuild11 = """
 [minibuild]
 depends=minibuild-12
 src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
 src_type=hg
 install_method=buildout
 category=eggs
+""",
 """
-        minibuild12 = """
 [minibuild]
 depends=minibuild-13
 src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
 src_type=hg
 install_method=buildout
 category=eggs
+""",
 """
-        minibuild13 = """
 [minibuild]
 depends=minibuild-10
 src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
 src_type=hg
 install_method=buildout
 category=eggs
+""",
+]
+        pythonmbs = [
+#1000
 """
-        for index, minibuild in enumerate((minibuild0, minibuild1, minibuild2,
-                                          minibuild3, minibuild4, minibuild5,
-                                          minibuild6, minibuild7, minibuild8,
-                                          minibuild9, minibuild10, minibuild11,
-                                          minibuild12, minibuild13),):
+[minibuild]
+src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
+src_type=hg
+install_method=buildout
+category=dependencies
+""", #1001
+"""
+[minibuild]
+depends=meta-python minibuild-1005
+src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
+src_type=hg
+install_method=buildout
+category=dependencies
+""", #1002
+"""
+[minibuild]
+depends=python-2.4 minibuild-1005
+src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
+src_type=hg
+install_method=buildout
+category=dependencies
+""", #1003
+"""
+[minibuild]
+depends=python-2.5 minibuild-1005
+src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
+src_type=hg
+install_method=buildout
+category=dependencies
+""", #1004
+"""
+[minibuild]
+depends=minibuild-1005
+src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
+src_type=hg
+install_method=buildout
+category=dependencies
+""", #1005
+"""
+[minibuild]
+depends=meta-python
+src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
+src_type=hg
+install_method=buildout
+category=eggs
+""",
+]
+
+        for index, minibuild in enumerate(minibuilds):
             open('%s/minibuild-%s' % (minilay, index), 'w').write(minibuild)
+
+        for index, minibuild in enumerate(pythonmbs):
+            open('%s/minibuild-100%s' % (minilay, index), 'w').write(minibuild)
+
+        # fake 3 pythons.
+        for minibuild in ['python-2.4', 'python-2.5']:
+            open('%s/%s' % (minilay, minibuild), 'w').write("""
+[minibuild]
+src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
+src_type=hg
+install_method=buildout
+category=dependencies""")
+
+        open('%s/%s' % (minilay, 'meta-python'), 'w').write("""
+[minibuild]
+depends=python-2.4 python-2.5
+src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
+src_type=hg
+category=meta
+install_method=buildout""")
 
     def tearDown(self):
         """."""
+        os.chdir(__cwd__)
         shutil.rmtree(os.path.expanduser(path))
 
     def testFindMinibuild(self):
-        """find m0?"""
+        """testFindMinibuild
+        find m0?"""
         # create minilays in the minilays dir, seeing if they get putted in
-        sys.argv = [sys.argv[0], '--config', 
+        sys.argv = [sys.argv[0], '--config',
                     '%s/etc/minimerge.cfg' % path, 'foo']
         opts = cli.do_read_options()
         minimerge = api.Minimerge(opts)
@@ -166,8 +241,9 @@ category=eggs
         self.assertEquals('minibuild-0', mb.name)
 
     def testComputeDepsWithNoDeps(self):
-        """m0 depends on nothing"""
-        sys.argv = [sys.argv[0], '--config', 
+        """testComputeDepsWithNoDeps
+        m0 depends on nothing"""
+        sys.argv = [sys.argv[0], '--config',
                     '%s/etc/minimerge.cfg' % path, 'foo']
         opts = cli.do_read_options()
         minimerge = api.Minimerge(opts)
@@ -176,8 +252,9 @@ category=eggs
         self.assertEquals('minibuild-0', mb.name)
 
     def testSimpleDeps(self):
-        """ test m1 -> m0"""
-        sys.argv = [sys.argv[0], '--config', 
+        """testSimpleDeps
+        test m1 -> m0"""
+        sys.argv = [sys.argv[0], '--config',
                     '%s/etc/minimerge.cfg' % path, 'foo']
         opts = cli.do_read_options()
         minimerge = api.Minimerge(opts)
@@ -188,7 +265,8 @@ category=eggs
         self.assertEquals(mb.name, 'minibuild-1')
 
     def testChainedandTreeDeps(self):
-        """ Will test that this tree is safe:
+        """testChainedandTreeDeps
+        Will test that this tree is safe:
               -       m3
                       /
                      m2
@@ -201,12 +279,12 @@ category=eggs
                   / \
                  m0 m3
         """
-        sys.argv = [sys.argv[0], '--config', 
+        sys.argv = [sys.argv[0], '--config',
                     '%s/etc/minimerge.cfg' % path, 'foo']
         opts = cli.do_read_options()
         minimerge = api.Minimerge(opts)
         computed_packages = minimerge._compute_dependencies(['minibuild-3'])
-        wanted_list = ['minibuild-0', 'minibuild-4', 
+        wanted_list = ['minibuild-0', 'minibuild-4',
                        'minibuild-1', 'minibuild-2', 'minibuild-3']
         self.assertEquals([mb.name for mb in computed_packages], wanted_list)
         computed_packages = minimerge._compute_dependencies(['minibuild-9'])
@@ -215,13 +293,14 @@ category=eggs
         self.assertEquals([mb.name for mb in computed_packages], wanted_list)
 
     def testRecursivity(self):
-        """check that:
+        """testRecursivity
+        check that:
              - m5  -> m6 -> m7
              - m8  -> m8
              - m10 -> m11 -> m12 -> m13 -> m10
         will throw some recursity problems.
         """
-        sys.argv = [sys.argv[0], '--config', 
+        sys.argv = [sys.argv[0], '--config',
                     '%s/etc/minimerge.cfg' % path, 'foo']
         opts = cli.do_read_options()
 
@@ -238,8 +317,9 @@ category=eggs
                           minimerge._compute_dependencies, ['minibuild-13'])
 
     def testMinibuildNotFound(self):
-        """ INOTINANYMINILAY does not exist"""
-        sys.argv = [sys.argv[0], '--config', 
+        """testMinibuildNotFound
+        INOTINANYMINILAY does not exist"""
+        sys.argv = [sys.argv[0], '--config',
                     '%s/etc/minimerge.cfg' % path, 'foo']
         opts = cli.do_read_options()
         minimerge = api.Minimerge(opts)
@@ -277,6 +357,157 @@ category=eggs
         self.assertFalse(minimerge._offline)
         minimerge._fetch(minimerge._find_minibuild('minibuild-0'))
         self.assertTrue(os.path.isdir('%s/eggs/minibuild-0/.hg' % path))
+
+
+    def testActionInstall(self):
+        """testActionInstall"""
+        pass
+
+    def testSelectPython(self):
+        """testSelectPython.
+        Goal of this test is to prevent uneccesary python versions
+        to be built.
+        """
+        sys.argv = [sys.argv[0], '--config',
+                    '%s/etc/minimerge.cfg' % path, 'minibuild-0']
+        opts = cli.do_read_options()
+        minimerge = api.Minimerge(opts)
+        self.assertTrue(minimerge._action, 'install')
+
+        # we install a dependency which is not a egg
+        # result is false, no eggs dict in return.
+        computed_packages0, p0 = minimerge._select_pythons(
+            minimerge._compute_dependencies(['minibuild-1000']))
+        self.assertFalse(p0)
+
+        # we install a dep that require python
+        # the dict must contains eggs 2.5/2.4
+        # available python = 2.4/2.5
+        computed_packages1, p1 = minimerge._select_pythons(
+            minimerge._compute_dependencies(['minibuild-1001']))
+        for i in ['2.4', '2.5']:
+            self.assertTrue(i in p1['minibuild-1005'])
+            self.assertTrue('python-%s'%i
+                            in [c.name for c in computed_packages1]
+                           )
+
+        # we install a dep that require python-2.4
+        # the dict must contains eggs ==  2.4
+        # available python = 2.4
+        deps = minimerge._compute_dependencies(['minibuild-1002'])
+        computed_packages2, p2 = minimerge._select_pythons(deps)
+        self.assertTrue('python-2.4'
+                        in [c.name for c in computed_packages2]
+                       )
+        self.assertTrue('python-2.5'
+                        not in [c.name for c in computed_packages2]
+                       )
+        self.assertTrue('2.4' in p2['minibuild-1005'])
+        self.assertTrue('2.5' not in p2['minibuild-1005'])
+
+        # we install a dep that require python-2.5
+        # the dict must contains eggs ==  2.5
+        # available python = 2.5
+        deps = minimerge._compute_dependencies(['minibuild-1003'])
+        computed_packages3, p3 = minimerge._select_pythons(deps)
+        self.assertTrue('python-2.5'
+                        in [c.name for c in computed_packages3]
+                       )
+        self.assertTrue('python-2.4'
+                        not in [c.name for c in computed_packages3]
+                       )
+        self.assertTrue('2.5' in p3['minibuild-1005'])
+        self.assertTrue('2.4' not in p3['minibuild-1005'])
+
+        # we install a dep that require only a egg, no pytthon
+        # is specified specificly
+        # the dict must contains eggs ==  2.5/2.4
+        # available python = 2.5/2.4
+        computed_packages4, p4 = minimerge._select_pythons(
+            minimerge._compute_dependencies(['minibuild-1004']))
+        for i in ['2.4', '2.5']:
+            self.assertTrue(i in p4['minibuild-1005'])
+            self.assertTrue('python-%s'%i
+                            in [c.name for c in computed_packages4]
+                           )
+
+        # we install an egg directly
+        # the dict must contains eggs ==  2.5/2.4
+        # available python = 2.5/2.4
+        minimerge._packages = ['minibuild-1005']
+        computed_packagest, pt = minimerge._select_pythons(
+            minimerge._compute_dependencies(['minibuild-1005']))
+        for i in ['2.4', '2.5']:
+            self.assertTrue(i in pt['minibuild-1005'])
+            self.assertTrue('python-%s'%i
+                            in [c.name for c in computed_packagest]
+                           )
+
+    def testActionDelete(self):
+        """testActionDelete."""
+        sys.argv = [sys.argv[0], '--config',
+                    '%s/etc/minimerge.cfg' % path, 'minibuild-0']
+        opts = cli.do_read_options()
+        minimerge = api.Minimerge(opts)
+
+        ipath = '%s/dependencies/python-%s' % (path, '2.4')
+        test_common.make_dummy_buildoutdir(ipath)
+
+        py24 = minimerge._find_minibuild('python-2.4')
+        self.assertTrue(os.path.isdir(ipath))
+        minimerge._do_action('delete', [py24])
+        self.assertTrue(not os.path.isdir(ipath))
+
+    def testActionInstall(self):
+        """testActionInstall."""
+        sys.argv = [sys.argv[0], '--config',
+                    '%s/etc/minimerge.cfg' % path, 'minibuild-0']
+        opts = cli.do_read_options()
+        minimerge = api.Minimerge(opts)
+
+        for i in ['2.4', '2.5']:
+            test_common.make_dummy_buildoutdir(
+                '%s/dependencies/python-%s' % (path, i)
+            )
+
+        test_common.make_dummy_buildoutdir(
+            '%s/eggs/%s' % (path, 'minibuild-1005')
+        )
+
+        py24 = minimerge._find_minibuild('python-2.4')
+        respy24 = '%s/dependencies/python-2.4/testres' % path
+        minimerge._do_action('install', [py24])
+        py25 = minimerge._find_minibuild('python-2.5')
+        respy25 = '%s/dependencies/python-2.5/testres' % path
+        
+        minimerge._do_action('install', [py24])
+        self.assertEquals(open(respy24,'r').read(), 'part')
+        minimerge._do_action('install', [py25])
+        self.assertEquals(open(respy25,'r').read(), 'part') 
+
+        m1005 = minimerge._find_minibuild('minibuild-1005')
+        m1005res =   '%s/eggs/minibuild-1005/testres' % path
+        m1005res24 = '%s/eggs/minibuild-1005/testres2.4' % path
+        m1005res25 = '%s/eggs/minibuild-1005/testres2.5' % path
+        minimerge._do_action('install', [m1005])
+        self.assertEquals(open(m1005res24,'r').read(), '2.4') 
+        self.assertEquals(open(m1005res25,'r').read(), '2.5') 
+        self.assertFalse(os.path.isfile(m1005res))
+
+    def testInvalidAction(self):
+        sys.argv = [sys.argv[0], '--config',
+                    '%s/etc/minimerge.cfg' % path, 'minibuild-0']
+        opts = cli.do_read_options()
+        minimerge = api.Minimerge(opts)
+        test_common.make_dummy_buildoutdir(
+            '%s/dependencies/python-2.4' % path
+        )
+        py = minimerge._find_minibuild('python-2.4')
+        self.assertRaises(core.ActionError,
+                          minimerge._do_action,
+                          'invalid',
+                          [py]
+                         )
 
 if __name__ == '__main__':
     suite = unittest.TestSuite()

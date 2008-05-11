@@ -20,6 +20,7 @@ import ConfigParser
 
 from minitage.core import objects
 from minitage.core.fetchers.interfaces import IFetcherFactory
+from minitage.core.makers.interfaces   import IMakerFactory
 
 class MinimergeError(Exception):
     """General Minimerge Error"""
@@ -33,25 +34,31 @@ class ConflictModesError(MinimergeError):
     """Minimerge used without arguments."""
 
 
-class InvalidConfigFileError(MinimergeError): 
+class InvalidConfigFileError(MinimergeError):
     """Minimerge config file is not valid."""
 
 
-class TooMuchActionsError(MinimergeError): 
+class TooMuchActionsError(MinimergeError):
     """Too much actions are given to do"""
 
 
-class CliError(MinimergeError): 
+class CliError(MinimergeError):
     """General command line error"""
 
+class ActionError(MinimergeError):
+    """General action error"""
 
-class MinibuildNotFoundError(MinimergeError): 
+
+class MinibuildNotFoundError(MinimergeError):
     """Minibuild is not found."""
 
 
-class CircurlarDependencyError(MinimergeError): 
+class CircurlarDependencyError(MinimergeError):
     """There are circular dependencies in the dependency tree"""
 
+
+
+PYTHON_VERSIONS = ('2.4', '2.5')
 
 class Minimerge(object):
     """Minimerge object."""
@@ -87,7 +94,7 @@ class Minimerge(object):
         try:
             self._config.read(self._config_path)
         except:
-            message = 'The configuration file is invalid: %s' % self._config_path
+            message = 'The config file is invalid: %s' % self._config_path
             raise InvalidConfigFileError(message)
 
         # prefix is setted in the configuration file
@@ -144,8 +151,22 @@ class Minimerge(object):
         for minilay in self._minilays:
             if package in minilay:
                 return minilay[package]
-        message = 'Tahe minibuild \'%s\' was not found' % package
+        message = 'The minibuild \'%s\' was not found' % package
         raise MinibuildNotFoundError(message)
+
+    def _find_minibuilds(self, packages):
+        """
+        @param package list minibuild to find
+        Exceptions
+            - MinibuildNotFoundError if the packages is not found is any minilay.
+
+        Returns
+            - The minibuild found
+        """
+        cpackages = []
+        for package in packages:
+            cpackages.append(self._find_minibuild(package))
+        return cpackages
 
     def _compute_dependencies(self, packages = None, ancestors = None):
         """
@@ -209,10 +230,43 @@ class Minimerge(object):
             '%s/%s' % (dest_container, package.name)
         )
 
-    def _do_action(self, package):
-        """Do action."""
-        pass
+    def _do_action(self, action, packages):
+        """Do action.
+        Install, delete or reinstall a list of packages (minibuild instances).
+        Arguments
+            - action: reinstall|install|delete action to do.
+            - packages: minibuilds to deal with in order!
+        """
+        # cut pythons we do not need !
+        # also get the parts to do in 'eggs' buildout
+        packages, pyvers = self._select_pythons(packages)
+        maker_kwargs = {}
 
+        mf = IMakerFactory(self._config_path)
+        for package in packages:
+            # if we are an egg, we maybe will have python versions setted.
+            maker_kwargs['python_versions'] = pyvers.get(package.name, None)
+            # we install unless we are dealing with a meta
+            if not package.name.startswith('meta-'):
+                options = {}
+
+                ipath = '%s/%s/%s' % (self._prefix,
+                                      package.category,
+                                      package.name)
+                maker = mf(package.install_method)
+                options = maker.get_options(self, package, **maker_kwargs)
+
+                # finally, time to act.
+                if not os.path.isdir(ipath):
+                    os.makedirs(ipath)
+                callback = getattr(maker, action, None)
+                if callback:
+                    callback(ipath, options)
+                else:
+                    message = 'The action \'%s\' does not exists ' % action
+                    message += 'in this \'%s\' component' \
+                            % ( package.install_method)
+                    raise ActionError(message)
 
     def _cut_jumped_packages(self, packages):
         """Remove jumped packages."""
@@ -231,12 +285,12 @@ class Minimerge(object):
 
                   - maybe fetch / update
                   - maybe install
-                  - maybe remove
+                  - maybe delete
         """
         packages = self._packages
         # compute dependencies
         if not self._nodeps:
-            packages = self._compute_dependencies(self.packages)
+            packages = self._compute_dependencies(self._packages)
 
         if self._jump:
             packages = self._cut_jumped_packages(packages)
@@ -249,6 +303,83 @@ class Minimerge(object):
         # if we do not want just to fetch, let's go ,
         # (install|delete|reinstall) baby.
         if not self._fetchonly:
-            for package in package:
-                self._do_action(package)
+            self._do_action(packages)
+
+    def _select_pythons(self, packages):
+        """Get pythons to build into dependencies.
+        Handle multi site-packages is not that tricky:
+            - We have to install python-major.minor only
+              if we need it
+            - We must build eggs site-packages only if
+              we need them too.
+
+        The idea i found is something like that:
+            - We look in the packages to see if they want a
+              particular python.
+
+               * If a particular 'python-MAJOR.minor' is set in
+                 the dependencies, we grab this version for selection.
+               * If 'meta-python' is set in a direct dependency
+                   (command line): we grab all available versions
+               * If nothing is set, we let the dependency system continue
+                 with what it has already.
+            - Next, when we have selected pythons, we will delete others
+              python from the dependency tree.
+            - We put inside our selected python(s)
+            - And we set too the parts to build for 'eggs' Minibuilds.
+
+        Return
+            - tuple with the according packages without uneeded stuff
+              and a dict for the eggs with just the needed parts.
+                ([new, packages, list], {'packagename': (buildout, parts)}
+        """
+        # select wich version of python are really needed.
+        pyversions = []
+        selected_pyver = {}
+        stop = False
+
+        # first look if we have meta-python in direct
+        # dependencies
+        computed_packages = self._find_minibuilds(self._packages)
+        for package in computed_packages:
+            if 'meta-python' in package.dependencies:
+                pyversions.extend([ver for ver in PYTHON_VERSIONS])
+                # if it is a egg, set the site-package to all python!
+                if package.category == 'eggs':
+                    selected_pyver[package.name] = PYTHON_VERSIONS
+                stop = True
+
+        if not stop:
+            for package in packages:
+                # we do not want eggs to make us build all site-packages,
+                # always !
+                if package.category != 'eggs' \
+                   and not package.name.startswith('python') \
+                   and not package.name.startswith('meta-python'):
+                    # we want all versions of python:
+                    if 'meta-python' in package.dependencies:
+                        pyversions.extend([ver for ver in PYTHON_VERSIONS])
+                    else:
+                        # particular version selected ???
+                        for pyversion in PYTHON_VERSIONS:
+                            if 'python-%s' % pyversion in package.dependencies\
+                               and not pyversion in pyversions:
+                                pyversions.append(pyversion)
+
+        if not pyversions:
+            pyversions = PYTHON_VERSIONS
+        # cut all python versions that are not needed.
+        # for eggs, add site packages stuff only if if was not done.
+        # Because we had maybe already set it if we install the egg as a direct
+        # dependency and so we dont want to overwrite !
+        selected_py = ['python-%s' % ver for ver in pyversions]
+        for package in packages:
+            if package.name.startswith('python') \
+               and not package.name in selected_py:
+                packages.pop(packages.index(package))
+            if package.category == 'eggs'\
+               and not package.name in self._packages:
+                selected_pyver[package.name] = pyversions
+
+        return packages, selected_pyver
 
