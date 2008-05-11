@@ -25,11 +25,13 @@ class TestInterfaces(unittest.TestCase):
         """testIMaker"""
         i = makers.interfaces.IMaker()
         self.assertRaises(interfaces.NotImplementedError,
-                          i.make, 'foo', {'bar':'loo'})
+                          i.install, 'foo', {'bar':'loo'})
         self.assertRaises(interfaces.NotImplementedError,
                           i.reinstall, 'foo', {'bar':'loo'})
         self.assertRaises(interfaces.NotImplementedError,
                           i.match, 'foo')
+        self.assertRaises(interfaces.NotImplementedError,
+                          i.get_options, 'foo') 
 
     def testFactory(self):
         """testFactory"""
