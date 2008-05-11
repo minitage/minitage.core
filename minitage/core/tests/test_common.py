@@ -175,7 +175,7 @@ class test:
         pass
 
     def install(a):
-        open('testres','w').write('2.5') """)
+        open('testres2.5','w').write('2.5') """)
 
     write('py24.py', """
 class test:
@@ -183,7 +183,7 @@ class test:
         pass
 
     def install(a):
-        open('testres','w').write('2.4') """)
+        open('testres2.4','w').write('2.4') """)
     write('part.py', """
 class test:
     def __init__(self,a, b, c):
