@@ -32,6 +32,9 @@ class testMinibuilds(unittest.TestCase):
         """testValidNames"""
         mb = api.Minibuild(path=mb_path)
         valid_names = []
+        valid_names.append('meta-toto')
+        valid_names.append('test-toto')
+        valid_names.append('toto')
         valid_names.append('test-1.0')
         valid_names.append('test-test-1.0')
         valid_names.append('test-1.0.3')
@@ -46,22 +49,18 @@ class testMinibuilds(unittest.TestCase):
         valid_names.append('test-1.0_r1')
         valid_names.append('test-1.0_rHEAD')
         valid_names.append('test-1.0_rTIP')
-        valid_names.append('meta-toto')
         for i in valid_names:
             # will fail if raise error anyway
             self.assertTrue(mb.check_minibuild_name(i))
         invalid_names = []
-        invalid_names.append('test')
         invalid_names.append('test-')
         invalid_names.append('test-1.0_prout4')
         invalid_names.append('test_prout4-1.0')
-        invalid_names.append('test-test')
         invalid_names.append('test-test-')
-        invalid_names.append('meta')
         invalid_names.append('meta-meta-')
-        valid_names.append('test-1.0_brancha10')
-        valid_names.append('test-1.0_branch.10')
-        valid_names.append('test-1.0_rnot')
+        invalid_names.append('test-1.0_brancha10')
+        invalid_names.append('test-1.0_branch.10')
+        invalid_names.append('test-1.0_rnot')
         invalid_names.append('meta-')
         for i in invalid_names:
             # will fail if raise error anyway
@@ -74,7 +73,7 @@ class testMinibuilds(unittest.TestCase):
         install_method=buildout
         category=eggs
         """
-        nvmbp = 'notvalidminibuildnamewhichisuniquetothistestforminitage'
+        nvmbp = 'notvalidminibuildnamewhichisuniquetothistestforminitage-'
         open(nvmbp,'w').write(minibuild1)
         mb = api.Minibuild(path=nvmbp)
         self.assertRaises(objects.InvalidMinibuildNameError, mb.load)

@@ -28,15 +28,15 @@ class InvalidConfigFileError(MinibuildException):
     """InvalidConfigFileError."""
 
 
-class NoMinibuildSectionError(MinibuildException): 
+class NoMinibuildSectionError(MinibuildException):
     """No minibuild section was found in the minibuild."""
 
 
-class MissingFetchMethodError(MinibuildException): 
+class MissingFetchMethodError(MinibuildException):
     """There is no fetch method in the minibuild."""
 
 
-class MissingCategoryError(MinibuildException): 
+class MissingCategoryError(MinibuildException):
     """There is no category in the minibuild."""
 
 
@@ -44,19 +44,19 @@ class InvalidCategoryError(MinibuildException):
     """The category specified is invalid."""
 
 
-class InvalidFetchMethodError(MinibuildException): 
+class InvalidFetchMethodError(MinibuildException):
     """The fetch method is invalid."""
 
 
-class InvalidInstallMethodError(MinibuildException): 
+class InvalidInstallMethodError(MinibuildException):
     """The install method is invalid."""
 
 
-class EmptyMinibuildError(MinibuildException): 
+class EmptyMinibuildError(MinibuildException):
     """The minibuild is empty."""
 
 
-class InvalidMinibuildNameError(MinibuildException): 
+class InvalidMinibuildNameError(MinibuildException):
     """The minibuild was not well named."""
 
 
@@ -64,7 +64,7 @@ class InvalidMinibuildNameError(MinibuildException):
 class MinilayException(Exception):
     """General Minilay Error."""
 
-class InvalidMinilayPath(MinilayException): 
+class InvalidMinilayPath(MinilayException):
     """The minilay path is invalid."""
 
 
@@ -79,14 +79,21 @@ VALID_INSTALL_METHODS = ['buildout']
 VALID_FETCH_METHODS = ['svn', 'hg']
 
 # minibuilds name checkers
-v_sfx = '(pre|p|beta|alpha|rc)\d*'
-s_sfx = '(tag|branch)([A-Z]|\d)(\.|[A-Z]|\d)*'
-n_sfx = 'r(HEAD|TIP|\d+)'
-m_sfx = '([a-zA-Z]|\d)+(-([a-zA-Z]|\d)+)*'
-sufix = '(_((%s)|(%s)|(%s)))' % (n_sfx, s_sfx, v_sfx)
-versioned_rxp = '^%s(-\d+)((\.\d+)*)([a-z]?)(%s)*$' % (m_sfx, sufix)
-meta_rxp = '^((meta-[a-zA-Z0-9]+)(-([a-za-z]|\d)+)*)$'
-packageversion_re = re.compile('((%s|%s))' % (meta_rxp, versioned_rxp))
+# versions _pre1234, _beta1234, _alpha1234, _rc1234, _pre1234
+v_sfx = '((pre|p|beta|alpha|rc)\d*)'
+# _tagNAME or _branchNAME for scm tags
+s_sfx = '((tag|branch)([A-Z]|\d)(\.|[A-Z]|\d)*)'
+# _rHEAD or _rTIP or _r1234 -> scm revision
+n_sfx = '(r(HEAD|TIP|\d+))'
+# major-minor
+mn_sfx = '((-\d+((\.\d+)*([a-z]?)))?)'
+# complete sufix
+sufix = '((%s(_(%s|%s|%s))*)*)' % (mn_sfx, n_sfx, s_sfx, v_sfx)
+# packagename : aZ1-az123
+m_sfx = '(([a-zA-Z]|\d)+(-([a-zA-Z]|\d)+)*)'
+# assemble prefixes
+versioned_rxp = '^(%s%s)$' % (m_sfx, sufix)
+packageversion_re = re.compile(versioned_rxp)
 
 class Minilay(collections.LazyLoadedDict):
     """Minilays are list of minibuilds.
@@ -106,7 +113,7 @@ class Minilay(collections.LazyLoadedDict):
             raise InvalidMinilayPath(message)
 
     def load(self, item=None):
-        """Walk the minilay and load everything 
+        """Walk the minilay and load everything
         wich seems to be a minibuild inside."""
         if not self.loaded and not item in self.items:
             minibuilds = []
@@ -249,7 +256,7 @@ class Minibuild(object):
             # chech that we got a valid src_type if any
             if not self.src_type in VALID_FETCH_METHODS:
                raise InvalidFetchMethodError(
-                   'The \'%s\' src_uri is invalid in \'%s\''  
+                   'The \'%s\' src_uri is invalid in \'%s\''
                                           % (self.src_type, self.path))
             # if we have a src_uri, we re not a meta package, so we must install
             # somehow, somewhere, so we need a category to install into
@@ -262,8 +269,8 @@ class Minibuild(object):
                 message = 'the minibuild \'%s\' has an invalid category: %s.\n'
                 message += '\tvalid ones are: %s'
                 raise InvalidCategoryError(message % (
-                    self.path, 
-                    self.category, 
+                    self.path,
+                    self.category,
                     VALID_CATEGORIES)
                 )
 
@@ -271,7 +278,7 @@ class Minibuild(object):
         self.url = section.get('url','').strip()
         self.description = section.get('description','').strip()
 
-        # but in any case, we must at least have dependencies 
+        # but in any case, we must at least have dependencies
         # or a install method
         if not self.install_method and not self.dependencies:
             message = 'There is no install method neither dependencies '
