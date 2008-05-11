@@ -23,8 +23,8 @@ class TestCli(unittest.TestCase):
 
     def testActions(self):
         """Test minimerge actions."""
-        actions = {'-R': 'rebuild', 
-                   '--rm': 'remove', 
+        actions = {'-R': 'reinstall', 
+                   '--rm': 'delete', 
                    '--install': 'install',
                    '--sync': 'sync'}
         for action in actions:
@@ -44,7 +44,7 @@ class TestCli(unittest.TestCase):
         sys.argv = [sys.argv[0], '--install', '--rm', 'foo']
         self.assertRaises(core.TooMuchActionsError, cli.do_read_options)
 
-        sys.argv = [sys.argv[0], '--rebuild', '--rm', 'foo']
+        sys.argv = [sys.argv[0], '--reinstall', '--rm', 'foo']
         self.assertRaises(core.ConflictModesError, cli.do_read_options)
 
         sys.argv = [sys.argv[0], '--fetchonly', '--offline', 'foo']
@@ -53,7 +53,7 @@ class TestCli(unittest.TestCase):
         sys.argv = [sys.argv[0], '--jump', 'foo', '--nodeps', 'foo']
         self.assertRaises(core.ConflictModesError, cli.do_read_options)
 
-        sys.argv = [sys.argv[0], '--rebuild', '--config', 
+        sys.argv = [sys.argv[0], '--reinstall', '--config', 
                     'iamafilewhichdoesnotexist', 'foo']
         self.assertRaises(core.InvalidConfigFileError, cli.do_read_options)
 

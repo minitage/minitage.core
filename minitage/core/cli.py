@@ -35,8 +35,8 @@ def do_read_options():
             action can be one of these :
 
                 - install
-                - remove
-                - rebuild
+                - delete
+                - reinstall
         - `args` [list] : cli left args, in fact these are the packages to deal with.
     """
 
@@ -48,8 +48,8 @@ def do_read_options():
     jump_help = 'Squizze prior dependencies to the '
     jump_help += 'minibuild specified in that option'
     fetchonly_help = 'Fetch the packages but do not build yet'
-    remove_help = 'Remove selected packages'
-    rebuild_help = 'Uncondionnaly rebuild packages'
+    delete_help = 'Remove selected packages'
+    reinstall_help = 'Uncondionnaly reinstall packages'
     install_help = 'Installs packages (default action)'
     nodeps_help = 'Squizzes all dependencies'
     config_help = 'Alternate config file. By default it\'s searched in '
@@ -60,8 +60,8 @@ def do_read_options():
                              action='store_true', dest='sync',
                              help = nodeps_help),
         optparse.make_option('--rm',
-                             action='store_true', dest='remove',
-                             help = remove_help),
+                             action='store_true', dest='delete',
+                             help = delete_help),
         optparse.make_option('-i', '--install',
                              action='store_true', dest='install',
                              help = install_help),
@@ -80,9 +80,9 @@ def do_read_options():
         optparse.make_option('-f', '--fetchonly',
                              action='store_true', dest='fetchonly',
                              help = fetchonly_help),
-        optparse.make_option('-R', '--rebuild',
-                             action='store_true', dest='rebuild',
-                             help = rebuild_help),
+        optparse.make_option('-R', '--reinstall',
+                             action='store_true', dest='reinstall',
+                             help = reinstall_help),
         optparse.make_option('-N', '--nodeps',
                              action='store_true', dest='nodeps',
                              help = nodeps_help),
@@ -92,7 +92,7 @@ def do_read_options():
                                    option_list=option_list)
     (options, args) = parser.parse_args()
 
-    if (options.rebuild and options.remove) or\
+    if (options.reinstall and options.delete) or\
        (options.fetchonly and options.offline) or \
        (options.jump and options.nodeps):
         raise core.ConflictModesError('You are using conflicting modes')
@@ -107,18 +107,18 @@ def do_read_options():
         print '\'%s --help\' for more inforamtion on usage.' % sys.argv[0]
 
     actionsCount = 0
-    for action in [options.rebuild, options.install, options.remove]:
+    for action in [options.reinstall, options.install, options.delete]:
         if action:
             actionsCount += 1
     if actionsCount > 1:
         message = 'You must precise only one action at a time'
         raise core.TooMuchActionsError(message)
 
-    if options.remove:
-        options.action = 'remove'
-    elif options.rebuild:
-        options.action = 'rebuild'
-    elif options.rebuild:
+    if options.delete:
+        options.action = 'delete'
+    elif options.reinstall:
+        options.action = 'reinstall'
+    elif options.reinstall:
         options.action = 'sync'
     elif options.install:
         options.action = 'install'
