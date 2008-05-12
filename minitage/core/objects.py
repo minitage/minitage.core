@@ -174,6 +174,7 @@ class Minibuild(object):
         self.install_method = None
         self.src_type = None
         self.src_opts = None
+        self.src_md5 = None
         self.src_uri = None
         self.url = None
         self.category = None
@@ -190,7 +191,7 @@ class Minibuild(object):
 
     def __getattribute__(self, attr):
         """Lazyload stuff."""
-        lazyloaded = ['config', 'url', 'category',
+        lazyloaded = ['config', 'url', 'category', 'src_md5',
                       'dependencies', 'description','src_opts',
                       'src_type', 'install_method', 'src_type']
         if attr in lazyloaded and not self.loaded:
@@ -248,6 +249,8 @@ class Minibuild(object):
                 raise MissingFetchMethodError(message % self.path)
             # src_opts is only important if we have src_uri
             self.src_opts = section.get('src_opts','').strip()
+            # src_md5 is only important if we have src_uri
+            self.src_md5 = section.get('src_md5','').strip() 
             # chech that we got a valid src_type if any
             if not self.src_type in VALID_FETCH_METHODS:
                raise InvalidFetchMethodError(
