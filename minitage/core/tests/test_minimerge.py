@@ -37,10 +37,11 @@ class testMinimerge(unittest.TestCase):
         os.chdir(__cwd__)
         test_common.createMinitageEnv(path)
         os.makedirs(minilay)
+
         minibuilds = [
 """
 [minibuild]
-src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
+src_uri=https://hg.minitage.org/minitage
 src_type=hg
 install_method=buildout
 category=eggs
@@ -48,7 +49,7 @@ category=eggs
 """
 [minibuild]
 depends=minibuild-0
-src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
+src_uri=https://hg.minitage.org/minitage
 src_type=hg
 install_method=buildout
 category=eggs
@@ -56,7 +57,7 @@ category=eggs
 """
 [minibuild]
 depends=minibuild-4 minibuild-1
-src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
+src_uri=https://hg.minitage.org/minitage
 src_type=hg
 install_method=buildout
 category=eggs
@@ -64,7 +65,7 @@ category=eggs
 """
 [minibuild]
 depends=minibuild-2
-src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
+src_uri=https://hg.minitage.org/minitage
 src_type=hg
 install_method=buildout
 category=eggs
@@ -72,7 +73,7 @@ category=eggs
 """
 [minibuild]
 depends=minibuild-0
-src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
+src_uri=https://hg.minitage.org/minitage
 src_type=hg
 install_method=buildout
 category=eggs
@@ -80,7 +81,7 @@ category=eggs
 """
 [minibuild]
 depends=minibuild-7
-src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
+src_uri=https://hg.minitage.org/minitage
 src_type=hg
 install_method=buildout
 category=eggs
@@ -88,7 +89,7 @@ category=eggs
 """
 [minibuild]
 depends=minibuild-5
-src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
+src_uri=https://hg.minitage.org/minitage
 src_type=hg
 install_method=buildout
 category=eggs
@@ -96,7 +97,7 @@ category=eggs
 """
 [minibuild]
 depends=minibuild-6
-src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
+src_uri=https://hg.minitage.org/minitage
 src_type=hg
 install_method=buildout
 category=eggs
@@ -104,7 +105,7 @@ category=eggs
 """
 [minibuild]
 depends=minibuild-8
-src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
+src_uri=https://hg.minitage.org/minitage
 src_type=hg
 install_method=buildout
 category=eggs
@@ -112,7 +113,7 @@ category=eggs
 """
 [minibuild]
 depends=minibuild-0 minibuild-3
-src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
+src_uri=https://hg.minitage.org/minitage
 src_type=hg
 install_method=buildout
 category=eggs
@@ -120,7 +121,7 @@ category=eggs
 """
 [minibuild]
 depends=minibuild-11
-src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
+src_uri=https://hg.minitage.org/minitage
 src_type=hg
 install_method=buildout
 category=eggs
@@ -128,7 +129,7 @@ category=eggs
 """
 [minibuild]
 depends=minibuild-12
-src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
+src_uri=https://hg.minitage.org/minitage
 src_type=hg
 install_method=buildout
 category=eggs
@@ -136,7 +137,7 @@ category=eggs
 """
 [minibuild]
 depends=minibuild-13
-src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
+src_uri=https://hg.minitage.org/minitage
 src_type=hg
 install_method=buildout
 category=eggs
@@ -144,17 +145,17 @@ category=eggs
 """
 [minibuild]
 depends=minibuild-10
-src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
+src_uri=https://hg.minitage.org/minitage
 src_type=hg
 install_method=buildout
 category=eggs
-""",
-]
+""" ]
+
         pythonmbs = [
 #1000
 """
 [minibuild]
-src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
+src_uri=https://hg.minitage.org/minitage
 src_type=hg
 install_method=buildout
 category=dependencies
@@ -162,7 +163,7 @@ category=dependencies
 """
 [minibuild]
 depends=meta-python minibuild-1005
-src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
+src_uri=https://hg.minitage.org/minitage
 src_type=hg
 install_method=buildout
 category=dependencies
@@ -170,7 +171,7 @@ category=dependencies
 """
 [minibuild]
 depends=python-2.4 minibuild-1005
-src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
+src_uri=https://hg.minitage.org/minitage
 src_type=hg
 install_method=buildout
 category=dependencies
@@ -178,7 +179,7 @@ category=dependencies
 """
 [minibuild]
 depends=python-2.5 minibuild-1005
-src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
+src_uri=https://hg.minitage.org/minitage
 src_type=hg
 install_method=buildout
 category=dependencies
@@ -186,7 +187,7 @@ category=dependencies
 """
 [minibuild]
 depends=minibuild-1005
-src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
+src_uri=https://hg.minitage.org/minitage
 src_type=hg
 install_method=buildout
 category=dependencies
@@ -194,7 +195,7 @@ category=dependencies
 """
 [minibuild]
 depends=meta-python
-src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
+src_uri=https://hg.minitage.org/minitage
 src_type=hg
 install_method=buildout
 category=eggs
@@ -211,7 +212,7 @@ category=eggs
         for minibuild in ['python-2.4', 'python-2.5']:
             open('%s/%s' % (minilay, minibuild), 'w').write("""
 [minibuild]
-src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
+src_uri=https://hg.minitage.org/minitage
 src_type=hg
 install_method=buildout
 category=dependencies""")
@@ -219,7 +220,7 @@ category=dependencies""")
         open('%s/%s' % (minilay, 'meta-python'), 'w').write("""
 [minibuild]
 depends=python-2.4 python-2.5
-src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
+src_uri=https://hg.minitage.org/minitage
 src_type=hg
 category=meta
 install_method=buildout""")
@@ -479,19 +480,19 @@ install_method=buildout""")
         minimerge._do_action('install', [py24])
         py25 = minimerge._find_minibuild('python-2.5')
         respy25 = '%s/dependencies/python-2.5/testres' % path
-        
+
         minimerge._do_action('install', [py24])
         self.assertEquals(open(respy24,'r').read(), 'part')
         minimerge._do_action('install', [py25])
-        self.assertEquals(open(respy25,'r').read(), 'part') 
+        self.assertEquals(open(respy25,'r').read(), 'part')
 
         m1005 = minimerge._find_minibuild('minibuild-1005')
         m1005res =   '%s/eggs/minibuild-1005/testres' % path
         m1005res24 = '%s/eggs/minibuild-1005/testres2.4' % path
         m1005res25 = '%s/eggs/minibuild-1005/testres2.5' % path
         minimerge._do_action('install', [m1005])
-        self.assertEquals(open(m1005res24,'r').read(), '2.4') 
-        self.assertEquals(open(m1005res25,'r').read(), '2.5') 
+        self.assertEquals(open(m1005res24,'r').read(), '2.4')
+        self.assertEquals(open(m1005res25,'r').read(), '2.5')
         self.assertFalse(os.path.isfile(m1005res))
 
     def testInvalidAction(self):
