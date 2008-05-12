@@ -70,6 +70,7 @@ class IFetcherFactory(interfaces.IFactory):
             {
                 'hg': 'minitage.core.fetchers.scm.HgFetcher',
                 'svn': 'minitage.core.fetchers.scm.SvnFetcher',
+                'static': 'minitage.core.fetchers.static.StaticFetcher',
             }
         )
 
@@ -84,7 +85,7 @@ class IFetcherFactory(interfaces.IFactory):
         """
         for key in self.products:
             klass = self.products[key]
-            instance = klass(config = self.section)
+            instance = klass(config = self.sections)
             if instance.match(switch):
                 return instance
 
@@ -113,8 +114,7 @@ class IFetcher(interfaces.IProduct):
               we got from or a new one.
     """
 
-    def __init__(self, name, executable,
-                 config = None, metadata_directory = None):
+    def __init__(self, name, executable = None , config = None, metadata_directory = None):
         """
         Attributes:
             - name : name of the fetcher
@@ -127,21 +127,21 @@ class IFetcher(interfaces.IProduct):
         if not config:
             config = {}
         self.config = config
-        if executable is None:
-            executable = ''
-        if not '/' in executable:
-            for path in os.environ['PATH'].split(os.pathsep):
-                if os.path.isfile('%s/%s' % (path, executable)):
-                    self.executable = '%s/%s' % (path, executable)
-                    break
-        else:
-            if os.path.isfile(executable):
-                self.executable = executable
 
-        if self.executable is None:
-            message = '%s is not in your path, ' % self.executable
-            message += 'please install it or maybe get it into your PATH'
-            raise FetcherNotInPathError(message)
+        if executable:
+            if not '/' in executable:
+                for path in os.environ['PATH'].split(os.pathsep):
+                    if os.path.isfile('%s/%s' % (path, executable)):
+                        self.executable = '%s/%s' % (path, executable)
+                        break
+            else:
+                if os.path.isfile(executable):
+                    self.executable = executable
+
+            if not self.executable:
+                message = '%s is not in your path, ' % self.executable
+                message += 'please install it or maybe get it into your PATH'
+                raise FetcherNotInPathError(message)
 
     def update(self, uri, dest, opts=None):
         """Update a package.

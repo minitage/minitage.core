@@ -37,8 +37,7 @@ class HgFetcher(interfaces.IFetcher):
     """
 
     def __init__(self, config = None):
-        if not config:
-            config = None
+        self.config =  config
         interfaces.IFetcher.__init__(self, 'mercurial', 'hg', config, '.hg')
 
     def update(self, uri, dest, opts=None):
@@ -171,8 +170,7 @@ class SvnFetcher(interfaces.IFetcher):
     """
 
     def __init__(self, config = None):
-        if not config:
-            config = {}
+        self.config =  config
         interfaces.IFetcher.__init__(self, 'subversion', 'svn', config, '.svn')
 
     def update(self, uri, dest, opts=None):

@@ -70,12 +70,12 @@ class testInterfaces(unittest.TestCase):
         f = fetchers.interfaces.IFetcherFactory()
         svn = f('svn')
         hg = f('hg')
+        self.assertEquals(hg.__class__.__name__,
+                          fetchers.scm.HgFetcher.__name__)
         self.assertEquals(svn.__class__.__name__,
                           fetchers.scm.SvnFetcher.__name__)
-        self.assertEquals(svn.__class__.__name__,
-                          fetchers.scm.SvnFetcher.__name__)
-        self.assertEquals(hg.__module__,
-                          fetchers.scm.HgFetcher.__module__.split('.').pop())
+        self.assertEquals(svn.__module__,
+                          fetchers.scm.SvnFetcher.__module__.split('.').pop())
         self.assertEquals(hg.__module__,
                           fetchers.scm.HgFetcher.__module__.split('.').pop())
 
