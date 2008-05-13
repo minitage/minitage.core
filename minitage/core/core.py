@@ -406,7 +406,7 @@ class Minimerge(object):
                .get('minilays_scm','')\
                .strip()
               )
-        default_minilay_paths = ['%s/%s' % (self._prefix, minilay)\
+        default_minilay_paths = ['%s/minilays/%s' % (self._prefix, minilay)\
                              for minilay in default_minilays]
         default_minilay_urls = ['%s/%s' % (urlbase, minilay)\
                                 for minilay in default_minilays]
