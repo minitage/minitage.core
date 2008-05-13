@@ -287,7 +287,7 @@ class Minimerge(object):
                   - maybe install
                   - maybe delete
         """
-        if self.action == 'sync':
+        if self._action == 'sync':
             self._sync()
         else:
             packages = self._packages
@@ -412,7 +412,7 @@ class Minimerge(object):
                                 for minilay in default_minilays]
         for minilay, url in zip(default_minilay_paths, default_minilay_urls):
             hg.fetch_or_update(minilay, url)
-
+        
         # for others minilays, we just try to update them
         for minilay in self._minilays:
             path = minilay.path
@@ -421,8 +421,4 @@ class Minimerge(object):
                 if os.path.isdir('%s/.%s' % (path, strscm)):
                     scm = f(strscm)
                     scm.update(dest=path)
-
-
-
-
 

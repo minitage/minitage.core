@@ -11,5 +11,4 @@ except Exception, e:
     sys.stderr.write('Minimerge executation failed:\n')
     sys.stderr.write('\t%s\n' % e)
 
-minimerge.main()
 # vim:set ft=python sts=4 ts=4 tw=80 et:

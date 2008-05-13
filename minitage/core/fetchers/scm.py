@@ -69,9 +69,9 @@ class HgFetcher(interfaces.IFetcher):
                     message += 'a valid mercurial repository' % (dest)
                     raise InvalidMercurialRepositoryError(message)
             if uri:
-                self._scm_cmd('pull -f -r %s %s -R %s' % (revision, uri, dest))
+                self._scm_cmd('pull -f %s -R %s' % (uri, dest))
             else:
-                self._scm_cmd('pull -f -r %s -R %s' % (revision, dest))
+                self._scm_cmd('pull -f -R %s' % (dest))
             self._scm_cmd('  up -r %s -R %s ' % (revision, dest))
             if not os.path.isdir('%s/%s' % (dest, self.metadata_directory)):
                 message = 'Unexpected fetch error on \'%s\'\n' % uri

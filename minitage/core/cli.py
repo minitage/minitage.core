@@ -97,7 +97,7 @@ def do_read_options():
        (options.jump and options.nodeps):
         raise core.ConflictModesError('You are using conflicting modes')
 
-    if not args and len(sys.argv) > 1:
+    if (not args and len(sys.argv) > 1) and not options.sync:
         message = 'You must precise which packages you want to deal with'
         raise core.NoPackagesError(message)
 
@@ -118,7 +118,7 @@ def do_read_options():
         options.action = 'delete'
     elif options.reinstall:
         options.action = 'reinstall'
-    elif options.reinstall:
+    elif options.sync:
         options.action = 'sync'
     elif options.install:
         options.action = 'install'
