@@ -17,13 +17,14 @@ __docformat__ = 'restructuredtext en'
 import unittest
 import shutil
 import os
+import tempfile
 
 from minitage.core.fetchers import scm, interfaces
 
 opts = dict(
-    path=os.path.expanduser('~/minitagerepo'),
-    dest=os.path.expanduser('~/minitagerepodest'),
-    wc=os.path.expanduser('~/minitagerepodestwc'),
+    path=os.path.expanduser(tempfile.mkdtemp()),
+    dest=os.path.expanduser(tempfile.mkdtemp()),
+    wc=os.path.expanduser(tempfile.mkdtemp()),
 )
 
 prefix = os.getcwd()
@@ -55,12 +56,12 @@ class testHg(unittest.TestCase):
     def testUrlChanged(self):
         """testUrlChanged"""
         hg = scm.HgFetcher()
-        hg.fetch('file://%s' % opts['path'], opts['dest'])
+        hg.fetch(opts['dest'], 'file://%s' % opts['path'])
         self.assertTrue(os.path.isdir('%s/%s' % (opts['dest'], '.hg')))
         self.assertFalse(
             hg._has_uri_changed(
+                opts['dest'],
                 'file://%s' % opts['path'],
-                opts['dest']
             )
         )
         self.assertTrue(hg._has_uri_changed('hehe_changed', opts['dest']))
@@ -68,75 +69,60 @@ class testHg(unittest.TestCase):
     def testRemoveVersionnedDirs(self):
         """testRemoveVersionnedDirs"""
         hg = scm.HgFetcher()
-        hg.fetch('file://%s' % opts['path'], opts['dest'])
+        hg.fetch(opts['dest'], 'file://%s' % opts['path'])
         self.assertTrue(os.path.isdir('%s/%s' % (opts['dest'], '.hg')))
         os.mkdir('%s/%s' % (opts['dest'],'part'))
         hg._remove_versionned_directories(opts['dest'])
         self.assertTrue(os.path.isdir('%s/%s' % (opts['dest'],'part')))
         self.assertFalse(os.path.isdir('%s/%s' % (opts['dest'],'.hg')))
         self.assertFalse(os.path.isfile('%s/%s' % (opts['dest'],'file2')))
-        hg.update('file://%s' % opts['path'], opts['dest'])
+        hg.update(opts['dest'], 'file://%s' % opts['path'])
         self.assertTrue(os.path.isdir('%s/%s' % (opts['dest'], '.hg')))
 
     def testScmInvalidUri(self):
         """testScmInvalidUri"""
         hg = scm.HgFetcher()
         self.assertRaises(interfaces.InvalidUrlError,
-                          hg.fetch, 'invalidsrcuri', 'somewhere')
+                          hg.fetch, 'somewhere', 'invalidsrcuri')
 
-    def testInvalidReturn(self):
-        """testInvalidReturn"""
-        hg = scm.HgFetcher()
-        hg.executable = 'nothg'
-        # shell will not find that command, heh
-        self.assertRaises(interfaces.FetcherRuntimmeError,
-                          hg.fetch, 'file://nowhere', 'somewhere')
-
-        hg = scm.HgFetcher()
-        # prevent mercurial from writing in dest ;)
-        os.mkdir(opts['dest'], 660)
-        # it will crash luke
-        self.assertRaises(interfaces.FetcherRuntimmeError,
-                          hg.fetch, 'file://%s' % opts['path'], opts['dest'])
-        os.removedirs(opts['dest'])
 
     def testFetch(self):
         """testFetch"""
         hg = scm.HgFetcher()
-        hg.fetch('file://%s' % opts['path'], opts['dest'])
+        hg.fetch(opts['dest'], 'file://%s' % opts['path'])
         self.assertTrue(os.path.isdir('%s/%s' % (opts['dest'], '.hg')))
 
     def testFetchToParticularRevision(self):
         """testFetchToParticularRevision"""
         hg = scm.HgFetcher()
-        hg.fetch('file://%s' % opts['path'], opts['dest'], dict(revision=0))
+        hg.fetch(opts['dest'], 'file://%s' % opts['path'], dict(revision=0))
         self.assertTrue(os.path.isdir('%s/%s' % (opts['dest'], '.hg')))
         self.assertFalse(os.path.isfile('%s/%s' % (opts['dest'], 'file2')))
 
     def testUpdate(self):
         """testUpdate"""
         hg = scm.HgFetcher()
-        hg.fetch('file://%s' % opts['path'], opts['dest'], dict(revision=0))
+        hg.fetch(opts['dest'], 'file://%s' % opts['path'], dict(revision=0))
         self.assertTrue(os.path.isdir('%s/%s' % (opts['dest'], '.hg')))
-        hg.update('file://%s' % opts['path'], opts['dest'])
+        hg.update(opts['dest'], 'file://%s' % opts['path'])
         self.assertTrue(os.path.isfile('%s/%s' % (opts['dest'], 'file2')))
-        hg.update('file://%s' % opts['path'], opts['dest'], dict(revision=0))
+        hg.update(opts['dest'], 'file://%s' % opts['path'], dict(revision=0))
         self.assertFalse(os.path.isfile('%s/%s' % (opts['dest'], 'file2')))
 
     def testFetchOrUpdate_fetch(self):
         """testFetchOrUpdate_fetch"""
         hg = scm.HgFetcher()
-        hg.fetch_or_update('file://%s' % opts['path'], opts['dest'])
+        hg.fetch_or_update(opts['dest'], 'file://%s' % opts['path'])
         self.assertTrue(os.path.isfile('%s/%s' % (opts['dest'], 'file2')))
         self.assertTrue(os.path.isdir('%s/%s' % (opts['dest'], '.hg')))
 
     def testFetchOrUpdate_update(self):
         """testFetchOrUpdate_update"""
         hg = scm.HgFetcher()
-        hg.fetch('file://%s' % opts['path'], opts['dest'], dict(revision=0))
+        hg.fetch(opts['dest'], 'file://%s' % opts['path'], dict(revision=0))
         self.assertTrue(os.path.isdir('%s/%s' % (opts['dest'], '.hg')))
         self.assertFalse(os.path.isfile('%s/%s' % (opts['dest'], 'file2')))
-        hg.fetch_or_update('file://%s' % opts['path'], opts['dest'])
+        hg.fetch_or_update(opts['dest'], 'file://%s' % opts['path'])
         self.assertTrue(os.path.isfile('%s/%s' % (opts['dest'], 'file2')))
 
 
@@ -172,88 +158,90 @@ class testSvn(unittest.TestCase):
     def testUrlChanged(self):
         """testUrlChanged"""
         svn = scm.SvnFetcher()
-        svn.fetch('file://%s' % opts['path'], opts['wc'])
+        svn.fetch(opts['wc'], 'file://%s' % opts['path'])
         self.assertTrue(os.path.isdir('%s/%s' % (opts['wc'], '.svn')))
         self.assertFalse(
             svn._has_uri_changed(
+                opts['wc'],
                 'file://%s' % opts['path'],
-                opts['wc']
             )
         )
-        self.assertTrue(svn._has_uri_changed('hehe_changed', opts['wc']))
+        self.assertTrue(svn._has_uri_changed(opts['wc'], 'hehe_changed'))
 
     def testRemoveVersionnedDirs(self):
         """testRemoveVersionnedDirs"""
         svn = scm.SvnFetcher()
-        svn.fetch('file://%s' % opts['path'], opts['wc'])
+        svn.fetch(opts['wc'], 'file://%s' % opts['path'])
         self.assertTrue(os.path.isdir('%s/%s' % (opts['wc'], '.svn')))
         svn._has_uri_changed(opts['wc'], 'file://%s' % opts['path'])
         os.mkdir('%s/%s' % (opts['wc'],'part'))
         svn._remove_versionned_directories(opts['wc'])
         self.assertTrue(os.path.isdir('%s/%s' % (opts['wc'],'part')))
         self.assertFalse(os.path.isfile('%s/%s' % (opts['wc'],'file2')))
-        svn.fetch('file://%s' % opts['path'], opts['wc'])
+        svn.fetch(opts['wc'], 'file://%s' % opts['path'])
         self.assertTrue(os.path.isdir('%s/%s' % (opts['wc'], '.svn')))
 
     def testScmInvalidUri(self):
         """testScmInvalidUri"""
         svn = scm.SvnFetcher()
         self.assertRaises(interfaces.InvalidUrlError,
-                          svn.fetch, 'invalidsrcuri', 'somewhere')
+                          svn.fetch, 'somewhere', 'invalidsrcuri')
 
     def testInvalidReturn(self):
         """testInvalidReturn"""
         svn = scm.SvnFetcher()
         svn.executable = 'notsvn'
         # shell will not find that command, heh
-        self.assertRaises(interfaces.FetcherRuntimmeError,
-                          svn.fetch, 'file://nowhere', 'somewhere')
+        self.assertRaises(interfaces.FetcherRuntimeError,
+                          svn.fetch, 'somewhere', 'file://nowhere')
 
         svn = scm.SvnFetcher()
         # prevent mercurial from writing in dest ;)
-        os.mkdir(opts['wc'], 660)
+        if not os.path.isdir(opts['wc']):
+            os.makedirs(opts['wc'])
+        os.chmod(opts['wc'], 660)
         # it will crash luke
-        self.assertRaises(interfaces.FetcherRuntimmeError,
-                          svn.fetch, 'file://%s' % opts['path'], opts['wc'])
+        self.assertRaises(interfaces.FetcherRuntimeError,
+                          svn.fetch, opts['wc'], 'file://%s' % opts['path'])
         os.removedirs(opts['wc'])
 
     def testFetch(self):
         """testFetch"""
         svn = scm.SvnFetcher()
-        svn.fetch('file://%s' % opts['path'], opts['wc'])
+        svn.fetch(opts['wc'], 'file://%s' % opts['path'])
         self.assertTrue(os.path.isdir('%s/%s' % (opts['wc'], '.svn')))
 
     def testFetchToParticularRevision(self):
         """testFetchToParticularRevision"""
         svn = scm.SvnFetcher()
-        svn.fetch('file://%s' % opts['path'], opts['wc'], dict(revision=1))
+        svn.fetch(opts['wc'], 'file://%s' % opts['path'], dict(revision=1))
         self.assertTrue(os.path.isdir('%s/%s' % (opts['wc'], '.svn')))
         self.assertFalse(os.path.isfile('%s/%s' % (opts['wc'], 'file2')))
 
     def testUpdate(self):
         """testUpdate"""
         svn = scm.SvnFetcher()
-        svn.fetch('file://%s' % opts['path'], opts['wc'], dict(revision=1))
+        svn.fetch(opts['wc'], 'file://%s' % opts['path'], dict(revision=1))
         self.assertTrue(os.path.isdir('%s/%s' % (opts['wc'], '.svn')))
-        svn.update('file://%s' % opts['path'], opts['wc'])
+        svn.update(opts['wc'], 'file://%s' % opts['path'])
         self.assertTrue(os.path.isfile('%s/%s' % (opts['wc'], 'file2')))
-        svn.update('file://%s' % opts['path'], opts['wc'], dict(revision=1))
+        svn.update(opts['wc'], 'file://%s' % opts['path'], dict(revision=1))
         self.assertFalse(os.path.isfile('%s/%s' % (opts['wc'], 'file2')))
 
     def testFetchOrUpdate_fetch(self):
         """testFetchOrUpdate_fetch"""
         svn = scm.SvnFetcher()
-        svn.fetch_or_update('file://%s' % opts['path'], opts['wc'])
+        svn.fetch_or_update(opts['wc'], 'file://%s' % opts['path'])
         self.assertTrue(os.path.isfile('%s/%s' % (opts['wc'], 'file2')))
         self.assertTrue(os.path.isdir('%s/%s' % (opts['wc'], '.svn')))
 
     def testFetchOrUpdate_update(self):
         """testFetchOrUpdate_update"""
         svn = scm.SvnFetcher()
-        svn.fetch('file://%s' % opts['path'], opts['wc'], dict(revision=1))
+        svn.fetch(opts['wc'], 'file://%s' % opts['path'], dict(revision=1))
         self.assertTrue(os.path.isdir('%s/%s' % (opts['wc'], '.svn')))
         self.assertFalse(os.path.isfile('%s/%s' % (opts['wc'], 'file2')))
-        svn.fetch_or_update('file://%s' % opts['path'], opts['wc'])
+        svn.fetch_or_update(opts['wc'], 'file://%s' % opts['path'])
         self.assertTrue(os.path.isfile('%s/%s' % (opts['wc'], 'file2')))
 
 if __name__ == '__main__':

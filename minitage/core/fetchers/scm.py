@@ -17,6 +17,8 @@ __docformat__ = 'restructuredtext en'
 import os
 import subprocess
 import re
+import shutil
+import datetime
 
 from minitage.core.fetchers import interfaces
 
@@ -40,7 +42,7 @@ class HgFetcher(interfaces.IFetcher):
         self.config =  config
         interfaces.IFetcher.__init__(self, 'mercurial', 'hg', config, '.hg')
 
-    def update(self, uri, dest, opts=None):
+    def update(self, dest, uri = None, opts=None):
         """Update a package.
         Arguments:
             - uri : check out/update uri
@@ -57,8 +59,8 @@ class HgFetcher(interfaces.IFetcher):
         if opts is None:
             opts = {}
         revision = opts.get('revision','tip')
-        if self.is_valid_src_uri(uri):
-            if self._has_uri_changed(uri, dest):
+        if not uri or self.is_valid_src_uri(uri):
+            if uri and self._has_uri_changed(dest, uri):
                 self._remove_versionned_directories(dest)
                 self._scm_cmd('init %s' % (dest))
                 if not os.path.isdir('%s/%s' % (dest, self.metadata_directory)):
@@ -76,7 +78,7 @@ class HgFetcher(interfaces.IFetcher):
         else:
             raise interfaces.InvalidUrlError('this uri \'%s\' is invalid' % uri)
 
-    def fetch(self, uri, dest, opts=None):
+    def fetch(self, dest, uri, opts=None):
         """Fetch a package.
         Arguments:
             - uri : check out/update uri
@@ -93,6 +95,11 @@ class HgFetcher(interfaces.IFetcher):
         if opts is None:
             opts = {}
         revision = opts.get('revision','tip')
+        # move directory that musnt be there !
+        if os.path.isdir(dest):
+            os.rename(dest, '%s.old.%s' \
+                      % (dest, datetime.datetime.now().strftime('%d%m%y%H%M%S'))
+                     )
         if self.is_valid_src_uri(uri):
             self._scm_cmd('clone %s %s' % (uri, dest))
             self._scm_cmd('up  -r %s -R %s' % (revision, dest))
@@ -104,12 +111,12 @@ class HgFetcher(interfaces.IFetcher):
         else:
             raise interfaces.InvalidUrlError('this uri \'%s\' is invalid' % uri)
 
-    def fetch_or_update(self, uri, dest, opts = None):
+    def fetch_or_update(self, dest, uri, opts = None):
         """See interface."""
         if os.path.isdir('%s/%s' % (dest, self.metadata_directory)):
-            self.update(uri, dest, opts)
+            self.update(dest, uri, opts)
         else:
-            self.fetch(uri, dest, opts)
+            self.fetch(dest, uri, opts)
 
     def is_valid_src_uri(self, uri):
         """See interface."""
@@ -126,7 +133,7 @@ class HgFetcher(interfaces.IFetcher):
             return True
         return False
 
-    def _has_uri_changed(self, uri, dest):
+    def _has_uri_changed(self, dest, uri):
         """See interface."""
         # file is removed on the local uris
         uri = uri.replace('file://', '')
@@ -147,7 +154,7 @@ class HgFetcher(interfaces.IFetcher):
                 ret = process.wait()
                 if ret != 0:
                     message = '%s failed to achieve correctly.' % self.name
-                    raise interfaces.FetcherRuntimmeError(message)
+                    raise interfaces.FetcherRuntimeError(message)
                 dest_uri = re.sub('([^=]*=)\s*(.*)',
                                   '\\2',
                                   process.stdout.read().strip()
@@ -173,7 +180,7 @@ class SvnFetcher(interfaces.IFetcher):
         self.config =  config
         interfaces.IFetcher.__init__(self, 'subversion', 'svn', config, '.svn')
 
-    def update(self, uri, dest, opts=None):
+    def update(self, dest, uri = None, opts=None):
         """Update a package.
         Arguments:
             - uri : check out/update uri
@@ -190,8 +197,8 @@ class SvnFetcher(interfaces.IFetcher):
         if opts is None:
             opts = {}
         revision = opts.get('revision','HEAD')
-        if self.is_valid_src_uri(uri):
-            if self._has_uri_changed(uri, dest):
+        if not uri or self.is_valid_src_uri(uri):
+            if uri and self._has_uri_changed(dest, uri):
                 self._remove_versionned_directories(dest)
             self._scm_cmd('up -r %s %s' % (revision, dest))
             if not os.path.isdir('%s/%s' % (dest, self.metadata_directory)):
@@ -202,7 +209,7 @@ class SvnFetcher(interfaces.IFetcher):
         else:
             raise interfaces.InvalidUrlError('this uri \'%s\' is invalid' % uri)
 
-    def fetch(self, uri, dest, opts=None):
+    def fetch(self, dest, uri, opts=None):
         """Fetch a package.
         Arguments:
             - uri : check out/update uri
@@ -229,12 +236,12 @@ class SvnFetcher(interfaces.IFetcher):
         else:
             raise interfaces.InvalidUrlError('this uri \'%s\' is invalid' % uri)
 
-    def fetch_or_update(self, uri, dest, opts = None):
+    def fetch_or_update(self, dest, uri, opts = None):
         """See interface."""
         if os.path.isdir(dest):
-            self.update(uri, dest, opts)
+            self.update(dest, uri, opts)
         else:
-            self.fetch(uri, dest, opts)
+            self.fetch(dest, uri, opts)
 
     def is_valid_src_uri(self, uri):
         """See interface."""
@@ -251,7 +258,7 @@ class SvnFetcher(interfaces.IFetcher):
             return True
         return False
 
-    def _has_uri_changed(self, uri, dest):
+    def _has_uri_changed(self, dest, uri):
         """See interface."""
         process = subprocess.Popen(
             '%s %s' % (

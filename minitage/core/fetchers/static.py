@@ -48,7 +48,7 @@ class StaticFetcher(interfaces.IFetcher):
             self._proxies = None
         interfaces.IFetcher.__init__(self, 'static', config = config)
 
-    def update(self, uri, dest, opts=None):
+    def update(self, dest, uri, opts=None):
         """Update a package.
         Arguments:
             - uri : check out/update uri
@@ -68,9 +68,9 @@ class StaticFetcher(interfaces.IFetcher):
                     path = '%s/%s' % (dest,item)
                     common.remove_path(path)
 
-        self.fetch(uri, dest, opts)
+        self.fetch(dest, uri, opts)
 
-    def fetch(self, uri, dest, opts=None):
+    def fetch(self, dest, uri, opts=None):
         """Fetch a package.
         Arguments:
             - uri : check out/update uri
@@ -104,7 +104,7 @@ class StaticFetcher(interfaces.IFetcher):
                 file.flush()
                 file.close()
             except Exception, e:
-                message = 'Can\'t download file \'%s\'' % file
+                message = 'Can\'t download file \'%s\'' % filename
                 message += 'from \'%s\' .\n\t%s' % (uri, e)
                 raise StaticFetchError(message)
 
@@ -124,12 +124,12 @@ class StaticFetcher(interfaces.IFetcher):
                 message = 'Can\'t install file %s in its destination %s.'
                 raise StaticFetchError(message % (filepath, dest))
 
-    def fetch_or_update(self, uri, dest, opts = None):
+    def fetch_or_update(self, dest, uri, opts = None):
         """See interface."""
         if os.path.isdir(dest):
-            self.update(uri, dest, opts)
+            self.update(dest, uri, opts)
         else:
-            self.fetch(uri, dest, opts)
+            self.fetch(dest, uri, opts)
 
     def match(self, switch):
         """See interface."""
@@ -137,7 +137,7 @@ class StaticFetcher(interfaces.IFetcher):
             return True
         return False
 
-    def _has_uri_changed(self, uri, dest):
+    def _has_uri_changed(self, dest, uri):
         """As we are over static media, we cannot
         be sure the source does not change.
         """

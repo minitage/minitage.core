@@ -45,7 +45,7 @@ class FetcherNotInPathError(IFetcherError):
     """Fetcher was not found."""
 
 
-class FetcherRuntimmeError(IFetcherError):
+class FetcherRuntimeError(IFetcherError):
     """Unknown runtime Error."""
 
 
@@ -143,7 +143,7 @@ class IFetcher(interfaces.IProduct):
                 message += 'please install it or maybe get it into your PATH'
                 raise FetcherNotInPathError(message)
 
-    def update(self, uri, dest, opts=None):
+    def update(self, dest, uri, opts=None):
         """Update a package.
         Exceptions:
             - InvalidUrlError
@@ -154,7 +154,7 @@ class IFetcher(interfaces.IProduct):
         """
         raise interfaces.NotImplementedError('The method is not implemented')
 
-    def fetch(self, uri, dest, ops=None):
+    def fetch(self, dest, uri, ops=None):
         """Fetch a package.
         Exceptions:
             - InvalidUrlError
@@ -165,7 +165,7 @@ class IFetcher(interfaces.IProduct):
         """
         raise interfaces.NotImplementedError('The method is not implemented')
 
-    def fetch_or_update(self, uri, dest, opts = None):
+    def fetch_or_update(self, dest, uri, opts = None):
         """Fetch or update a package (call the one of those 2 methods).
         Arguments:
             - uri : check out/update uri
@@ -192,9 +192,9 @@ class IFetcher(interfaces.IProduct):
         ret = p.wait()
         if ret != 0:
             message = '%s failed to achieve correctly.' % self.name
-            raise FetcherRuntimmeError(message)
+            raise FetcherRuntimeError(message)
 
-    def _has_uri_changed(self, uri, dest):
+    def _has_uri_changed(self, dest, uri):
         """Does the uri we fetch from in the working changed or not.
         Arguments
             - dest the working copy

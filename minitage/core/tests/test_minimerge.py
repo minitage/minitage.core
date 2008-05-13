@@ -19,6 +19,7 @@ import sys
 import shutil
 import optparse
 import ConfigParser
+import tempfile
 
 from minitage.core import api, cli, objects, core
 from minitage.core.tests import test_common
@@ -26,7 +27,7 @@ from minitage.core.tests import test_common
 __cwd__ = os.getcwd()
 
 
-path = os.path.expanduser('~/iamauniquetestdirformatiwillberemoveafterthetest')
+path = '%s/test' % os.path.expanduser(tempfile.mkdtemp())
 testopts = dict(path=path)
 minilay = '%(path)s/minilays/myminilay1' % testopts
 class testMinimerge(unittest.TestCase):
@@ -37,6 +38,9 @@ class testMinimerge(unittest.TestCase):
         os.chdir(__cwd__)
         test_common.createMinitageEnv(path)
         os.makedirs(minilay)
+
+
+
 
         minibuilds = [
 """
@@ -151,6 +155,10 @@ install_method=buildout
 category=eggs
 """ ]
 
+        os.system("""cd %s ;
+                  hg init;
+                  hg add;
+                  hg ci -m 1;""" % minilay)
         pythonmbs = [
 #1000
 """
@@ -201,6 +209,9 @@ install_method=buildout
 category=eggs
 """,
 ]
+        os.system("""cd %s ;pwd;
+                  hg add;
+                  hg ci -m 2;""" % {'path': minilay})
 
         for index, minibuild in enumerate(minibuilds):
             open('%s/minibuild-%s' % (minilay, index), 'w').write(minibuild)
@@ -225,12 +236,13 @@ src_type=hg
 category=meta
 install_method=buildout""")
 
+
     def tearDown(self):
         """."""
         os.chdir(__cwd__)
         shutil.rmtree(os.path.expanduser(path))
 
-    def testFindMinibuild(self):
+    def atestFindMinibuild(self):
         """testFindMinibuild
         find m0?"""
         # create minilays in the minilays dir, seeing if they get putted in
@@ -241,7 +253,7 @@ install_method=buildout""")
         mb = minimerge._find_minibuild('minibuild-0')
         self.assertEquals('minibuild-0', mb.name)
 
-    def testComputeDepsWithNoDeps(self):
+    def atestComputeDepsWithNoDeps(self):
         """testComputeDepsWithNoDeps
         m0 depends on nothing"""
         sys.argv = [sys.argv[0], '--config',
@@ -252,7 +264,7 @@ install_method=buildout""")
         mb = computed_packages[0]
         self.assertEquals('minibuild-0', mb.name)
 
-    def testSimpleDeps(self):
+    def atestSimpleDeps(self):
         """testSimpleDeps
         test m1 -> m0"""
         sys.argv = [sys.argv[0], '--config',
@@ -265,7 +277,7 @@ install_method=buildout""")
         mb = computed_packages[1]
         self.assertEquals(mb.name, 'minibuild-1')
 
-    def testChainedandTreeDeps(self):
+    def atestChainedandTreeDeps(self):
         """testChainedandTreeDeps
         Will test that this tree is safe:
               -       m3
@@ -293,7 +305,7 @@ install_method=buildout""")
                        'minibuild-2', 'minibuild-3', 'minibuild-9']
         self.assertEquals([mb.name for mb in computed_packages], wanted_list)
 
-    def testRecursivity(self):
+    def atestRecursivity(self):
         """testRecursivity
         check that:
              - m5  -> m6 -> m7
@@ -317,7 +329,7 @@ install_method=buildout""")
         self.assertRaises(core.CircurlarDependencyError,
                           minimerge._compute_dependencies, ['minibuild-13'])
 
-    def testMinibuildNotFound(self):
+    def atestMinibuildNotFound(self):
         """testMinibuildNotFound
         INOTINANYMINILAY does not exist"""
         sys.argv = [sys.argv[0], '--config',
@@ -327,7 +339,7 @@ install_method=buildout""")
         self.assertRaises(core.MinibuildNotFoundError,
                           minimerge._find_minibuild, 'INOTINANYMINILAY')
 
-    def testCutDeps(self):
+    def atestCutDeps(self):
         """testCutDeps"""
         sys.argv = [sys.argv[0], '--config',
                     '%s/etc/minimerge.cfg' % path,
@@ -341,7 +353,7 @@ install_method=buildout""")
         self.assertEquals(p, ['minibuild-2', 'minibuild-3'])
 
 
-    def testFetchOffline(self):
+    def atestFetchOffline(self):
         """testFetchOffline"""
         sys.argv = [sys.argv[0], '--config',
                     '%s/etc/minimerge.cfg' % path, '--offline', 'minibuild-0']
@@ -349,7 +361,7 @@ install_method=buildout""")
         minimerge = api.Minimerge(opts)
         self.assertTrue(minimerge._offline)
 
-    def testFetchOnline(self):
+    def atestFetchOnline(self):
         """testFetchOnline"""
         sys.argv = [sys.argv[0], '--config',
                     '%s/etc/minimerge.cfg' % path, 'minibuild-0']
@@ -360,11 +372,11 @@ install_method=buildout""")
         self.assertTrue(os.path.isdir('%s/eggs/minibuild-0/.hg' % path))
 
 
-    def testActionInstall(self):
+    def atestActionInstall(self):
         """testActionInstall"""
         pass
 
-    def testSelectPython(self):
+    def atestSelectPython(self):
         """testSelectPython.
         Goal of this test is to prevent uneccesary python versions
         to be built.
@@ -444,7 +456,7 @@ install_method=buildout""")
                             in [c.name for c in computed_packagest]
                            )
 
-    def testActionDelete(self):
+    def atestActionDelete(self):
         """testActionDelete."""
         sys.argv = [sys.argv[0], '--config',
                     '%s/etc/minimerge.cfg' % path, 'minibuild-0']
@@ -459,7 +471,7 @@ install_method=buildout""")
         minimerge._do_action('delete', [py24])
         self.assertTrue(not os.path.isdir(ipath))
 
-    def testActionInstall(self):
+    def atestActionInstall(self):
         """testActionInstall."""
         sys.argv = [sys.argv[0], '--config',
                     '%s/etc/minimerge.cfg' % path, 'minibuild-0']
@@ -495,7 +507,7 @@ install_method=buildout""")
         self.assertEquals(open(m1005res25,'r').read(), '2.5')
         self.assertFalse(os.path.isfile(m1005res))
 
-    def testInvalidAction(self):
+    def atestInvalidAction(self):
         sys.argv = [sys.argv[0], '--config',
                     '%s/etc/minimerge.cfg' % path, 'minibuild-0']
         opts = cli.do_read_options()
@@ -509,6 +521,23 @@ install_method=buildout""")
                           'invalid',
                           [py]
                          )
+
+    def testSync(self):
+        """testSync."""
+        sys.argv = [sys.argv[0], '--config',
+                    '%s/etc/minimerge.cfg' % path, 'minibuild-0']
+        opts = cli.do_read_options()
+        minimerge = api.Minimerge(opts)
+        os.system("cd %s;hg up -r 1" % minilay)
+        self.assertFalse(os.path.isFile('%s/%s' % (minilay, 'minibuild-1000')))
+        minimerge._sync()
+        self.assertTrue(
+            os.path.isdir(
+                '%s/minilays/%s' %
+                (path, 'dependencies')
+            )
+        )
+        self.assertTrue(os.path.isFile('%s/%s' % (minilay, 'minibuild-1000')))
 
 if __name__ == '__main__':
     suite = unittest.TestSuite()

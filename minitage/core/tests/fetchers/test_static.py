@@ -52,7 +52,7 @@ class testStatic(unittest.TestCase):
     def testFetch(self):
         """testFetch"""
         static = staticm.StaticFetcher()
-        static.fetch('file://%s/file' % opts['path'], opts['dest'])
+        static.fetch(opts['dest'],'file://%s/file' % opts['path'])
         self.assertTrue(os.path.isdir('%s/%s' % (opts['dest'], '.download')))
         self.assertTrue(os.path.isfile('%s/%s' % (opts['dest'], '.download/file')))
         self.assertTrue(os.path.isfile('%s/%s' % (opts['dest'], 'file')))

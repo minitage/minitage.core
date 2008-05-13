@@ -76,5 +76,9 @@ p_config = os.path.abspath('%s/etc/minimerge.cfg' % prefix)
 prefixed = re.sub('%PREFIX%',prefix,open(config,'r').read())
 if not os.path.isdir('%s/etc' % prefix):
     os.mkdir('%s/etc' % prefix)
+
+
+# write default config
 open(p_config,'w').write(prefixed)
+
 

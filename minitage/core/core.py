@@ -226,8 +226,8 @@ class Minimerge(object):
         if not os.path.isdir(dest_container):
             os.makedirs(dest_container)
         fetcherFactory(package.src_type).fetch_or_update(
+            '%s/%s' % (dest_container, package.name),
             package.src_uri,
-            '%s/%s' % (dest_container, package.name)
         )
 
     def _do_action(self, action, packages):
@@ -287,23 +287,26 @@ class Minimerge(object):
                   - maybe install
                   - maybe delete
         """
-        packages = self._packages
-        # compute dependencies
-        if not self._nodeps:
-            packages = self._compute_dependencies(self._packages)
+        if self.action == 'sync':
+            self._sync()
+        else:
+            packages = self._packages
+            # compute dependencies
+            if not self._nodeps:
+                packages = self._compute_dependencies(self._packages)
 
-        if self._jump:
-            packages = self._cut_jumped_packages(packages)
+            if self._jump:
+                packages = self._cut_jumped_packages(packages)
 
-        # fetch if not offline
-        if not self._offline:
-            for package in packages:
-                self._fetch(package)
+            # fetch if not offline
+            if not self._offline:
+                for package in packages:
+                    self._fetch(package)
 
-        # if we do not want just to fetch, let's go ,
-        # (install|delete|reinstall) baby.
-        if not self._fetchonly:
-            self._do_action(packages)
+            # if we do not want just to fetch, let's go ,
+            # (install|delete|reinstall) baby.
+            if not self._fetchonly:
+                self._do_action(packages)
 
     def _select_pythons(self, packages):
         """Get pythons to build into dependencies.
@@ -382,4 +385,44 @@ class Minimerge(object):
                 selected_pyver[package.name] = pyversions
 
         return packages, selected_pyver
+
+    def _sync(self):
+        # install our default minilays
+        default_minilays = [s.strip() \
+                            for s in self._config._sections\
+                            .get('minimerge', {})\
+                            .get('default_minilays','')\
+                            .split('\n')]
+        minimerge_section = self._config._sections.get('minimerge', {})
+        urlbase = '%s/%s' % (
+            minimerge_section\
+            .get('minilays_url','')\
+            .strip(),
+            version
+        )
+
+        f = IFetcherFactory(self._config_path)
+        hg = f(minimerge_section\
+               .get('minilays_scm','')\
+               .strip()
+              )
+        default_minilay_paths = ['%s/%s' % (self._prefix, minilay)\
+                             for minilay in default_minilays]
+        default_minilay_urls = ['%s/%s' % (urlbase, minilay)\
+                                for minilay in default_minilays]
+        for minilay, url in zip(default_minilay_paths, default_minilay_urls):
+            hg.fetch_or_update(minilay, url)
+
+        # for others minilays, we just try to update them
+        for minilay in self._minilays:
+            path = minilay.path
+            type = None
+            for strscm in ['hg', 'svn']:
+                if os.path.isdir('%s/.%s' % (path, strscm)):
+                    scm = f(strscm)
+                    scm.update(dest=path)
+
+
+
+
 
