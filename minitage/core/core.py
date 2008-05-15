@@ -288,34 +288,33 @@ class Minimerge(object):
                   - maybe install
                   - maybe delete
         """
+        if self._action == 'sync':
+            self._sync()
+        else:
+            packages = self._packages
+            # compute dependencies
+            if not self._nodeps:
+                packages = self._compute_dependencies(self._packages)
 
-            if self._action == 'sync':
-                self._sync()
+            if self._jump:
+                packages = self._cut_jumped_packages(packages)
+
+            if self._pretend:
+                 print "Action: %s" % self._action 
+                 print
+                 print "On packages:"
+                 for package in packages:
+                    print '\t* %s\n' % package
             else:
-                packages = self._packages
-                # compute dependencies
-                if not self._nodeps:
-                    packages = self._compute_dependencies(self._packages)
+                # fetch if not offline
+                if not self._offline:
+                    for package in packages:
+                        self._fetch(package)
 
-                if self._jump:
-                    packages = self._cut_jumped_packages(packages)
-
-                if self._pretend:
-                     print "Action: %s" % self._action 
-                     print
-                     print "On packages:"
-                     for package in packages:
-                        print '\t* %s\n' % package
-                else:
-                    # fetch if not offline
-                    if not self._offline:
-                        for package in packages:
-                            self._fetch(package)
-
-                    # if we do not want just to fetch, let's go ,
-                    # (install|delete|reinstall) baby.
-                    if not self._fetchonly:
-                        self._do_action(packages)
+                # if we do not want just to fetch, let's go ,
+                # (install|delete|reinstall) baby.
+                if not self._fetchonly:
+                    self._do_action(packages)
 
     def _select_pythons(self, packages):
         """Get pythons to build into dependencies.
