@@ -40,7 +40,6 @@ class TestCommon(unittest.TestCase):
                            )
         )
 
-
     def testRemovePath(self):
         """testRemovePath."""
         file = tempfile.mkstemp()
@@ -55,6 +54,21 @@ class TestCommon(unittest.TestCase):
         common.remove_path(a)
         self.assertFalse(os.path.isdir(a))
 
+    def testAppendVar(self):
+        """testAppendVar."""
+        os.environ['TEST'] = 'test'
+        self.assertEquals(os.environ['TEST'], 'test')
+        common.append_env_var('TEST', ["toto"], sep='|', before=False)
+        self.assertEquals(os.environ['TEST'], 'test|toto')
+        common.append_env_var('TEST', ["toto"], sep='|', before=True)
+        self.assertEquals(os.environ['TEST'], 'toto|test|toto')
+
+    def testSubstitute(self):
+        """testSubstitute."""
+        open(tf,'w').write('foo')
+        self.assertEquals(open(tf).read(), 'foo')
+        common.substitute(tf,'foo','bar')
+        self.assertEquals(open(tf).read(), 'bar')
 
 if __name__ == '__main__':
     suite = unittest.TestSuite()

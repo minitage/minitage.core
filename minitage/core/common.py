@@ -21,7 +21,7 @@ helpers functions
 import md5
 import os
 import shutil
-
+import re
 
 def test_md5(file, md5sum):
     """Test if file match md5 md5sum."""
@@ -44,6 +44,35 @@ def remove_path(path):
         shutil.rmtree(path)
     elif os.path.exists(path):
         os.remove(path)
+
+def append_env_var(env, var ,sep=":", before=True):
+    """Append text to a environnement variable.
+    @param env String variable to set
+    @param before append before or after the variable
+    """
+    for path in var:
+        if before:
+            os.environ[env] = "%s%s%s" % (
+                path,sep,os.environ.get(env, '')
+            )
+        else:
+            os.environ[env] = "%s%s%s" % (
+                os.environ.get(env, ''), sep, path
+            )
+
+def substitute(filename, search_re, replacement):
+    """Substitutes text within the contents of ``filename`` matching
+    ``search_re`` with ``replacement``.
+    """
+    search = re.compile(search_re, re.MULTILINE)
+    text = open(filename).read()
+    text = replacement.join(search.split(text))
+    newfilename = '%s%s' % (filename, '.~new')
+    newfile = open(newfilename, 'w')
+    newfile.write(text)
+    newfile.close()
+    shutil.copymode(filename, newfilename)
+    shutil.move(newfilename, filename)
 
 
 # vim:set et sts=4 ts=4 tw=80:
