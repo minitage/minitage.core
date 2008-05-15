@@ -77,6 +77,7 @@ VALID_INSTALL_METHODS = ['buildout']
  - hg: mercurial
  - svn: subversion"""
 VALID_FETCH_METHODS = ['svn', 'hg']
+UNAME = os.uname()[0].lower()
 
 # minibuilds name checkers
 # versions _pre1234, _beta1234, _alpha1234, _rc1234, _pre1234
@@ -225,6 +226,14 @@ class Minibuild(object):
 
         # our dependencies, can be empty
         self.dependencies = section.get('depends','').strip().split()
+        # specific os dependencies
+        os_depends = section.get('depends-%s' % UNAME, None)
+        if os_depends:
+            self.dependencies.extend(
+                [d \
+                 for d in os_depends.strip().split()\
+                 if d not in self.dependencies]
+            )
 
         # our install method, can be empty
         self.install_method = section.get('install_method','').strip()
@@ -250,7 +259,7 @@ class Minibuild(object):
             # src_opts is only important if we have src_uri
             self.src_opts = section.get('src_opts','').strip()
             # src_md5 is only important if we have src_uri
-            self.src_md5 = section.get('src_md5','').strip() 
+            self.src_md5 = section.get('src_md5','').strip()
             # chech that we got a valid src_type if any
             if not self.src_type in VALID_FETCH_METHODS:
                raise InvalidFetchMethodError(

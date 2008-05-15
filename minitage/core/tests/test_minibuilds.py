@@ -84,6 +84,9 @@ class testMinibuilds(unittest.TestCase):
         minibuild1 = """
 [minibuild]
 depends=python
+depends-linux=linux
+depends-darwin=darwin
+depends-freebsd=freebsd
 src_type=hg
 src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
 install_method=buildout
@@ -91,7 +94,9 @@ category=eggs
 """
         open(mb_path,'w').write(minibuild1)
         mb = api.Minibuild(path=mb_path).load()
-        self.assertEquals(mb.dependencies, ['python'])
+        self.assertTrue('python' in mb.dependencies)
+        uname = os.uname()[0].lower()
+        self.assertTrue(uname in mb.dependencies)
 
     def testValidMinibuilds(self):
         """testValidMinibuilds"""
