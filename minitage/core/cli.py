@@ -54,6 +54,7 @@ def do_read_options():
     nodeps_help = 'Squizzes all dependencies'
     config_help = 'Alternate config file. By default it\'s searched in '
     config_help += '%s/etc/minimerge.cfg and ~/.minimerge.cfg' % sys.exec_prefix
+    pretend_help = 'Do nothing, show what will be done'
 
     option_list = [
         optparse.make_option('-s', '--sync',
@@ -83,6 +84,9 @@ def do_read_options():
         optparse.make_option('-R', '--reinstall',
                              action='store_true', dest='reinstall',
                              help = reinstall_help),
+        optparse.make_option('-p', '--pretend',
+                             action='store_true', dest='pretend',
+                             help = pretend_help), 
         optparse.make_option('-N', '--nodeps',
                              action='store_true', dest='nodeps',
                              help = nodeps_help),
@@ -139,15 +143,16 @@ def do_read_options():
         raise core.InvalidConfigFileError(message)
 
     minimerge_options = {
-            'path': path,
-            'packages': args,
-            'debug': options.debug,
-            'fetchonly': options.fetchonly,
-            'nodeps': options.nodeps,
-            'offline': options.offline,
-            'jump': options.jump,
-            'action': options.action,
-            'config': options.config,
+        'path': path,
+        'packages': args,
+        'debug': options.debug,
+        'fetchonly': options.fetchonly,
+        'nodeps': options.nodeps,
+        'offline': options.offline,
+        'jump': options.jump,
+        'action': options.action,
+        'config': options.config,
+        'pretend': options.pretend,
     }
     return minimerge_options
 

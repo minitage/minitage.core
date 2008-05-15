@@ -59,7 +59,7 @@ class TestCli(unittest.TestCase):
 
     def testModes(self):
         """Test minimerge modes."""
-        modes = ('offline', 'fetchonly', 'debug', 'nodeps')
+        modes = ('offline', 'fetchonly', 'debug', 'nodeps', 'pretend')
         for mode in modes:
             sys.argv = [sys.argv[0], '--%s' % mode, 'foo']
             opts = cli.do_read_options()
