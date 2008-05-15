@@ -304,7 +304,7 @@ class Minimerge(object):
                  print
                  print "On packages:"
                  for package in packages:
-                    print '\t* %s\n' % package
+                    print '\t* %s [%s]\n' % (package.name, package.path)
             else:
                 # fetch if not offline
                 if not self._offline:
