@@ -80,6 +80,8 @@ VALID_FETCH_METHODS = ['svn', 'hg']
 UNAME = os.uname()[0].lower()
 
 # minibuilds name checkers
+# python sfx
+p_sfx = '(py(2\.4|2\.5))'
 # versions _pre1234, _beta1234, _alpha1234, _rc1234, _pre1234
 v_sfx = '((pre|p|beta|alpha|rc)\d*)'
 # _tagNAME or _branchNAME for scm tags
@@ -89,7 +91,7 @@ n_sfx = '(r(HEAD|TIP|\d+))'
 # major-minor
 mn_sfx = '((-\d+((\.\d+)*([a-z]?)))?)'
 # complete sufix
-sufix = '((%s(_(%s|%s|%s))*)*)' % (mn_sfx, n_sfx, s_sfx, v_sfx)
+sufix = '((%s(_(%s|%s|%s|%s))*)*)' % (mn_sfx, p_sfx, n_sfx, s_sfx, v_sfx)
 # packagename : aZ1-az123
 m_sfx = '(([a-zA-Z]|\d)+(-([a-zA-Z]|\d)+)*)'
 # assemble prefixes

@@ -39,6 +39,8 @@ class testMinibuilds(unittest.TestCase):
         valid_names.append('test-test-1.0')
         valid_names.append('test-1.0.3')
         valid_names.append('test-1.0_beta444')
+        valid_names.append('test-1.0_py2.4')
+        valid_names.append('test-1.0_py2.5')
         valid_names.append('test-1.0_beta444_pre20071024')
         valid_names.append('test-1.0_alpha44')
         valid_names.append('test-1.0_alpha44_pre20071024')
@@ -55,6 +57,7 @@ class testMinibuilds(unittest.TestCase):
         invalid_names = []
         invalid_names.append('test-')
         invalid_names.append('test-1.0_prout4')
+        invalid_names.append('test-1.0_py3k')
         invalid_names.append('test_prout4-1.0')
         invalid_names.append('test-test-')
         invalid_names.append('meta-meta-')
