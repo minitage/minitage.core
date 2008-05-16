@@ -55,8 +55,12 @@ def do_read_options():
     config_help = 'Alternate config file. By default it\'s searched in '
     config_help += '%s/etc/minimerge.cfg and ~/.minimerge.cfg' % sys.exec_prefix
     pretend_help = 'Do nothing, show what will be done'
+    ask_help = 'Do nothing, show what will be done and ask to continue'
 
     option_list = [
+        optparse.make_option('-a', '--ask',
+                             action='store_true', dest='ask',
+                             help = ask_help), 
         optparse.make_option('-s', '--sync',
                              action='store_true', dest='sync',
                              help = nodeps_help),
@@ -153,6 +157,7 @@ def do_read_options():
         'action': options.action,
         'config': options.config,
         'pretend': options.pretend,
+        'ask': options.ask,
     }
     return minimerge_options
 

@@ -79,6 +79,10 @@ class Minimerge(object):
                 - action: what to do *mandatory*
                 - sync: sync mode
                 - config: configuration file path *mandatory*
+                -flags :
+
+                    - ask
+                    - pretend
         """
         if options is None:
             options = {}
@@ -111,6 +115,7 @@ class Minimerge(object):
                                   .get('minimerge', {}).get('debug', False))
         self._fetchonly = options.get('fetchonly', False)
         self._pretend = options.get('pretend', False)
+        self._ask = options.get('ask', False)
         self._offline = options.get('offline', self._config._sections\
                                     .get('minimerge', {}).get('offline', False))
 
@@ -299,13 +304,26 @@ class Minimerge(object):
             if self._jump:
                 packages = self._cut_jumped_packages(packages)
 
-            if self._pretend:
-                 print "Action: %s" % self._action 
-                 print
-                 print "On packages:"
-                 for package in packages:
-                    print '\t* %s [%s]\n' % (package.name, package.path)
-            else:
+            stop = False
+            if self._ask or self._pretend:
+                print "Action: %s" % self._action
+                print
+                print "On packages:"
+                for package in packages:
+                    print '\t* %s [%s]' % (package.name, package.path)
+
+            answer = ''
+            valid_answers = ('y', '', 'yes')
+            if self._ask:
+                print
+                print 'Continue ? (y|n)'
+                answer = raw_input()
+
+            if self._pretend \
+               or not answer.lower() in valid_answers:
+                stop = True
+
+            if not stop:
                 # fetch if not offline
                 if not self._offline:
                     for package in packages:
@@ -314,7 +332,7 @@ class Minimerge(object):
                 # if we do not want just to fetch, let's go ,
                 # (install|delete|reinstall) baby.
                 if not self._fetchonly:
-                    self._do_action(packages)
+                    self._do_action(self._action, packages)
 
     def _select_pythons(self, packages):
         """Get pythons to build into dependencies.
@@ -420,7 +438,7 @@ class Minimerge(object):
                                 for minilay in default_minilays]
         for minilay, url in zip(default_minilay_paths, default_minilay_urls):
             hg.fetch_or_update(minilay, url)
-        
+
         # for others minilays, we just try to update them
         for minilay in self._minilays:
             path = minilay.path
