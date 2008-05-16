@@ -18,7 +18,7 @@ import unittest
 import tempfile
 import os
 
-from minitage.core import common
+from minitage.core import common, core
 
 path = tempfile.mkdtemp('minitagetestcomon')
 tf = '%s/a'  % path
@@ -69,6 +69,44 @@ class TestCommon(unittest.TestCase):
         self.assertEquals(open(tf).read(), 'foo')
         common.substitute(tf,'foo','bar')
         self.assertEquals(open(tf).read(), 'bar')
+
+    def testSystem(self):
+        """testSystem."""
+        self.assertRaises(SystemError, common.system, '6666')
+
+    def testGetFromCache(self):
+        """testGetFromCache."""
+        ret, file = tempfile.mkstemp()
+        filename = 'myfilename'
+        download_cache = tempfile.mkdtemp()
+        open(file, 'w').write('foo')
+        self.assertRaises(
+            core.MinimergeError,
+            common.get_from_cache,
+            'file://%s' % file,
+            filename,
+            offline = True
+        )
+        self.assertRaises(
+            core.MinimergeError,
+            common.get_from_cache,
+            'file://%s' % file,
+            filename,
+            md5 = 'false'
+        )
+
+        ret = common.get_from_cache('file://%s' % file,
+                             filename,
+                            )
+        self.assertEquals(open(ret).read(),'foo')
+        ret = common.get_from_cache('file://%s' % file,
+                                   filename,
+                                   download_cache,
+                                  )
+        self.assertEquals(
+            open(ret).read(),
+            'foo'
+        )
 
 if __name__ == '__main__':
     suite = unittest.TestSuite()

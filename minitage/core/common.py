@@ -17,11 +17,20 @@ __docformat__ = 'restructuredtext en'
 """
 helpers functions
 """
-
+import datetime
+import logging
 import md5
 import os
-import shutil
 import re
+import setuptools.archive_util
+import sha
+import shutil
+import sys
+import tempfile
+import urllib2
+import urlparse
+
+from minitage.core import core
 
 def test_md5(file, md5sum):
     """Test if file match md5 md5sum."""
@@ -74,5 +83,93 @@ def substitute(filename, search_re, replacement):
     shutil.copymode(filename, newfilename)
     shutil.move(newfilename, filename)
 
+def system(c,log=None):
+    if log:
+        log.info("Running %s" % c)
+    if os.system(c):
+        raise SystemError('Failed', c)
 
+def get_from_cache(url, name,
+                   download_cache = None,
+                   md5 = None,
+                   offline = False):
+    """Get a file from the buildout download cache.
+    Arguments:
+        - url : where to fetch from
+        - download_cache: path to the dl cache
+        - install_from_cache:
+        - offline : offline mode
+    """
+    # borrowed from zc.recipe.cmmi
+    if download_cache:
+        if not os.path.isdir(download_cache):
+            os.makedirs(download_cache)
+
+    _, _, urlpath, _, _ = urlparse.urlsplit(url)
+    filename = urlpath.split('/')[-1]
+
+    # get the file from the right place
+    fname = tmp2 = file_present = None
+    if download_cache:
+        # if we have a cache, try and use it
+        logging.getLogger(name).debug(
+            'Searching cache at %s' % download_cache)
+        if os.path.isdir(download_cache):
+            # just cache files for now
+            fname = os.path.join(download_cache, filename)
+            file_present=os.path.exists(fname)
+            if file_present:
+                logging.getLogger(name).debug(
+                    'Using cache file in %s' % fname
+                )
+            else:
+                logging.getLogger(name).debug(
+                    'Did not find %s under cache: %s' % (
+                        filename,
+                        download_cache)
+                )
+
+    if not file_present:
+        if offline:
+            # no file in the cache, but we are staying offline
+            raise core.MinimergeError(
+                "Offline mode: file from %s not found in the cache at %s" %
+                (url, download_cache)
+            )
+
+        try:
+            # okay, we've got to download now
+            tmp2 = None
+            if download_cache:
+                # set up the cache and download into it
+                fname = os.path.join(download_cache, filename)
+                logging.getLogger(name).debug(
+                    'Cache download %s as %s' % (
+                        url,
+                        download_cache)
+                )
+            else:
+                # use tempfile
+                tmp2 = tempfile.mkdtemp('buildout-' + name)
+                fname = os.path.join(tmp2, filename)
+            logging.getLogger(name).info(
+                'Downloading %s in %s' % (url,fname)
+            )
+            open(fname,'w').write(urllib2.urlopen(url).read())
+            if md5:
+                if not test_md5(fname, md5):
+                    raise core.MinimergeError(
+                        'MD5SUM mismatch for %s' % fname
+                    )
+
+        except Exception, e:
+            if tmp2 is not None:
+               shutil.rmtree(tmp2)
+            if download_cache:
+               shutil.rmtree(fname)
+            raise core.MinimergeError(
+                'Failed download for %s:\t%s' % (url, e)
+            )
+
+    return fname
 # vim:set et sts=4 ts=4 tw=80:
