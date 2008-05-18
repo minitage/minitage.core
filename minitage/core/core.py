@@ -413,6 +413,7 @@ class Minimerge(object):
         return packages, selected_pyver
 
     def _sync(self):
+        """Sync or install our minilays."""
         # install our default minilays
         default_minilays = [s.strip() \
                             for s in self._config._sections\
@@ -432,10 +433,16 @@ class Minimerge(object):
                .get('minilays_scm','')\
                .strip()
               )
-        default_minilay_paths = ['%s/minilays/%s' % (self._prefix, minilay)\
+
+        # create default minilay dir in case
+        os.makedirs(os.path.join(self._prefix,'minilays'))
+
+        default_minilay_paths = [os.path.join(self._prefix,'minilays', minilay)\
                              for minilay in default_minilays]
         default_minilay_urls = ['%s/%s' % (urlbase, minilay)\
                                 for minilay in default_minilays]
+
+
         for minilay, url in zip(default_minilay_paths, default_minilay_urls):
             hg.fetch_or_update(minilay, url)
 
