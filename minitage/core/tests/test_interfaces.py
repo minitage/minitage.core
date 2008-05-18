@@ -43,8 +43,8 @@ src_type=hg
 install_method=buildout
 category=invalid
 
-[interface]
-item1=minitage.core.tests.test_interfaces.test
+[minitage.interface]
+item1=minitage.core.tests.test_interfaces:test
 """
         open('%s' % path, 'w').write(config)
         try:

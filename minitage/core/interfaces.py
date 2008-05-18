@@ -17,6 +17,7 @@ __docformat__ = 'restructuredtext en'
 import ConfigParser
 import imp
 import types
+import pkg_resources
 
 class InterfaceError(Exception):
     """General Interface Error."""
@@ -64,7 +65,7 @@ class IFactory(object):
             - config: a configuration file with a self.name section
                     containing all needed classes.
         """
-        self.name = name
+        self.name = 'minitage.%s' % name
         self.config = ConfigParser.ConfigParser()
         self.section = {}
         self.sections = {}
@@ -94,27 +95,15 @@ class IFactory(object):
             - InvalidComponentClassPathError
         """
         # the type/plugin in the factory dict.
+        #
         for key in dict:
             try:
-                # we have full.qualified.module.path.ClassName
-                modules = dict[key].strip().split('.')
-                klass_str = modules.pop()
-                module = None
-                # get the last inner submodule
-                for submodule in modules:
-                    if module:
-                        file, path, desc = imp.find_module(submodule,
-                                                           module.__path__)
-                        module = imp.load_module(submodule, file, path, desc)
-                    else:
-                        file, path, desc = imp.find_module(submodule)
-                        module = imp.load_module(submodule, file, path, desc)
-
-                # get now the corresponding class
-                klass = getattr(module, klass_str)
+                smodule, sklass = dict[key].strip().split(':')
+                module = __import__(smodule, None, None, [''])
+                klass = getattr(module, sklass)
             except Exception,e:
-                message = 'Invalid Component: \'%s/%s\'' % (key, dict[key])
-                raise InvalidComponentClassPathError(message)
+                 message = 'Invalid Component: \'%s/%s\'' % (key, dict[key])
+                 raise InvalidComponentClassPathError(message)
             self.register(key, klass)
 
     def register(self, type, klass):

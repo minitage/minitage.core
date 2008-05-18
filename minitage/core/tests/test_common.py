@@ -19,7 +19,7 @@ import sys
 eggs = os.environ.get('MINITAGE_CORE_EGG_PATH', None)
 setup = os.environ.get('MINITAGE_CORE_SETUPPY', None)
 if not setup:
-    raise Exception("Please set the 'MINITAGE_CORE_EGG_PATH' variable pointing to the setup.py file of the minitage distribution")
+    raise Exception("Please set the 'MINITAGE_CORE_SETUPPY' variable pointing to the setup.py file of the minitage distribution")
 
 def createMinitageEnv(directory):
     """Initialise a minitage in a particular directory."""

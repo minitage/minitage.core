@@ -68,9 +68,9 @@ class IFetcherFactory(interfaces.IFactory):
         interfaces.IFactory.__init__(self, 'fetchers', config)
         self.registerDict(
             {
-                'hg': 'minitage.core.fetchers.scm.HgFetcher',
-                'svn': 'minitage.core.fetchers.scm.SvnFetcher',
-                'static': 'minitage.core.fetchers.static.StaticFetcher',
+                'hg': 'minitage.core.fetchers:HgFetcher',
+                'svn': 'minitage.core.fetchers:SvnFetcher',
+                'static': 'minitage.core.fetchers:StaticFetcher',
             }
         )
 

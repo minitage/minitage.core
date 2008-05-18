@@ -31,7 +31,7 @@ class TestInterfaces(unittest.TestCase):
         self.assertRaises(interfaces.NotImplementedError,
                           i.match, 'foo')
         self.assertRaises(interfaces.NotImplementedError,
-                          i.get_options, 'foo') 
+                          i.get_options, 'foo', 'foo') 
 
     def testFactory(self):
         """testFactory"""
@@ -41,7 +41,7 @@ class TestInterfaces(unittest.TestCase):
                           makers.buildout.BuildoutMaker.__name__)
         self.assertEquals(buildout.__module__,
                           makers.buildout.BuildoutMaker\
-                          .__module__.split('.').pop())
+                          .__module__)
 
 if __name__ == '__main__':
     suite = unittest.TestSuite()

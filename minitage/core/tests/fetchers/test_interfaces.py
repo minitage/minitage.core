@@ -75,9 +75,9 @@ class testInterfaces(unittest.TestCase):
         self.assertEquals(svn.__class__.__name__,
                           fetchers.scm.SvnFetcher.__name__)
         self.assertEquals(svn.__module__,
-                          fetchers.scm.SvnFetcher.__module__.split('.').pop())
+                          fetchers.scm.SvnFetcher.__module__)
         self.assertEquals(hg.__module__,
-                          fetchers.scm.HgFetcher.__module__.split('.').pop())
+                          fetchers.scm.HgFetcher.__module__)
 
 if __name__ == '__main__':
     suite = unittest.TestSuite()

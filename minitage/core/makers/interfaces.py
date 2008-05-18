@@ -49,7 +49,7 @@ class IMakerFactory(interfaces.IFactory):
         interfaces.IFactory.__init__(self, 'makers', config)
         self.registerDict(
             {
-                'buildout': 'minitage.core.makers.buildout.BuildoutMaker',
+                'buildout': 'minitage.core.makers.buildout:BuildoutMaker',
             }
         )
 

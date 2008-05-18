@@ -78,7 +78,7 @@ class BuildoutMaker(interfaces.IMaker):
             opts = {}
         try:
             sys.argv[1:] = self.config.get('options',
-                                           '-c -N buildout.cfg -vvvvv').split()
+                                           '-N -c  buildout.cfg -vvvvv').split()
             if opts.get('offline', False):
                 sys.argv.append('-o')
             parts = opts.get('parts', False)

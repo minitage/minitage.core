@@ -15,6 +15,7 @@
 __docformat__ = 'restructuredtext en'
 
 import unittest
+import os
 from minitage.core import interfaces, unpackers
 from minitage.core.unpackers import tar
 
@@ -33,15 +34,12 @@ class testInterfaces(unittest.TestCase):
         """testInit"""
         f = unpackers.interfaces.IUnpacker('ls', 'ls')
         self.assertEquals(f.name,'ls')
-        self.assertEquals(f.executable,'/bin/ls')
         f = unpackers.interfaces.IUnpacker('ls','/bin/ls')
-        self.assertEquals(f.executable,'/bin/ls')
-        self.assertRaises(unpackers.interfaces.UnpackerNotInPathError,
-                        unpackers.interfaces.IUnpacker, 'ls','/bin/notfoundheh')
 
     def testFactory(self):
         """testFactory"""
         f = unpackers.interfaces.IUnpackerFactory()
+        os.system('touch toto;tar cvf tar toto')
         tar = f('tar')
         self.assertEquals(tar.__class__.__name__,
                           unpackers.tar.TarUnpacker.__name__)

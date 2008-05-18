@@ -46,8 +46,8 @@ class IUnpackerFactory(interfaces.IFactory):
         interfaces.IFactory.__init__(self, 'unpackers', config)
         self.registerDict(
             {
-                'tar': 'minitage.core.unpackers.tar.TarUnpacker',
-                'zip': 'minitage.core.unpackers.zip.ZipUnpacker',
+                'tar': 'minitage.core.unpackers.tar:TarUnpacker',
+                'zip': 'minitage.core.unpackers.zip:ZipUnpacker',
             }
         )
 

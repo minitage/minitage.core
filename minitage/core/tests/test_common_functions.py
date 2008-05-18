@@ -30,9 +30,14 @@ class TestCommon(unittest.TestCase):
         """testMd5."""
         open(tf,'w').write('a\n')
         self.assertTrue(
-            common.test_md5(tf,
-                            '60b725f10c9c85c70d97880dfe8191b3'
-                           )
+            common.test_md5(
+                tf,
+                '60b725f10c9c85c70d97880dfe8191b3'
+            )
+        )
+        self.assertTrue(
+            common.md5sum(tf),
+            '60b725f10c9c85c70d97880dfe8191b3'
         )
         self.assertFalse(
             common.test_md5(tf,
@@ -91,18 +96,13 @@ class TestCommon(unittest.TestCase):
             core.MinimergeError,
             common.get_from_cache,
             'file://%s' % file,
-            filename,
             md5 = 'false'
         )
 
-        ret = common.get_from_cache('file://%s' % file,
-                             filename,
-                            )
+        ret = common.get_from_cache('file://%s' % file,)
         self.assertEquals(open(ret).read(),'foo')
         ret = common.get_from_cache('file://%s' % file,
-                                   filename,
-                                   download_cache,
-                                  )
+                                    download_cache = download_cache,)
         self.assertEquals(
             open(ret).read(),
             'foo'

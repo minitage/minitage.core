@@ -18,6 +18,7 @@ import sys
 import os
 import shutil
 import unittest
+import tempfile
 
 from minitage.core import interfaces, makers, fetchers
 from minitage.core.tests  import test_common
@@ -27,10 +28,11 @@ from minitage.core import cli
 
 
 ocwd = os.getcwd()
-path = os.path.expanduser('~/iamauniquetestdirformatiwillberemoveafterthetest')
-ipath = os.path.expanduser(
-    '~/iamauniquetestdirformatiwillberemoveafterthetest/test'
-)
+path = tempfile.mkdtemp()
+ipath = tempfile.mkdtemp()
+shutil.rmtree(path)
+shutil.rmtree(ipath)
+config=os.path.join(path,'etc','minimerge.cfg')
 testopts = dict(path=path)
 class TestBuildout(unittest.TestCase):
     """testBuildout"""
@@ -45,6 +47,8 @@ class TestBuildout(unittest.TestCase):
         """."""
         if os.path.isdir(path):
             shutil.rmtree(path)
+        if os.path.isdir(ipath):
+                shutil.rmtree(ipath) 
 
     def testDelete(self):
         """testDelete"""
@@ -59,7 +63,7 @@ class TestBuildout(unittest.TestCase):
 
     def testInstall(self):
         """testInstall"""
-        mf = makers.interfaces.IMakerFactory('buildout.cfg')
+        mf = makers.interfaces.IMakerFactory(config)
         buildout = mf('buildout')
         # must not die ;)
         buildout.install(ipath)
@@ -67,7 +71,7 @@ class TestBuildout(unittest.TestCase):
 
     def testInstallPart(self):
         """testInstall"""
-        mf = makers.interfaces.IMakerFactory('buildout.cfg')
+        mf = makers.interfaces.IMakerFactory(config)
         buildout = mf('buildout')
         # must not die ;)
         buildout.install(ipath, {'parts': 'y'})
@@ -77,7 +81,7 @@ class TestBuildout(unittest.TestCase):
 
     def testInstallMultiPartStr(self):
         """testInstallMultiPartStr"""
-        mf = makers.interfaces.IMakerFactory('buildout.cfg')
+        mf = makers.interfaces.IMakerFactory(config)
         buildout = mf('buildout')
         buildout.install(ipath, {'parts': ['y', 'z']})
         buildout.install(ipath, {'parts': 'y z'})
@@ -89,7 +93,7 @@ class TestBuildout(unittest.TestCase):
 
     def testInstallMultiPartList(self):
         """testInstallMultiPartList"""
-        mf = makers.interfaces.IMakerFactory('buildout.cfg')
+        mf = makers.interfaces.IMakerFactory(config)
         buildout = mf('buildout')
         buildout.install(ipath, {'parts': ['y', 'z']})
         self.assertEquals(open('%s/testbar' % ipath,'r').read(), 'foo')
@@ -99,7 +103,7 @@ class TestBuildout(unittest.TestCase):
 
     def testReInstall(self):
         """testReInstall"""
-        mf = makers.interfaces.IMakerFactory('buildout.cfg')
+        mf = makers.interfaces.IMakerFactory(config)
         buildout = mf('buildout')
         # must not die ;)
         buildout.install(ipath)
@@ -112,10 +116,14 @@ class TestBuildout(unittest.TestCase):
                     '%s/etc/minimerge.cfg' % path, 'minibuild-0']
         opts = cli.do_read_options()
         minimerge = api.Minimerge(opts)
-        minibuild = api.Minibuild('a/minibuild')
+        open('minibuild', 'w').write("""
+[minibuild]
+install_method=buildout
+""")
+        minibuild = api.Minibuild('minibuild')
         minibuild.category = 'eggs'
         minibuild.name = 'toto'
-        mf = makers.interfaces.IMakerFactory('buildout.cfg')
+        mf = makers.interfaces.IMakerFactory(config)
         buildout = mf('buildout')
         pyvers = {'python_versions': ['2.4', '2.5']}
         options = buildout.get_options(minimerge, minibuild, **pyvers)
