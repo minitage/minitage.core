@@ -53,13 +53,13 @@ setup(
     url='http://cheeseshop.python.org/pypi/%s' % name,
     license='GPL',
     packages=find_packages(exclude=['ez_setup']),
-    namespace_packages=['minitage', 'minitage.core'],
+    namespace_packages=['minitage.core'],
     install_requires = ['virtualenv', 'zc.buildout', 'setuptools',],
     tests_require = [],
     test_suite = '%s.tests.test_suite' % name,
-    entry_points = {},
     zip_safe = False,
     include_package_data = True,
+    entry_points = {},
     package_dir={'etc': 'etc', '/share/minitage':'/share/minitage'},
     data_files = [
         ('%s/etc' % sys.exec_prefix, ['etc/minimerge.cfg']),
@@ -80,7 +80,7 @@ if not os.path.isdir('%s/etc' % prefix):
 open(p_config,'w').write(prefixed)
 
 if not os.path.isdir('%s/eggs' % prefix):
-    os.mkdir('%s/eggs' % prefix) 
+    os.mkdir('%s/eggs' % prefix)
 if not os.path.isdir('%s/dependencies' % prefix):
-    os.mkdir('%s/dependencies' % prefix) 
+    os.mkdir('%s/dependencies' % prefix)
 
