@@ -83,4 +83,5 @@ if not os.path.isdir('%s/eggs' % prefix):
     os.mkdir('%s/eggs' % prefix)
 if not os.path.isdir('%s/dependencies' % prefix):
     os.mkdir('%s/dependencies' % prefix)
-
+if not os.path.isdir('%s/logs' % prefix):
+    os.mkdir('%s/logs' % prefix) 

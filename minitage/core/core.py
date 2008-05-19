@@ -17,6 +17,8 @@ version = '0.0.4'
 import os
 import sys
 import ConfigParser
+import logging, logging.config
+import re
 
 from minitage.core import objects
 from minitage.core.fetchers.interfaces import IFetcherFactory
@@ -57,7 +59,6 @@ class CircurlarDependencyError(MinimergeError):
     """There are circular dependencies in the dependency tree"""
 
 
-
 PYTHON_VERSIONS = ('2.4', '2.5')
 
 class Minimerge(object):
@@ -84,6 +85,13 @@ class Minimerge(object):
                     - ask
                     - pretend
         """
+        self._config_path = os.path.expanduser(options.get('config'))
+        # configure logging system$
+        logging.root.setLevel(0)
+        logging.config.fileConfig(self._config_path)
+        self.logger = logging.getLogger('minitage.core')
+        self.logger.info('Initializing minitage.')
+
         if options is None:
             options = {}
         # first try to read the config in
@@ -93,7 +101,8 @@ class Minimerge(object):
         # We have the corresponding file allready filled in option._config, see
         # `minimerge.core.cli`
         #
-        self._config_path = os.path.expanduser(options.get('config'))
+
+        # read our config
         self._config = ConfigParser.ConfigParser()
         try:
             self._config.read(self._config_path)
@@ -227,6 +236,7 @@ class Minimerge(object):
              fetch the package.
            - The fetcher exception.
         """
+        self.logger.info('Fetching package %s from %s.' % (package.name,package.src_uri))
         dest_container = '%s/%s' % (self._prefix, package.category)
         fetcherFactory = IFetcherFactory(self._config_path)
         if not os.path.isdir(dest_container):
@@ -298,22 +308,24 @@ class Minimerge(object):
         else:
             packages = self._packages
             # compute dependencies
+            self.logger.info('Calculating ependencies.')
             if not self._nodeps:
                 packages = self._compute_dependencies(self._packages)
             else:
                 packages = self._find_minibuilds(self._packages)
 
             if self._jump:
+                self.logger.info('Shrinking packages away.')
                 packages = self._cut_jumped_packages(packages)
 
-            stop = False
-            if self._ask or self._pretend:
-                print "Action: %s" % self._action
-                print
-                print "On packages:"
-                for package in packages:
-                    print '\t* %s [%s]' % (package.name, package.path)
 
+            self.logger.info('Action:\t%s' % self._action)
+            if packages:
+                self.logger.info('Packages:')
+                for p in packages:
+                        self.logger.info('\t\t* %s' % p.name)
+
+            stop = False
             answer = ''
             valid_answers = ('y', '', 'yes')
             if self._ask:
@@ -323,9 +335,12 @@ class Minimerge(object):
 
             if self._pretend \
                or not answer.lower() in valid_answers:
+                self.logger.info('Running in pretend mode or user choosed to abort')
                 stop = True
 
             if not stop:
+                if answer:
+                    self.logger.info('User choosed to continue')
                 # fetch if not offline
                 if not self._offline:
                     for package in packages:
@@ -406,7 +421,8 @@ class Minimerge(object):
         # dependency and so we dont want to overwrite !
         selected_py = ['python-%s' % ver for ver in pyversions]
         for package in packages:
-            if package.name.startswith('python') \
+            if package.name.startswith('python-') \
+               and not re.match('^(python-[a-zA-Z])',package.name) \
                and not package.name in selected_py:
                 packages.pop(packages.index(package))
             if package.category == 'eggs'\
@@ -418,6 +434,7 @@ class Minimerge(object):
     def _sync(self):
         """Sync or install our minilays."""
         # install our default minilays
+        self.logger.info('Syncing minilays')
         default_minilays = [s.strip() \
                             for s in self._config._sections\
                             .get('minimerge', {})\
@@ -447,8 +464,9 @@ class Minimerge(object):
                                 for minilay in default_minilays]
 
 
-        for minilay, url in zip(default_minilay_paths, default_minilay_urls):
-            hg.fetch_or_update(minilay, url)
+        #for minilay, url in zip(default_minilay_paths, default_minilay_urls):
+        #    self.logger.info('Syncing %s from %s' % (minilay, url))
+        #    hg.fetch_or_update(minilay, url)
 
         # for others minilays, we just try to update them
         for minilay in self._minilays:
@@ -457,5 +475,7 @@ class Minimerge(object):
             for strscm in ['hg', 'svn']:
                 if os.path.isdir('%s/.%s' % (path, strscm)):
                     scm = f(strscm)
+                    self.logger.info('Syncing %s from %s [via %s]' % (
+                        path, scm.get_uri(path), strscm))
                     scm.update(dest=path)
 

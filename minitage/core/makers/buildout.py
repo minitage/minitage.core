@@ -16,6 +16,7 @@ __docformat__ = 'restructuredtext en'
 
 import os
 import sys
+import logging
 
 import zc.buildout.buildout
 
@@ -24,7 +25,7 @@ from minitage.core.makers  import interfaces
 class BuildoutError(interfaces.IMakerError):
     """General Buildout Error."""
 
-
+__logger__ = 'minitage.makers.buildout'
 
 class BuildoutMaker(interfaces.IMaker):
     """Buildout Maker.
@@ -38,6 +39,7 @@ class BuildoutMaker(interfaces.IMaker):
         """
         if not config:
             config = {}
+        self.logger = logging.getLogger(__logger__)
         self.config = config
         interfaces.IMaker.__init__(self)
 
@@ -71,6 +73,7 @@ class BuildoutMaker(interfaces.IMaker):
             - dir : directory where the packge is
             - opts : arguments for the maker
         """
+        self.logger.info('Running buildout in %s' % directory)
         cwd = os.getcwd()
         os.chdir(directory)
         old_args = sys.argv[:]
@@ -80,6 +83,7 @@ class BuildoutMaker(interfaces.IMaker):
             sys.argv[1:] = self.config.get('options',
                                            '-N -c  buildout.cfg -vvvvv').split()
             if opts.get('offline', False):
+                self.logger.info('We will run in offline mode!')
                 sys.argv.append('-o')
             parts = opts.get('parts', False)
             if parts:
@@ -88,6 +92,29 @@ class BuildoutMaker(interfaces.IMaker):
                     sys.argv.extend(parts.split())
                 else:
                     sys.argv.extend(parts)
+
+            # monkey patch
+            # to avoid double logging
+            def donothing(self):
+                self._logger = logging.getLogger(__logger__)
+                verbosity = 0
+                level = self['buildout']['log-level']
+                if level in ('DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'):
+                    level = getattr(logging, level)
+                else:
+                    try:
+                        level = int(level)
+                    except ValueError:
+                        self._error("Invalid logging level %s", level)
+                        verbosity = self['buildout'].get('verbosity', 0)
+                try:
+                    verbosity = int(verbosity)
+                except ValueError:
+                    self._error("Invalid verbosity %s", verbosity)
+
+                level -= verbosity
+                self._log_level = level
+            zc.buildout.buildout.Buildout._setup_logging = donothing
 
             zc.buildout.buildout.main()
         except Exception, instance:

@@ -18,6 +18,7 @@ import re
 import os
 import subprocess
 import shutil
+import logging
 
 from minitage.core import interfaces
 
@@ -48,12 +49,11 @@ class FetcherNotInPathError(IFetcherError):
 class FetcherRuntimeError(IFetcherError):
     """Unknown runtime Error."""
 
-
-
 dscms = 'git|hg|bzr|mtn'
 p = 'ssh|http|https|ftp|sftp|file'
 scms = 'svn|svn\+ssh|cvs'
 URI_REGEX = re.compile('^((%s|%s|%s):\/\/(.*))$' % (dscms, p , scms))
+__logger__ = 'minitage.interfaces'
 
 class IFetcherFactory(interfaces.IFactory):
     """Interface Factory."""
@@ -187,6 +187,7 @@ class IFetcher(interfaces.IProduct):
 
     def _scm_cmd(self, command):
         """Helper to run scm commands."""
+        logging.getLogger(__logger__).debug('Running %s %s 2>&1' % (self.executable, command))
         p = subprocess.Popen('%s %s 2>&1' % (self.executable, command),
                              shell = True, stdout=subprocess.PIPE)
         ret = p.wait()

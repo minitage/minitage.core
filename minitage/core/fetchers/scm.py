@@ -19,8 +19,11 @@ import subprocess
 import re
 import shutil
 import datetime
+import logging
 
 from minitage.core.fetchers import interfaces
+
+__logger__ = 'minitage.fetchers.scm'
 
 class InvalidMercurialRepositoryError(interfaces.InvalidRepositoryError):
     """Mercurial repository is invalid."""
@@ -41,6 +44,7 @@ class HgFetcher(interfaces.IFetcher):
     def __init__(self, config = None):
         self.config =  config
         interfaces.IFetcher.__init__(self, 'mercurial', 'hg', config, '.hg')
+        self.log = logging.getLogger(__logger__)
 
     def update(self, dest, uri = None, opts=None):
         """Update a package.
@@ -56,6 +60,7 @@ class HgFetcher(interfaces.IFetcher):
             - interfaces.FetchErrorin case of fetch problems
             - interfaces.InvalidUrlError in case of uri is invalid
         """
+        self.log.debug('Updating %s / %s' % (dest, uri))
         if opts is None:
             opts = {}
         revision = opts.get('revision','tip')
@@ -136,6 +141,39 @@ class HgFetcher(interfaces.IFetcher):
             return True
         return False
 
+
+    def get_uri(self, dest):
+        """get mercurial url"""
+        try:
+            cwd = os.getcwd()
+            os.chdir(dest)
+            self.log.debug('Running %s %s in %s' % (
+                self.executable,
+                'showconfig |grep paths.default',
+                dest
+            ))
+            process = subprocess.Popen(
+                '%s %s' % (
+                    self.executable,
+                    'showconfig |grep paths.default'
+                ),
+                shell = True, stdout=subprocess.PIPE
+            )
+            ret = process.wait()
+            if ret != 0:
+                message = '%s failed to achieve correctly.' % self.name
+                raise interfaces.FetcherRuntimeError(message)
+            dest_uri = re.sub('([^=]*=)\s*(.*)',
+                          '\\2',
+                          process.stdout.read().strip()
+                         )
+            os.chdir(cwd)
+            return dest_uri
+        except Exception, instance:
+            import pdb;pdb.set_trace()  ## Breakpoint ##
+            os.chdir(cwd)
+            raise instance
+
     def _has_uri_changed(self, dest, uri):
         """See interface."""
         # file is removed on the local uris
@@ -143,31 +181,8 @@ class HgFetcher(interfaces.IFetcher):
         # in case we were not hg before
         if not os.path.isdir('%s/%s' % (dest, self.metadata_directory)):
             return True
-        else:
-            try:
-                cwd = os.getcwd()
-                os.chdir(dest)
-                process = subprocess.Popen(
-                    '%s %s' % (
-                        self.executable,
-                        'showconfig |grep paths.default'
-                    ),
-                    shell = True, stdout=subprocess.PIPE
-                )
-                ret = process.wait()
-                if ret != 0:
-                    message = '%s failed to achieve correctly.' % self.name
-                    raise interfaces.FetcherRuntimeError(message)
-                dest_uri = re.sub('([^=]*=)\s*(.*)',
-                                  '\\2',
-                                  process.stdout.read().strip()
-                                 )
-                os.chdir(cwd)
-                if uri != dest_uri:
-                    return True
-            except Exception, instance:
-                os.chdir(cwd)
-                raise instance
+        elif uri != self.get_uri(dest):
+                return True
         return False
 
 
@@ -197,6 +212,8 @@ class SvnFetcher(interfaces.IFetcher):
             - interfaces.FetchErrorin case of fetch problems
             - interfaces.InvalidUrlError in case of uri is invalid
         """
+        log = logging.getLogger(__logger__)
+        log.debug('Updating %s / %s' % (dest, uri))
         if opts is None:
             opts = {}
         revision = opts.get('revision','HEAD')
@@ -261,8 +278,9 @@ class SvnFetcher(interfaces.IFetcher):
             return True
         return False
 
-    def _has_uri_changed(self, dest, uri):
-        """See interface."""
+
+    def get_uri(self, dest):
+        """Get url."""
         process = subprocess.Popen(
             '%s %s' % (
                 self.executable,
@@ -273,11 +291,14 @@ class SvnFetcher(interfaces.IFetcher):
         ret = process.wait()
         # we werent svn
         if ret != 0:
-            return True
-        dest_uri = re.sub('([^:]*:)\s*(.*)', '\\2',
+            return None
+        return re.sub('([^:]*:)\s*(.*)', '\\2',
                           process.stdout.read().strip()
                          )
-        if uri != dest_uri:
+
+    def _has_uri_changed(self, dest, uri):
+        """See interface."""
+        if uri != self.get_uri(dest):
             return True
         return False
 

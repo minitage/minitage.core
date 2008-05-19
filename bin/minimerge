@@ -2,10 +2,10 @@
 __docformat__ = 'restructuredtext en'
 import sys
 from minitage.core.cli import do_read_options
-from minitage.core.api  import Minimerge
+from minitage.core import core
 try:
     options = do_read_options()
-    minimerge = Minimerge(options)
+    minimerge = core.Minimerge(options)
     minimerge.main()
 except Exception, e:
     sys.stderr.write('Minimerge executation failed:\n')
