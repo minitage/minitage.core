@@ -20,11 +20,13 @@ import shutil
 import optparse
 import ConfigParser
 import re
+import tempfile
 
 from minitage.core import api, cli, objects
 from minitage.core.tests import test_common
 
-path = os.path.expanduser('~/iamauniquetestdirformatiwillberemoveafterthetest')
+path = os.path.expanduser(tempfile.mkdtemp())
+shutil.rmtree(path)
 testopts = dict(path=path)
 minilay1 = '%(path)s/minilays/myminilay1' % testopts
 class testMinilays(unittest.TestCase):
@@ -42,11 +44,11 @@ class testMinilays(unittest.TestCase):
     def testSearchingForMinilays(self):
         """testSearchingForMinilays"""
         # create minilays in the minilays dir, seeing if they get putted in
-        sys.argv = [sys.executable, '--config', 
+        sys.argv = [sys.executable, '--config',
                     '%s/etc/minimerge.cfg' % path, 'foo']
         opts = cli.do_read_options()
         minimerge = api.Minimerge(opts)
-        self.failUnless(minilay1 
+        self.failUnless(minilay1
                         in [minilay.path for minilay in minimerge._minilays])
 
         # create minilays in env. seeing if they get putted in
@@ -57,12 +59,12 @@ class testMinilays(unittest.TestCase):
             os.environ['MINILAYS'] = '%s %s' % (
                 minilay, os.environ.get('MINILAYS','')
             )
-        sys.argv = [sys.argv[0], '--config', 
+        sys.argv = [sys.argv[0], '--config',
                     '%s/etc/minimerge.cfg' % path, 'foo']
         opts = cli.do_read_options()
         minimerge = api.Minimerge(opts)
         for dir in minilays:
-            self.failUnless(dir 
+            self.failUnless(dir
                            in [minilay.path for minilay in minimerge._minilays])
         # reset env
         os.environ['MINILAYS'] = ''
@@ -72,16 +74,16 @@ class testMinilays(unittest.TestCase):
         minilays.append('%(path)s/minilays_alternate2/myminilay1' % testopts)
         f = open('%s/etc/minimerge.cfg' % path,'r').read()
         for minilay in minilays:
-            f = re.sub('(#\s*minilays\s*=)(.*)', 
+            f = re.sub('(#\s*minilays\s*=)(.*)',
                        'minilays= \\2 %s' % minilay, f)
             os.system("mkdir -p %s" % (minilay))
         open('%s/etc/minimerge.cfg'%path,'w').write(f)
-        sys.argv = [sys.argv[0], '--config', 
+        sys.argv = [sys.argv[0], '--config',
                     '%s/etc/minimerge.cfg' % path, 'foo']
         opts = cli.do_read_options()
         minimerge = api.Minimerge(opts)
         for dir in minilays:
-            self.failUnless(dir 
+            self.failUnless(dir
                            in [minilay.path for minilay in minimerge._minilays])
 
     def testLoadingBrokenMinibuild(self):
@@ -98,7 +100,7 @@ category=invalid
         open('%s/minibuild-1' % minilay1, 'w').write(minibuild)
         minilay = api.Minilay(path=minilay1)
         self.assertTrue( None == minilay['minibuild-1'].loaded)
-        self.assertRaises(objects.InvalidCategoryError, 
+        self.assertRaises(objects.InvalidCategoryError,
                           minilay['minibuild-1'].load)
 
         minibuild = """
@@ -116,7 +118,7 @@ category=eggs
 
     def testInvalidMinilayPath(self):
         """testInvalidMinilayPath"""
-        self.assertRaises(objects.InvalidMinilayPath, 
+        self.assertRaises(objects.InvalidMinilayPath,
                           api.Minilay, path='notexistingpath')
 
     def testLazyLoad(self):

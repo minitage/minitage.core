@@ -20,7 +20,7 @@ import shutil
 
 from minitage.core.fetchers import interfaces
 from minitage.core.unpackers.interfaces import IUnpackerFactory
-from minitage.core import common
+import minitage.core.common
 
 
 class StaticFetchError(interfaces.IFetcherError):
@@ -66,7 +66,7 @@ class StaticFetcher(interfaces.IFetcher):
             for item in os.listdir(dest):
                 if item not in ['.download']:
                     path = '%s/%s' % (dest,item)
-                    common.remove_path(path)
+                    minitage.core.common.emove_path(path)
 
         self.fetch(dest, uri, opts)
 
@@ -93,7 +93,7 @@ class StaticFetcher(interfaces.IFetcher):
             os.makedirs(download_dir)
 
         # only download if we do not have already the file
-        if (md5 and not common.test_md5(filepath, md5))\
+        if (md5 and not minitage.core.common.test_md5(filepath, md5))\
            or not md5:
             try:
                 data = urllib\

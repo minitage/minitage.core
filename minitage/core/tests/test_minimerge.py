@@ -499,9 +499,9 @@ install_method=buildout""")
         respy25 = '%s/dependencies/python-2.5/testres' % path
 
         minimerge._do_action('install', [py24])
-        self.assertEquals(open(respy24,'r').read(), 'part')
+        self.assertEquals(open(respy24,'r').read(), 'bar')
         minimerge._do_action('install', [py25])
-        self.assertEquals(open(respy25,'r').read(), 'part')
+        self.assertEquals(open(respy25,'r').read(), 'bar')
 
         m1005 = minimerge._find_minibuild('minibuild-1005')
         m1005res =   '%s/eggs/minibuild-1005/testres' % path

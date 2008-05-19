@@ -121,7 +121,7 @@ def get_from_cache(url,
         logger = logging.getLogger(filename)
 
     # get the file from the right place
-    fname = tmp2 = file_present = None
+    fname = tmp2 = file_present = ''
     if download_cache:
         # if we have a cache, try and use it
         logger.debug(

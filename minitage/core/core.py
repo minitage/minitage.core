@@ -300,6 +300,8 @@ class Minimerge(object):
             # compute dependencies
             if not self._nodeps:
                 packages = self._compute_dependencies(self._packages)
+            else:
+                packages = self._find_minibuilds(self._packages)
 
             if self._jump:
                 packages = self._cut_jumped_packages(packages)
@@ -327,7 +329,8 @@ class Minimerge(object):
                 # fetch if not offline
                 if not self._offline:
                     for package in packages:
-                        self._fetch(package)
+                        if not package.name.startswith('meta-'):
+                            self._fetch(package)
 
                 # if we do not want just to fetch, let's go ,
                 # (install|delete|reinstall) baby.
@@ -435,7 +438,8 @@ class Minimerge(object):
               )
 
         # create default minilay dir in case
-        os.makedirs(os.path.join(self._prefix,'minilays'))
+        if not os.path.isdir(os.path.join(self._prefix,'minilays')):
+            os.makedirs(os.path.join(self._prefix,'minilays'))
 
         default_minilay_paths = [os.path.join(self._prefix,'minilays', minilay)\
                              for minilay in default_minilays]

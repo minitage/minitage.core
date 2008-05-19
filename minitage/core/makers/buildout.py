@@ -111,11 +111,7 @@ class BuildoutMaker(interfaces.IMaker):
                   python to compile against.
         """
         options = {}
-        parts = None
-
-        # if we install dependencies, we install in /part
-        if minibuild.category == 'dependencies':
-            parts = 'part'
+        parts = []
 
         # if it s an egg, we must install just the needed
         # site-minibuilds if selected
@@ -123,8 +119,7 @@ class BuildoutMaker(interfaces.IMaker):
             parts = ['site-packages-%s' % ver \
                      for ver in kwargs.get('python_versions', ())]
 
-        if parts:
-            options['parts'] = parts
+        options['parts'] = parts
 
         return options
 
