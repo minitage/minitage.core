@@ -52,7 +52,7 @@ class ZipUnpacker(interfaces.IUnpacker):
                     outfile.write(zfobj.read(name))
                     outfile.close()
         except Exception, e:
-            message = 'Tar Unpack error\n\t%s' % e
+            message = 'Zip Unpack error\n\t%s' % e
             raise interfaces.UnpackerRuntimeError(message)
 
     def match(self, switch):

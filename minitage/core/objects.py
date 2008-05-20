@@ -241,7 +241,7 @@ class Minibuild(object):
         self.install_method = section.get('install_method','').strip()
         if self.install_method  \
            and not self.install_method in VALID_INSTALL_METHODS:
-            messsage = 'The \'%s\' install method is invalid for %s'
+            message = 'The \'%s\' install method is invalid for %s'
             raise InvalidInstallMethodError(
                 message % (
                     self.install_method, self.path
