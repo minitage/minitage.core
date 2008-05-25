@@ -199,7 +199,6 @@ category=dependencies
 """, #1005
 """
 [minibuild]
-dependencies=meta-python
 src_uri=https://hg.minitage.org/minitage
 src_type=hg
 install_method=buildout
@@ -247,7 +246,7 @@ install_method=buildout""")
         os.chdir(__cwd__)
         shutil.rmtree(os.path.expanduser(path))
 
-    def testFindMinibuild(self):
+    def atestFindMinibuild(self):
         """testFindMinibuild
         find m0?"""
         # create minilays in the minilays dir, seeing if they get putted in
@@ -258,7 +257,7 @@ install_method=buildout""")
         mb = minimerge._find_minibuild('minibuild-0')
         self.assertEquals('minibuild-0', mb.name)
 
-    def testComputeDepsWithNoDeps(self):
+    def atestComputeDepsWithNoDeps(self):
         """testComputeDepsWithNoDeps
         m0 depends on nothing"""
         sys.argv = [sys.argv[0], '--config',
@@ -269,7 +268,7 @@ install_method=buildout""")
         mb = computed_packages[0]
         self.assertEquals('minibuild-0', mb.name)
 
-    def testSimpleDeps(self):
+    def atestSimpleDeps(self):
         """testSimpleDeps
         test m1 -> m0"""
         sys.argv = [sys.argv[0], '--config',
@@ -282,7 +281,7 @@ install_method=buildout""")
         mb = computed_packages[1]
         self.assertEquals(mb.name, 'minibuild-1')
 
-    def testChainedandTreeDeps(self):
+    def atestChainedandTreeDeps(self):
         """testChainedandTreeDeps
         Will test that this tree is safe:
               -       m3
@@ -310,7 +309,7 @@ install_method=buildout""")
                        'minibuild-2', 'minibuild-3', 'minibuild-9']
         self.assertEquals([mb.name for mb in computed_packages], wanted_list)
 
-    def testRecursivity(self):
+    def atestRecursivity(self):
         """testRecursivity
         check that:
              - m5  -> m6 -> m7
@@ -334,7 +333,7 @@ install_method=buildout""")
         self.assertRaises(core.CircurlarDependencyError,
                           minimerge._compute_dependencies, ['minibuild-13'])
 
-    def testMinibuildNotFound(self):
+    def atestMinibuildNotFound(self):
         """testMinibuildNotFound
         INOTINANYMINILAY does not exist"""
         sys.argv = [sys.argv[0], '--config',
@@ -353,12 +352,28 @@ install_method=buildout""")
         opts = cli.do_read_options()
         minimerge = api.Minimerge(opts)
         p =  minimerge._cut_jumped_packages(
-            ['minibuild-1', 'minibuild-2', 'minibuild-3']
+            minimerge._find_minibuilds(
+                ['minibuild-1', 'minibuild-2', 'minibuild-3']
+            )
         )
-        self.assertEquals(p, ['minibuild-2', 'minibuild-3'])
+        self.assertEquals(
+            p,
+            minimerge._find_minibuilds(['minibuild-2', 'minibuild-3'])
+        )
+        minimerge._jump = '666'
+        q =  minimerge._cut_jumped_packages(
+            minimerge._find_minibuilds(
+                ['minibuild-1', 'minibuild-2', 'minibuild-3'])
+        )
+        self.assertEquals(
+            q,
+            minimerge._find_minibuilds(
+                ['minibuild-1', 'minibuild-2', 'minibuild-3']
+            )
+        )
 
 
-    def testFetchOffline(self):
+    def atestFetchOffline(self):
         """testFetchOffline"""
         sys.argv = [sys.argv[0], '--config',
                     '%s/etc/minimerge.cfg' % path, '--offline', 'minibuild-0']
@@ -366,7 +381,7 @@ install_method=buildout""")
         minimerge = api.Minimerge(opts)
         self.assertTrue(minimerge._offline)
 
-    def testFetchOnline(self):
+    def atestFetchOnline(self):
         """testFetchOnline"""
         sys.argv = [sys.argv[0], '--config',
                     '%s/etc/minimerge.cfg' % path, 'minibuild-0']
@@ -377,13 +392,13 @@ install_method=buildout""")
         self.assertTrue(os.path.isdir('%s/eggs/minibuild-0/.hg' % path))
 
 
-    def testSelectPython(self):
+    def atestSelectPython(self):
         """testSelectPython.
         Goal of this test is to prevent uneccesary python versions
         to be built.
         """
         sys.argv = [sys.argv[0], '--config',
-                    '%s/etc/minimerge.cfg' % path, 'minibuild-0']
+                    '%s/etc/minimerge.cfg' % path, 'minibuild-1000']
         opts = cli.do_read_options()
         minimerge = api.Minimerge(opts)
         self.assertTrue(minimerge._action, 'install')
@@ -394,21 +409,40 @@ install_method=buildout""")
             minimerge._compute_dependencies(['minibuild-1000']))
         self.assertFalse(p0)
 
-        # we install a dep that require python
-        # the dict must contains eggs 2.5/2.4
+        # we install a dep that require meta-python
+        # the dict must contains eggs 2.5
         # available python = 2.4/2.5
+        self._packages = ['minibuild-1001']
         computed_packages1, p1 = minimerge._select_pythons(
             minimerge._compute_dependencies(['minibuild-1001']))
-        for i in ['2.4', '2.5']:
+        for i in ['2.5']:
             self.assertTrue(i in p1['minibuild-1005'])
-            self.assertTrue('python-%s'%i
+            self.assertTrue('python-%s' % i
+                            in [c.name for c in computed_packages1]
+                           )
+        # we fake a python-2.4 installation
+        os.makedirs(
+            os.path.join(minimerge._prefix, 'dependencies', 'python-2.4')
+        )
+
+        # we install a dep that require meta-python
+        # the dict must contains eggs 2.4 as there is
+        # a python2.4 allready installed
+        self._packages = ['minibuild-1001']
+        computed_packages1, p1 = minimerge._select_pythons(
+            minimerge._compute_dependencies(['minibuild-1001']))
+        for i in ['2.4']:
+            self.assertTrue(i in p1['minibuild-1005'])
+            self.assertTrue('python-%s' % i
                             in [c.name for c in computed_packages1]
                            )
 
-        # we install a dep that require python-2.4
-        # the dict must contains eggs ==  2.4
+        # we install a dep that require python-2.4 but depends
+        # on a python egg 'minibuild-1005'
+        # the dict must contains eggs part againts 2.4
         # available python = 2.4
         deps = minimerge._compute_dependencies(['minibuild-1002'])
+        self._packages = ['minibuild-1002']
         computed_packages2, p2 = minimerge._select_pythons(deps)
         self.assertTrue('python-2.4'
                         in [c.name for c in computed_packages2]
@@ -423,6 +457,7 @@ install_method=buildout""")
         # the dict must contains eggs ==  2.5
         # available python = 2.5
         deps = minimerge._compute_dependencies(['minibuild-1003'])
+        self._packages = ['minibuild-1003']
         computed_packages3, p3 = minimerge._select_pythons(deps)
         self.assertTrue('python-2.5'
                         in [c.name for c in computed_packages3]
@@ -435,11 +470,13 @@ install_method=buildout""")
 
         # we install a dep that require only a egg, no pytthon
         # is specified specificly
-        # the dict must contains eggs ==  2.5/2.4
-        # available python = 2.5/2.4
+        # the dict must contains eggs ==  2.4
+        # available python = 2.4
+        # thus because we created a fake 'python-2.4'
+        self._packages = ['minibuild-1004']
         computed_packages4, p4 = minimerge._select_pythons(
             minimerge._compute_dependencies(['minibuild-1004']))
-        for i in ['2.4', '2.5']:
+        for i in ['2.4']:
             self.assertTrue(i in p4['minibuild-1005'])
             self.assertTrue('python-%s'%i
                             in [c.name for c in computed_packages4]
@@ -448,6 +485,7 @@ install_method=buildout""")
         # we install an egg directly
         # the dict must contains eggs ==  2.5/2.4
         # available python = 2.5/2.4
+        self._packages = ['minibuild-1005']
         minimerge._packages = ['minibuild-1005']
         computed_packagest, pt = minimerge._select_pythons(
             minimerge._compute_dependencies(['minibuild-1005']))
@@ -457,7 +495,7 @@ install_method=buildout""")
                             in [c.name for c in computed_packagest]
                            )
 
-    def testActionDelete(self):
+    def atestActionDelete(self):
         """testActionDelete."""
         sys.argv = [sys.argv[0], '--config',
                     '%s/etc/minimerge.cfg' % path, 'minibuild-0']
@@ -472,7 +510,7 @@ install_method=buildout""")
         minimerge._do_action('delete', [py24])
         self.assertTrue(not os.path.isdir(ipath))
 
-    def testActionInstall(self):
+    def atestActionInstall(self):
         """testActionInstall."""
         sys.argv = [sys.argv[0], '--config',
                     '%s/etc/minimerge.cfg' % path, 'minibuild-0']
@@ -510,7 +548,7 @@ install_method=buildout""")
         self.assertEquals(open(m1005res25,'r').read(), '2.5')
         self.assertFalse(os.path.isfile(m1005res))
 
-    def testInvalidAction(self):
+    def atestInvalidAction(self):
         sys.argv = [sys.argv[0], '--config',
                     '%s/etc/minimerge.cfg' % path, 'minibuild-0']
         opts = cli.do_read_options()
@@ -525,7 +563,7 @@ install_method=buildout""")
                           [py]
                          )
 
-    def testSync(self):
+    def atestSync(self):
         """testSync."""
         sys.argv = [sys.argv[0], '--config',
                     '%s/etc/minimerge.cfg' % path, 'minibuild-0']

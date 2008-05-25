@@ -278,8 +278,9 @@ class Minimerge(object):
                 # build options.
                 options = maker.get_options(self, package, **maker_kwargs)
 
-                # set off linemode
+                # set offline and debug mode
                 options['offline'] = self._offline
+                options['debug'] = self._debug
 
                 # finally, time to act.
                 if not os.path.isdir(ipath):
@@ -296,9 +297,12 @@ class Minimerge(object):
     def _cut_jumped_packages(self, packages):
         """Remove jumped packages."""
         try:
-            i = packages.index(self._jump)
-            packages = packages[i:]
-        except:
+            m = self._find_minibuild(self._jump)
+            if m:
+                names = [package.name for package in packages]
+                i = names.index(m.name)
+                packages = packages[i:]
+        except Exception, e:
             pass
         return packages
 
@@ -324,12 +328,22 @@ class Minimerge(object):
                 packages = self._find_minibuilds(self._packages)
 
             if self._jump:
-                self.logger.info('Shrinking packages away.')
+                # cut jumped dependencies.
                 packages = self._cut_jumped_packages(packages)
+                self.logger.info('Shrinking packages away.')
 
             # cut pythons we do not need !
             # also get the parts to do in 'eggs' buildout
-            packages, pyvers = self._select_pythons(packages)
+            pypackages, pyvers = self._select_pythons(packages[:])
+
+            # do not take python tree in account if we are in nodep mode
+            if not self._nodeps:
+                packages = pypackages
+
+            # cut jumped dependencies again.
+            if self._jump:
+                self.logger.info('Shrinking packages away.')
+                packages = self._cut_jumped_packages(packages)
 
             self.logger.info('Action:\t%s' % self._action)
             if packages:
@@ -354,7 +368,7 @@ class Minimerge(object):
                 if answer:
                     self.logger.info('User choosed to continue')
                 # fetch if not offline
-                if not self._offline:
+                if not (self._offline or self._action == 'delete'):
                     for package in packages:
                         if not package.name.startswith('meta-'):
                             self._fetch(package)
@@ -376,16 +390,24 @@ class Minimerge(object):
             - We look in the packages to see if they want a
               particular python.
 
+               * If 'meta-python' is set in a direct dependency and the
+                 dependency is an egg: we grab all versions
+
                * If a particular 'python-MAJOR.minor' is set in
-                 the dependencies, we grab this version for selection.
-               * If 'meta-python' is set in a direct dependency
-                   (command line): we grab all available versions
-               * If nothing is set, we let the dependency system continue
-                 with what it has already.
-            - Next, when we have selected pythons, we will delete others
-              python from the dependency tree.
-            - We put inside our selected python(s)
-            - And we set too the parts to build for 'eggs' Minibuilds.
+                 the dependencies: we grab this version for selection.
+
+               * if 'meta-python' is set on a dependency, we will use:
+
+                       - an already installed python if any
+                       - the most recent one otherwise
+
+            - Next, when we have selected pythons, we will:
+
+                * put our select pythons and their dependencies
+                  at the top of the dep tree
+                * delete others python and their dependencies
+                  from the dependency tree.
+                * map eggs and selected version for later use.
 
         Return
             - tuple with the according packages without uneeded stuff
@@ -395,51 +417,88 @@ class Minimerge(object):
         # select wich version of python are really needed.
         pyversions = []
         selected_pyver = {}
-        stop = False
+        metas=[]
+        pythons = [('python-%s' % version, version) \
+                   for version in PYTHON_VERSIONS]
+        ALL = False
 
-        # first look if we have meta-python in direct
-        # dependencies
-        computed_packages = self._find_minibuilds(self._packages)
-        for package in computed_packages:
-            if 'meta-python' in package.dependencies:
-                pyversions.extend([ver for ver in PYTHON_VERSIONS])
-                # if it is a egg, set the site-package to all python!
-                if package.category == 'eggs':
-                    selected_pyver[package.name] = PYTHON_VERSIONS
-                stop = True
+        # look if we have eggs in direct dependencies,
+        # if so: just build all site-packages available.
+        direct_dependencies = self._find_minibuilds(self._packages)
+        for package in direct_dependencies:
+            if package.category == 'eggs':
+                pyversions.extend(PYTHON_VERSIONS)
+                ALL = True
+                break
 
-        if not stop:
+        if not ALL:
             for package in packages:
-                # we do not want eggs to make us build all site-packages,
-                # always !
-                if package.category != 'eggs' \
-                   and not package.name.startswith('python') \
-                   and not package.name.startswith('meta-python'):
-                    # we want all versions of python:
-                    if 'meta-python' in package.dependencies:
-                        pyversions.extend([ver for ver in PYTHON_VERSIONS])
-                    else:
-                        # particular version selected ???
-                        for pyversion in PYTHON_VERSIONS:
-                            if 'python-%s' % pyversion in package.dependencies\
-                               and not pyversion in pyversions:
-                                pyversions.append(pyversion)
+                # first look if we have some python-ver in direct dependencies
+                # and select them
+                for python, version in pythons:
+                    if python in package.dependencies \
+                       and not package.name == 'meta-python':
+                        if version not in pyversions:
+                            pyversions.append(version)
+                # if this is a meta or and egg, record it for later use
+                if 'meta-python' in package.dependencies\
+                   or package.category == 'eggs':
+                    metas.append(package)
 
-        if not pyversions:
-            pyversions = PYTHON_VERSIONS
-        # cut all python versions that are not needed.
-        # for eggs, add site packages stuff only if if was not done.
-        # Because we had maybe already set it if we install the egg as a direct
-        # dependency and so we dont want to overwrite !
-        selected_py = ['python-%s' % ver for ver in pyversions]
-        for package in packages:
-            if package.name.startswith('python-') \
-               and not re.match('^(python-[a-zA-Z])',package.name) \
-               and not package.name in selected_py:
+            # if we got meta packages but no particular python versions on the run,
+            # we need to select the righ(s) versions to install
+            if not pyversions:
+                if metas:
+                    # look if we hav allready installed pythons and select the first
+                    # 'more recent' and exists
+                    mostrecentpy = pythons[:]
+                    mostrecentpy.reverse()
+                    for python, version in mostrecentpy:
+                        if os.path.exists(
+                            os.path.join(
+                                self._prefix,
+                                'dependencies',
+                                python
+                            )):
+                            if version not in pyversions:
+                                pyversions.append(version)
+                            break
+
+                    # if we havent got any python version, and no python is already
+                    # installed, we will need to merge one.
+                    # eggs must have meta-python in their dependencies, so if we
+                    # are building an egg which is not on direct dependencies.
+                    # We will select at least the most recent python version there.
+                    if not pyversions:
+                        pyversions.append(pythons[:].pop()[1])
+
+                # do nothing if we have no meta in dependencies and no python too.
+                # python is not always a dependency :)
+                else:
+                    pass
+
+        # change our real depedency tree according to local pythons
+        # if we got meta or particular python versions.
+        # get the dependencies for each python
+        selected_pys = ['python-%s' % version for version in pyversions]
+        python_deptree = self._compute_dependencies(selected_pys)
+
+        # before inserting our new python deptree we will need to:
+        #  - cut prior python dependencies if we have any
+        #  - set python versions to build against for eggs.
+        py_pn = [package.name for package in python_deptree]
+        for package in packages[:]:
+            # cut dependency if we need to cut it.
+            # cut also not others python.
+            if package.name in py_pn + [python[0] for python in pythons]:
                 packages.pop(packages.index(package))
-            if package.category == 'eggs'\
-               and not package.name in self._packages:
+            if package.category == 'eggs':
                 selected_pyver[package.name] = pyversions
+
+        # insert our selected python(s) deptree at the top of our packages list
+        python_deptree.reverse()
+        for package in python_deptree:
+            packages.insert(0, package)
 
         return packages, selected_pyver
 
@@ -476,7 +535,8 @@ class Minimerge(object):
             if not os.path.exists(d):
                 hg.fetch(d, url)
             else:
-                self._minilays.append(objects.Minilay(d))
+                if not d in [m.path for m in self._minilays]:
+                    self._minilays.append(objects.Minilay(d))
 
         # for others minilays, we just try to update them
         for minilay in self._minilays:
