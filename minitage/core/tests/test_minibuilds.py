@@ -70,7 +70,7 @@ class testMinibuilds(unittest.TestCase):
             self.assertFalse(mb.check_minibuild_name(i))
         minibuild1 = """
         [minibuild]
-        depends=python
+        dependencies=python
         src_type=hg
         src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
         install_method=buildout
@@ -86,10 +86,10 @@ class testMinibuilds(unittest.TestCase):
         """testDepends"""
         minibuild1 = """
 [minibuild]
-depends=python
-depends-linux=linux
-depends-darwin=darwin
-depends-freebsd=freebsd
+dependencies=python
+dependencies-linux=linux
+dependencies-darwin=darwin
+dependencies-freebsd=freebsd
 src_type=hg
 src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
 install_method=buildout
@@ -105,7 +105,7 @@ category=eggs
         """testValidMinibuilds"""
         minibuild1 = """
 [minibuild]
-depends=python
+dependencies=python
 src_type=hg
 src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
 install_method=buildout
@@ -119,7 +119,7 @@ category=eggs
         """testNoMinibuildSection"""
         minibuild2 = """
 [iamnotcalledminibuild]
-depends=python
+dependencies=python
 src_type=hg
 src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
 install_method=buildout
@@ -132,7 +132,7 @@ category=eggs
     def testInvalidConfig(self):
         """testInvalidConfig"""
         minibuild3 = """
-depends=python
+dependencies=python
 src_type=hg
 src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
 install_method=buildout
@@ -147,7 +147,7 @@ category=eggs
         minibuild = """
 [minibuild]
 category=eggs
-depends=python
+dependencies=python
 install_method=buildout
 src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
 """
@@ -160,7 +160,7 @@ src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewrit
         minibuild = """
 [minibuild]
 category=eggs
-depends=python
+dependencies=python
 install_method=buildout
 src_type=invalid
 src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
@@ -173,7 +173,7 @@ src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewrit
         minibuild = """
 [minibuild]
 category=eggs
-depends=python
+dependencies=python
 install_method=buildout
 src_type=hg
 src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
@@ -187,7 +187,7 @@ src_opts=-r666
         """testMeta"""
         minibuild = """
 [minibuild]
-depends=python
+dependencies=python
 """
         open(mb_path,'w').write(minibuild)
         # no tests there, if it has errors in loading, it will fail anyway...
@@ -198,7 +198,7 @@ depends=python
         """testDefaults"""
         minibuild = """
 [minibuild]
-depends=python
+dependencies=python
 """
         open(mb_path,'w').write(minibuild)
         mb = api.Minibuild(path=mb_path).load()
@@ -208,7 +208,7 @@ depends=python
         """testCategory"""
         minibuild = """
 [minibuild]
-depends=python
+dependencies=python
 src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
 src_type=hg
 install_method=buildout
@@ -220,7 +220,7 @@ category=eggs
 
         minibuild = """
 [minibuild]
-depends=python
+dependencies=python
 src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
 src_type=hg
 install_method=buildout
@@ -256,7 +256,7 @@ url=prout
         """testLazyLoad"""
         minibuild = """
 [minibuild]
-depends=python
+dependencies=python
 src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
 src_type=hg
 install_method=buildout
@@ -281,7 +281,7 @@ category=eggs
 
         minibuild = """
 [minibuild]
-depends=python
+dependencies=python
 src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
 src_type=hg
 install_method=buildout

@@ -154,7 +154,7 @@ class Minibuild(object):
       - src_opts : arguments for the fetch method (import, -rxxx) be aware you
         also must include the check out argument if you using SCM fetch method there.
         like co or export. This argument is also not filtered out, take care !
-      - depends : which minibuilds we are relying to as prior dependencies
+      - dependencies : which minibuilds we are relying to as prior dependencies
       - url : project's homepage
       - description : a short description
       - install_method : how to install (valid methods are 'buildout')
@@ -227,13 +227,13 @@ class Minibuild(object):
         section = config._sections['minibuild']
 
         # our dependencies, can be empty
-        self.dependencies = section.get('depends','').strip().split()
+        self.dependencies = section.get('dependencies','').strip().split()
         # specific os dependencies
-        os_depends = section.get('depends-%s' % UNAME, None)
-        if os_depends:
+        os_dependencies = section.get('dependencies-%s' % UNAME, None)
+        if os_dependencies:
             self.dependencies.extend(
                 [d \
-                 for d in os_depends.strip().split()\
+                 for d in os_dependencies.strip().split()\
                  if d not in self.dependencies]
             )
 

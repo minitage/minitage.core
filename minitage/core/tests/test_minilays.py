@@ -91,7 +91,7 @@ class testMinilays(unittest.TestCase):
         # create minilays in the minilays dir, seeing if they get putted in
         minibuild = """
 [minibuild]
-depends=python
+dependencies=python
 src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
 src_type=hg
 install_method=buildout
@@ -105,7 +105,7 @@ category=invalid
 
         minibuild = """
 [minibuild]
-depends=python
+dependencies=python
 src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
 src_type=hg
 install_method=buildout
@@ -125,7 +125,7 @@ category=eggs
         """testLazyLoad"""
         minibuild = """
 [minibuild]
-depends=python
+dependencies=python
 src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
 src_type=hg
 install_method=buildout
@@ -151,7 +151,7 @@ category=eggs
         """testMinibuildInMinilay"""
         minibuild = """
 [minibuild]
-depends=python
+dependencies=python
 src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
 src_type=hg
 install_method=buildout
@@ -167,7 +167,7 @@ category=eggs
         """testLoad"""
         minibuild = """
 [minibuild]
-depends=python
+dependencies=python
 src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
 src_type=hg
 install_method=buildout
