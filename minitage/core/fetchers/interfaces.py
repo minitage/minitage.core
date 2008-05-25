@@ -128,21 +128,10 @@ class IFetcher(interfaces.IProduct):
             config = {}
         self.config = config
 
-        if executable:
-            if not '/' in executable:
-                for path in os.environ['PATH'].split(os.pathsep):
-                    if os.path.isfile('%s/%s' % (path, executable)):
-                        self.executable = '%s/%s' % (path, executable)
-                        break
-            else:
-                if os.path.isfile(executable):
-                    self.executable = executable
 
-            if not self.executable:
-                message = '%s is not in your path, ' % self.executable
-                message += 'please install it or maybe get it into your PATH'
-                raise FetcherNotInPathError(message)
+        self.executable = executable
 
+        
     def update(self, dest, uri, opts=None):
         """Update a package.
         Exceptions:
@@ -188,6 +177,12 @@ class IFetcher(interfaces.IProduct):
     def _scm_cmd(self, command):
         """Helper to run scm commands."""
         logging.getLogger(__logger__).debug('Running %s %s 2>&1' % (self.executable, command))
+    
+        if not self.executable:
+            message = '%s is not in your path, ' % executable
+            message += 'please install it or maybe get it into your PATH'
+            raise FetcherNotInPathError(message)
+    
         p = subprocess.Popen('%s %s 2>&1' % (self.executable, command),
                              shell = True, stdout=subprocess.PIPE)
         ret = p.wait()
