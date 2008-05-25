@@ -330,8 +330,8 @@ class Minimerge(object):
             if self._jump:
                 # cut jumped dependencies.
                 packages = self._cut_jumped_packages(packages)
-                self.logger.info('Shrinking packages away.')
-
+                self.logger.info('Shrinking packages away. _1/2_' )
+                                                             
             # cut pythons we do not need !
             # also get the parts to do in 'eggs' buildout
             pypackages, pyvers = self._select_pythons(packages[:])
@@ -342,7 +342,7 @@ class Minimerge(object):
 
             # cut jumped dependencies again.
             if self._jump:
-                self.logger.info('Shrinking packages away.')
+                self.logger.info('Shrinking packages away. _2/2_')
                 packages = self._cut_jumped_packages(packages)
 
             self.logger.info('Action:\t%s' % self._action)
