@@ -321,7 +321,7 @@ class Minimerge(object):
         else:
             packages = self._packages
             # compute dependencies
-            self.logger.info('Calculating ependencies.')
+            self.logger.info('Calculating dependencies.')
             if not self._nodeps:
                 packages = self._compute_dependencies(self._packages)
             else:
