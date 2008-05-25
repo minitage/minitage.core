@@ -52,7 +52,7 @@ category=eggs
 """,
 """
 [minibuild]
-depends=minibuild-0
+dependencies=minibuild-0
 src_uri=https://hg.minitage.org/minitage
 src_type=hg
 install_method=buildout
@@ -60,7 +60,7 @@ category=eggs
 """,
 """
 [minibuild]
-depends=minibuild-4 minibuild-1
+dependencies=minibuild-4 minibuild-1
 src_uri=https://hg.minitage.org/minitage
 src_type=hg
 install_method=buildout
@@ -68,7 +68,7 @@ category=eggs
 """,
 """
 [minibuild]
-depends=minibuild-2
+dependencies=minibuild-2
 src_uri=https://hg.minitage.org/minitage
 src_type=hg
 install_method=buildout
@@ -76,7 +76,7 @@ category=eggs
 """,
 """
 [minibuild]
-depends=minibuild-0
+dependencies=minibuild-0
 src_uri=https://hg.minitage.org/minitage
 src_type=hg
 install_method=buildout
@@ -84,7 +84,7 @@ category=eggs
 """,
 """
 [minibuild]
-depends=minibuild-7
+dependencies=minibuild-7
 src_uri=https://hg.minitage.org/minitage
 src_type=hg
 install_method=buildout
@@ -92,7 +92,7 @@ category=eggs
 """,
 """
 [minibuild]
-depends=minibuild-5
+dependencies=minibuild-5
 src_uri=https://hg.minitage.org/minitage
 src_type=hg
 install_method=buildout
@@ -100,7 +100,7 @@ category=eggs
 """,
 """
 [minibuild]
-depends=minibuild-6
+dependencies=minibuild-6
 src_uri=https://hg.minitage.org/minitage
 src_type=hg
 install_method=buildout
@@ -108,7 +108,7 @@ category=eggs
 """,
 """
 [minibuild]
-depends=minibuild-8
+dependencies=minibuild-8
 src_uri=https://hg.minitage.org/minitage
 src_type=hg
 install_method=buildout
@@ -116,7 +116,7 @@ category=eggs
 """,
 """
 [minibuild]
-depends=minibuild-0 minibuild-3
+dependencies=minibuild-0 minibuild-3
 src_uri=https://hg.minitage.org/minitage
 src_type=hg
 install_method=buildout
@@ -124,7 +124,7 @@ category=eggs
 """,
 """
 [minibuild]
-depends=minibuild-11
+dependencies=minibuild-11
 src_uri=https://hg.minitage.org/minitage
 src_type=hg
 install_method=buildout
@@ -132,7 +132,7 @@ category=eggs
 """,
 """
 [minibuild]
-depends=minibuild-12
+dependencies=minibuild-12
 src_uri=https://hg.minitage.org/minitage
 src_type=hg
 install_method=buildout
@@ -140,7 +140,7 @@ category=eggs
 """,
 """
 [minibuild]
-depends=minibuild-13
+dependencies=minibuild-13
 src_uri=https://hg.minitage.org/minitage
 src_type=hg
 install_method=buildout
@@ -148,7 +148,7 @@ category=eggs
 """,
 """
 [minibuild]
-depends=minibuild-10
+dependencies=minibuild-10
 src_uri=https://hg.minitage.org/minitage
 src_type=hg
 install_method=buildout
@@ -167,7 +167,7 @@ category=dependencies
 """, #1001
 """
 [minibuild]
-depends=meta-python minibuild-1005
+dependencies=meta-python minibuild-1005
 src_uri=https://hg.minitage.org/minitage
 src_type=hg
 install_method=buildout
@@ -175,7 +175,7 @@ category=dependencies
 """, #1002
 """
 [minibuild]
-depends=python-2.4 minibuild-1005
+dependencies=python-2.4 minibuild-1005
 src_uri=https://hg.minitage.org/minitage
 src_type=hg
 install_method=buildout
@@ -183,7 +183,7 @@ category=dependencies
 """, #1003
 """
 [minibuild]
-depends=python-2.5 minibuild-1005
+dependencies=python-2.5 minibuild-1005
 src_uri=https://hg.minitage.org/minitage
 src_type=hg
 install_method=buildout
@@ -191,7 +191,7 @@ category=dependencies
 """, #1004
 """
 [minibuild]
-depends=minibuild-1005
+dependencies=minibuild-1005
 src_uri=https://hg.minitage.org/minitage
 src_type=hg
 install_method=buildout
@@ -199,7 +199,7 @@ category=dependencies
 """, #1005
 """
 [minibuild]
-depends=meta-python
+dependencies=meta-python
 src_uri=https://hg.minitage.org/minitage
 src_type=hg
 install_method=buildout
@@ -229,7 +229,7 @@ category=dependencies""")
 
         open('%s/%s' % (minilay, 'meta-python'), 'w').write("""
 [minibuild]
-depends=python-2.4 python-2.5
+dependencies=python-2.4 python-2.5
 src_uri=https://hg.minitage.org/minitage
 src_type=hg
 category=meta
@@ -377,10 +377,6 @@ install_method=buildout""")
         self.assertTrue(os.path.isdir('%s/eggs/minibuild-0/.hg' % path))
 
 
-    def testActionInstall(self):
-        """testActionInstall"""
-        pass
-
     def testSelectPython(self):
         """testSelectPython.
         Goal of this test is to prevent uneccesary python versions
@@ -492,22 +488,24 @@ install_method=buildout""")
             '%s/eggs/%s' % (path, 'minibuild-1005')
         )
 
+        my_d = {'python-2.4': '2.4'}
         py24 = minimerge._find_minibuild('python-2.4')
         respy24 = '%s/dependencies/python-2.4/testres' % path
-        minimerge._do_action('install', [py24])
+        minimerge._do_action('install', [py24], my_d)
         py25 = minimerge._find_minibuild('python-2.5')
         respy25 = '%s/dependencies/python-2.5/testres' % path
 
-        minimerge._do_action('install', [py24])
+        minimerge._do_action('install', [py24], my_d)
         self.assertEquals(open(respy24,'r').read(), 'bar')
-        minimerge._do_action('install', [py25])
+        minimerge._do_action('install', [py25], my_d)
         self.assertEquals(open(respy25,'r').read(), 'bar')
 
         m1005 = minimerge._find_minibuild('minibuild-1005')
         m1005res =   '%s/eggs/minibuild-1005/testres' % path
         m1005res24 = '%s/eggs/minibuild-1005/testres2.4' % path
         m1005res25 = '%s/eggs/minibuild-1005/testres2.5' % path
-        minimerge._do_action('install', [m1005])
+        minimerge._do_action('install', [m1005], {'minibuild-1005' :
+                                                  ['2.4', '2.5']})
         self.assertEquals(open(m1005res24,'r').read(), '2.4')
         self.assertEquals(open(m1005res25,'r').read(), '2.5')
         self.assertFalse(os.path.isfile(m1005res))
