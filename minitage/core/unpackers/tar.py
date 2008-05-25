@@ -39,7 +39,9 @@ class TarUnpacker(interfaces.IUnpacker):
             tar = tarfile.open(file)
             if not os.path.isdir(dest):
                 os.makedirs(dest)
-            tar.extractall(dest)
+            # use extract as extractall does not exist in python 2.4
+            for tarinfo in tar:
+                tar.extract(tarinfo, path=dest)
             tar.close()
         except Exception, e:
             message = 'Tar Unpack error\n\t%s' % e
