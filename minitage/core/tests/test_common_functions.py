@@ -26,6 +26,13 @@ tf = '%s/a'  % path
 class TestCommon(unittest.TestCase):
     """TesMd5."""
 
+    def testSplitStrip(self):
+        """testSplitStrip."""
+        self.assertEquals(
+            common.splitstrip(' \n666\n2012\n\n\t\n'),
+            ['666', '2012']
+        )
+
     def testMd5(self):
         """testMd5."""
         open(tf,'w').write('a\n')

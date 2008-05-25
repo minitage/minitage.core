@@ -32,6 +32,11 @@ import urlparse
 
 import  minitage.core.core
 
+def splitstrip(list, token=None):
+    """Split a list and return non stripped elements."""
+    return [elem \
+            for elem in list.split(token) \
+            if elem.strip()]
 
 def md5sum(file):
     """Return the md5 sium of a file"""
