@@ -55,9 +55,6 @@ class StaticFetcher(interfaces.IFetcher):
             - dest: destination to fetch to
             - opts : arguments for the fetcher
 
-        Exceptions:
-            - interfaces.FetchErrorin case of fetch problems
-            - interfaces.InvalidUrlError in case of uri is invalid
         """
         if opts is None:
             opts = {}
@@ -65,8 +62,8 @@ class StaticFetcher(interfaces.IFetcher):
         if os.path.isdir(dest):
             for item in os.listdir(dest):
                 if item not in ['.download']:
-                    path = '%s/%s' % (dest,item)
-                    minitage.core.common.emove_path(path)
+                    path = os.path.join(dest, item)
+                    minitage.core.common.remove_path(path)
 
         self.fetch(dest, uri, opts)
 
@@ -78,7 +75,7 @@ class StaticFetcher(interfaces.IFetcher):
             - opts : arguments for the fetcher
 
         Exceptions:
-            - interfaces.FetchErrorin case of fetch problems
+            - interfaces.FetchError in case of fetch problems
             - interfaces.InvalidUrlError in case of uri is invalid
         """
         if opts is None:
