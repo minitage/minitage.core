@@ -37,7 +37,7 @@ class testInterfaces(unittest.TestCase):
         """testFactory"""
         config = """
 [minibuild]
-depends=python
+dependencies=python
 src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
 src_type=hg
 install_method=buildout
