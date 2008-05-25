@@ -48,6 +48,16 @@ class ZipUnpacker(interfaces.IUnpacker):
                 if name.endswith('/'):
                     os.mkdir(os.path.join(dest, name))
                 else:
+                    # broken zip archives may contains 'dir/file' paths
+                    # before 'dir' one
+                    if len(name) > 1:
+                        if '/' in name[1:] and not (name.endswith('/')): 
+                            ldir = os.path.join(
+                                dest,
+                                '/'.join(name.split('/')[:-1])
+                            )
+                            if not os.path.exists(ldir):
+                                os.makedirs(ldir)
                     outfile = open(os.path.join(dest, name), 'wb')
                     outfile.write(zfobj.read(name))
                     outfile.close()
