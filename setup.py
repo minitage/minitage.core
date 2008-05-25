@@ -17,19 +17,19 @@ import re
 
 from setuptools import setup, find_packages
 prefix = os.path.abspath(sys.exec_prefix)
+setupdir =  os.path.dirname(
+    os.path.abspath(__file__)
+) 
 
-os.chdir(
-    os.path.dirname(
-        os.path.abspath(__file__)
-    )
-)
-
+os.chdir(setupdir)
 
 version = '0.0.4'
 name = 'minitage.core'
 
-def read(*rnames):
-    return open(os.path.join(os.path.dirname(__file__), *rnames)).read()
+def read(rnames):
+    return open(
+        os.path.join(setupdir, rnames)
+    ).read()
 
 setup(
     name=name,
@@ -70,8 +70,9 @@ setup(
 )
 
 # path to setup.py
-path = '/'.join(os.path.abspath(__file__).split('/')[:-1])
-config = '%s/etc/minimerge.cfg' % path
+config = os.path.join(
+    setupdir, 'etc', 'minimerge.cfg'
+)
 p_config = os.path.abspath('%s/etc/minimerge.cfg' % prefix)
 prefixed = re.sub('%PREFIX%',prefix,open(config,'r').read())
 if not os.path.isdir('%s/etc' % prefix):
