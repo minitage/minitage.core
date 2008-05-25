@@ -426,6 +426,11 @@ class Minimerge(object):
         # if so: just build all site-packages available.
         direct_dependencies = self._find_minibuilds(self._packages)
         for package in direct_dependencies:
+            if package.name in [python[0]\
+                                for python in pythons]:
+                pyversions.append(
+                    package.name.replace('python-', '')
+                )
             if package.category == 'eggs':
                 pyversions.extend(PYTHON_VERSIONS)
                 ALL = True
