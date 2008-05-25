@@ -86,11 +86,7 @@ class Minimerge(object):
                     - pretend
         """
         self._config_path = os.path.expanduser(options.get('config'))
-        # configure logging system$
-        logging.root.setLevel(0)
-        logging.config.fileConfig(self._config_path)
-        self.logger = logging.getLogger('minitage.core')
-        self.logger.info('Initializing minitage.')
+        self._init_logging()
 
         if options is None:
             options = {}
@@ -242,20 +238,22 @@ class Minimerge(object):
         if not os.path.isdir(dest_container):
             os.makedirs(dest_container)
         fetcherFactory(package.src_type).fetch_or_update(
-            '%s/%s' % (dest_container, package.name),
+                '%s/%s' % (dest_container, package.name),
             package.src_uri,
         )
 
-    def _do_action(self, action, packages):
+
+    def _do_action(self, action, packages, pyvers = None):
         """Do action.
         Install, delete or reinstall a list of packages (minibuild instances).
         Arguments
             - action: reinstall|install|delete action to do.
             - packages: minibuilds to deal with in order!
+            - pyvers: dict(package, [pythonver,]
         """
-        # cut pythons we do not need !
-        # also get the parts to do in 'eggs' buildout
-        packages, pyvers = self._select_pythons(packages)
+        if pyvers is None:
+            pyvers = {}
+
         maker_kwargs = {}
 
         mf = IMakerFactory(self._config_path)
@@ -266,11 +264,22 @@ class Minimerge(object):
             if not package.name.startswith('meta-'):
                 options = {}
 
-                ipath = '%s/%s/%s' % (self._prefix,
-                                      package.category,
-                                      package.name)
+                # installation prefix
+                ipath = os.path.join(
+                    self._prefix,
+                    package.category,
+                    package.name
+                )
+
+                # get the maker right for the install method
                 maker = mf(package.install_method)
+
+                # let our underlying maker make some addtionnnal choices for the
+                # build options.
                 options = maker.get_options(self, package, **maker_kwargs)
+
+                # set off linemode
+                options['offline'] = self._offline
 
                 # finally, time to act.
                 if not os.path.isdir(ipath):
@@ -318,6 +327,9 @@ class Minimerge(object):
                 self.logger.info('Shrinking packages away.')
                 packages = self._cut_jumped_packages(packages)
 
+            # cut pythons we do not need !
+            # also get the parts to do in 'eggs' buildout
+            packages, pyvers = self._select_pythons(packages)
 
             self.logger.info('Action:\t%s' % self._action)
             if packages:
@@ -350,7 +362,7 @@ class Minimerge(object):
                 # if we do not want just to fetch, let's go ,
                 # (install|delete|reinstall) baby.
                 if not self._fetchonly:
-                    self._do_action(self._action, packages)
+                    self._do_action(self._action, packages, pyvers)
 
     def _select_pythons(self, packages):
         """Get pythons to build into dependencies.
@@ -457,16 +469,14 @@ class Minimerge(object):
         # create default minilay dir in case
         if not os.path.isdir(os.path.join(self._prefix,'minilays')):
             os.makedirs(os.path.join(self._prefix,'minilays'))
-
-        default_minilay_paths = [os.path.join(self._prefix,'minilays', minilay)\
+        default_minilays_pathes_urls = [(os.path.join(self._prefix,'minilays', minilay),
+                             '/'.join((urlbase, minilay)))\
                              for minilay in default_minilays]
-        default_minilay_urls = ['%s/%s' % (urlbase, minilay)\
-                                for minilay in default_minilays]
-
-
-        #for minilay, url in zip(default_minilay_paths, default_minilay_urls):
-        #    self.logger.info('Syncing %s from %s' % (minilay, url))
-        #    hg.fetch_or_update(minilay, url)
+        for d, url in default_minilays_pathes_urls:
+            if not os.path.exists(d):
+                hg.fetch(d, url)
+            else:
+                self._minilays.append(objects.Minilay(d))
 
         # for others minilays, we just try to update them
         for minilay in self._minilays:
@@ -479,3 +489,11 @@ class Minimerge(object):
                         path, scm.get_uri(path), strscm))
                     scm.update(dest=path)
 
+
+    def _init_logging(self):
+        """Initialize logging system."""
+        # configure logging system$
+        logging.config.fileConfig(self._config_path)
+        logging.root.setLevel(0)
+        self.logger = logging.getLogger('minitage.core')
+        self.logger.info('(Re)Initializing minitage logging system.')
