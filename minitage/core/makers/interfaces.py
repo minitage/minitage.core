@@ -16,6 +16,8 @@ __docformat__ = 'restructuredtext en'
 
 import os
 import shutil
+import logging
+
 
 from minitage.core import interfaces
 
@@ -34,7 +36,7 @@ class DeleteError(IMakerError):
 class ReinstallError(IMakerError):
     """Reinstall runtime error."""
 
-
+__logger__ =  'minitage.core.makers.interfaces'
 
 class IMakerFactory(interfaces.IFactory):
     """Factory for makers utilities."""
@@ -97,9 +99,12 @@ class IMaker(interfaces.IProduct):
             - dir : directory where the packge is
             - opts : arguments for the maker
         """
+        logger = logging.getLogger(__logger__)
+        logger.info('Uninstalling %s' % directory)
         if os.path.isdir(directory):
             try:
                 shutil.rmtree(directory)
+                logger.info('Uninstalled %s' % directory)
             except:
                 raise DeleteError('Cannot remove \'%s\'' % directory)
 
