@@ -170,7 +170,6 @@ class HgFetcher(interfaces.IFetcher):
             os.chdir(cwd)
             return dest_uri
         except Exception, instance:
-            import pdb;pdb.set_trace()  ## Breakpoint ##
             os.chdir(cwd)
             raise instance
 
