@@ -86,7 +86,12 @@ class Minimerge(object):
                     - pretend
         """
         self._config_path = os.path.expanduser(options.get('config'))
-        self._init_logging()
+        if not os.path.isfile(self._config_path):
+            message = 'The config file is invalid: %s' % self._config_path
+            raise InvalidConfigFileError(message)
+
+        if not options.get('nolog', False):
+            self._init_logging()
 
         if options is None:
             options = {}
@@ -331,7 +336,7 @@ class Minimerge(object):
                 # cut jumped dependencies.
                 packages = self._cut_jumped_packages(packages)
                 self.logger.info('Shrinking packages away. _1/2_' )
-                                                             
+
             # cut pythons we do not need !
             # also get the parts to do in 'eggs' buildout
             pypackages, pyvers = self._select_pythons(packages[:])
