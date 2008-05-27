@@ -87,7 +87,7 @@ class BuildoutMaker(interfaces.IMaker):
             opts = {}
         try:
             argv = self.config.get('options',
-                                           ' -N -vvvvv').split()
+                                           ' -vvvvv').split()
             if opts.get('offline', False):
                 self.logger.info('Buildout is running in offline mode!')
                 argv.append('-o')
