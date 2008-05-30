@@ -67,7 +67,7 @@ class ZipUnpacker(interfaces.IUnpacker):
 
     def match(self, switch):
         """Test if the switch match the module."""
-        if zipfile.is_zipfile(switch):
+        if zipfile.is_zipfile(switch) or switch.endswith('.zip'):
             return True
         return False
 
