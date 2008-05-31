@@ -124,6 +124,7 @@ class Minimerge(object):
         self._debug = options.get('debug', self._config._sections\
                                   .get('minimerge', {}).get('debug', False))
         self._fetchonly = options.get('fetchonly', False)
+        self._update = options.get('update', False)
         self._pretend = options.get('pretend', False)
         self._ask = options.get('ask', False)
         self._offline = options.get('offline', self._config._sections\
@@ -237,15 +238,23 @@ class Minimerge(object):
              fetch the package.
            - The fetcher exception.
         """
-        self.logger.info('Fetching package %s from %s.' % (package.name,package.src_uri))
+        self.logger.info('Will fetch package %s.' % (package.name))
         dest_container = '%s/%s' % (self._prefix, package.category)
         fetcherFactory = IFetcherFactory(self._config_path)
-        if not os.path.isdir(dest_container):
-            os.makedirs(dest_container)
-        fetcherFactory(package.src_type).fetch_or_update(
-                '%s/%s' % (dest_container, package.name),
-            package.src_uri,
-        )
+        destination = '%s/%s' % (dest_container, package.name)
+        if not os.path.exists(destination):
+            self.logger.info('Fetching package %s from %s.' % (package.name,package.src_uri))
+            os.makedirs(destination)
+            fetcherFactory(package.src_type).fetch(
+                destination,
+                package.src_uri,
+            )
+        if self._update:
+            self.logger.info('Updating package %s from %s.' % (package.name,package.src_uri))
+            fetcherFactory(package.src_type).update(
+                destination,
+                package.src_uri,
+            )
 
 
     def _do_action(self, action, packages, pyvers = None):

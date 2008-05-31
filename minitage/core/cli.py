@@ -45,22 +45,24 @@ def do_read_options():
 
     offline_help = 'Build offline, do not try to connect outside.'
     debug_help = 'Run in debug mode'
-    jump_help = 'Squizze prior dependencies to the '
-    jump_help += 'minibuild specified in that option'
+    jump_help = 'Squizze prior dependencies to the '\
+                'minibuild specified in that option'
     fetchonly_help = 'Fetch the packages but do not build yet'
     delete_help = 'Remove selected packages'
     reinstall_help = 'Uncondionnaly reinstall packages'
     install_help = 'Installs packages (default action)'
     nodeps_help = 'Squizzes all dependencies'
-    config_help = 'Alternate config file. By default it\'s searched in '
-    config_help += '%s/etc/minimerge.cfg and ~/.minimerge.cfg' % sys.exec_prefix
+    config_help = 'Alternate config file. By default it\'s searched in '\
+                  '%s/etc/minimerge.cfg and '\
+                  '~/.minimerge.cfg' % sys.exec_prefix
     pretend_help = 'Do nothing, show what will be done'
+    update_help = 'Update packages prior to compilation step automaticly'
     ask_help = 'Do nothing, show what will be done and ask to continue'
 
     option_list = [
         optparse.make_option('-a', '--ask',
                              action='store_true', dest='ask',
-                             help = ask_help), 
+                             help = ask_help),
         optparse.make_option('-s', '--sync',
                              action='store_true', dest='sync',
                              help = nodeps_help),
@@ -85,12 +87,15 @@ def do_read_options():
         optparse.make_option('-f', '--fetchonly',
                              action='store_true', dest='fetchonly',
                              help = fetchonly_help),
+        optparse.make_option('-U', '--update',
+                             action='store_true', dest='update',
+                             help = update_help),
         optparse.make_option('-R', '--reinstall',
                              action='store_true', dest='reinstall',
                              help = reinstall_help),
         optparse.make_option('-p', '--pretend',
                              action='store_true', dest='pretend',
-                             help = pretend_help), 
+                             help = pretend_help),
         optparse.make_option('-N', '--nodeps',
                              action='store_true', dest='nodeps',
                              help = nodeps_help),
@@ -157,6 +162,7 @@ def do_read_options():
         'action': options.action,
         'config': options.config,
         'pretend': options.pretend,
+        'update': options.update,
         'ask': options.ask,
     }
     return minimerge_options
