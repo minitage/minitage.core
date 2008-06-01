@@ -244,7 +244,6 @@ class Minimerge(object):
         destination = '%s/%s' % (dest_container, package.name)
         if not os.path.exists(destination):
             self.logger.info('Fetching package %s from %s.' % (package.name,package.src_uri))
-            os.makedirs(destination)
             fetcherFactory(package.src_type).fetch(
                 destination,
                 package.src_uri,
