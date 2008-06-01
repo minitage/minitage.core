@@ -127,11 +127,9 @@ class IFetcher(interfaces.IProduct):
         if not config:
             config = {}
         self.config = config
-
-
         self.executable = executable
 
-        
+
     def update(self, dest, uri, opts=None):
         """Update a package.
         Exceptions:
@@ -174,17 +172,26 @@ class IFetcher(interfaces.IProduct):
         """Test if the switch match the module."""
         raise interfaces.NotImplementedError('The method is not implemented')
 
+
+    def _check_scm_presence(self):
+        """check if the scm is in he path"""
+        for path in os.environ.get('PATH', '').split(':'):
+            exe = os.path.join(path, self.executable)
+            if os.path.exists(exe):
+                self._scm_found = True
+                break
+
+        if not getattr(self, '_scm_found', False):
+            message = '%s is not in your path, ' % self.executable
+            message += 'please install it or maybe get it into your PATH'
+            raise FetcherNotInPathError(message) 
+
     def _scm_cmd(self, command):
         """Helper to run scm commands."""
-        logging.getLogger(__logger__).debug('Running %s %s 2>&1' % (self.executable, command))
-    
-        if not self.executable:
-            message = '%s is not in your path, ' % executable
-            message += 'please install it or maybe get it into your PATH'
-            raise FetcherNotInPathError(message)
-    
-        p = subprocess.Popen('%s %s 2>&1' % (self.executable, command),
-                             shell = True, stdout=subprocess.PIPE)
+        self._check_scm_presence()
+        logging.getLogger(__logger__).debug('Running %s %s ' % (self.executable, command))
+        p = subprocess.Popen('echo "there";%s %s;echo "there"' % (self.executable, command),
+                             shell=True, stdout=subprocess.PIPE)
         ret = p.wait()
         if ret != 0:
             message = '%s failed to achieve correctly.' % self.name

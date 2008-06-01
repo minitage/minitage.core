@@ -64,6 +64,7 @@ class HgFetcher(interfaces.IFetcher):
         if opts is None:
             opts = {}
         revision = opts.get('revision','tip')
+        args = opts.get('args','')
         if not uri or self.is_valid_src_uri(uri):
             if uri and self._has_uri_changed(dest, uri):
                 self._remove_versionned_directories(dest)
@@ -94,6 +95,7 @@ class HgFetcher(interfaces.IFetcher):
             - opts : arguments for the fetcher
 
                 - revision: particular revision to deal with.
+                - args: misc arguments to give
 
         Exceptions:
             - InvalidMercurialRepositoryError in case of repo problems
@@ -103,14 +105,15 @@ class HgFetcher(interfaces.IFetcher):
         if opts is None:
             opts = {}
         revision = opts.get('revision','tip')
+        args = opts.get('args','')
         # move directory that musnt be there !
         if os.path.isdir(dest):
             os.rename(dest, '%s.old.%s' \
                       % (dest, datetime.datetime.now().strftime('%d%m%y%H%M%S'))
                      )
         if self.is_valid_src_uri(uri):
-            self._scm_cmd('clone %s %s' % (uri, dest))
-            self._scm_cmd('up  -r %s -R %s' % (revision, dest))
+            self._scm_cmd('clone %s %s %s' % (args, uri, dest))
+            self._scm_cmd('up  -r %s %s -R %s' % (revision, args, dest))
             if not os.path.isdir('%s/%s' % (dest, self.metadata_directory)):
                 message = 'Unexpected fetch error on \'%s\'\n' % uri
                 message += 'The directory \'%s\' is not '
@@ -144,6 +147,7 @@ class HgFetcher(interfaces.IFetcher):
 
     def get_uri(self, dest):
         """get mercurial url"""
+        self._check_scm_presence()
         try:
             cwd = os.getcwd()
             os.chdir(dest)
@@ -196,6 +200,7 @@ class SvnFetcher(interfaces.IFetcher):
     def __init__(self, config = None):
         self.config =  config
         interfaces.IFetcher.__init__(self, 'subversion', 'svn', config, '.svn')
+        self.log = logging.getLogger(__logger__)
 
     def update(self, dest, uri = None, opts=None):
         """Update a package.
@@ -211,15 +216,15 @@ class SvnFetcher(interfaces.IFetcher):
             - interfaces.FetchErrorin case of fetch problems
             - interfaces.InvalidUrlError in case of uri is invalid
         """
-        log = logging.getLogger(__logger__)
-        log.debug('Updating %s / %s' % (dest, uri))
+        self.log.debug('Updating %s / %s' % (dest, uri))
         if opts is None:
             opts = {}
         revision = opts.get('revision','HEAD')
+        args = opts.get('args','')
         if not uri or self.is_valid_src_uri(uri):
             if uri and self._has_uri_changed(dest, uri):
                 self._remove_versionned_directories(dest)
-            self._scm_cmd('up -r %s %s' % (revision, dest))
+            self._scm_cmd('up %s -r %s %s' % (args, revision, dest))
             if not os.path.isdir('%s/%s' % (dest, self.metadata_directory)):
                 message = 'Unexpected fetch error on \'%s\'\n' % uri
                 message += 'The directory \'%s\' is not '
@@ -245,8 +250,10 @@ class SvnFetcher(interfaces.IFetcher):
         if opts is None:
             opts = {}
         revision = opts.get('revision','HEAD')
+        args = opts.get('args','')
         if self.is_valid_src_uri(uri):
-            self._scm_cmd('co -r %s %s %s' % (revision, uri, dest))
+            self._scm_cmd('co %s -r %s %s %s' % (args, revision, uri, dest))
+            self.log('SVN checkout completed')
             if not os.path.isdir('%s/%s' % (dest, self.metadata_directory)):
                 message = 'Unexpected fetch error on \'%s\'\n' % uri
                 message += 'The directory \'%s\' is not '
@@ -280,6 +287,7 @@ class SvnFetcher(interfaces.IFetcher):
 
     def get_uri(self, dest):
         """Get url."""
+        self._check_scm_presence()
         process = subprocess.Popen(
             '%s %s' % (
                 self.executable,
