@@ -242,6 +242,9 @@ class Minimerge(object):
         dest_container = '%s/%s' % (self._prefix, package.category)
         fetcherFactory = IFetcherFactory(self._config_path)
         destination = '%s/%s' % (dest_container, package.name)
+        # create categ dir
+        if not os.path.isdir(dest_container):
+            os.makedirs(dest_container)
         if not os.path.exists(destination):
             self.logger.info('Fetching package %s from %s.' % (
                 package.name,package.src_uri)
@@ -258,7 +261,6 @@ class Minimerge(object):
                 destination,
                 package.src_uri,
             )
-
 
     def _do_action(self, action, packages, pyvers = None):
         """Do action.
@@ -468,11 +470,11 @@ class Minimerge(object):
                    or package.category == 'eggs':
                     metas.append(package)
 
-            # if we got meta packages but no particular python versions 
+            # if we got meta packages but no particular python versions
             # on the run, we need to select the righ(s) versions to install
             if not pyversions:
                 if metas:
-                    # look if we hav allready installed pythons and select 
+                    # look if we hav allready installed pythons and select
                     # the first 'more recent' and exists
                     mostrecentpy = pythons[:]
                     mostrecentpy.reverse()
@@ -487,7 +489,7 @@ class Minimerge(object):
                                 pyversions.append(version)
                             break
 
-                    # if we havent got any python version, and no python is 
+                    # if we havent got any python version, and no python is
                     # already installed, we will need to merge one.
                     # eggs must have meta-python in their dependencies, so if we
                     # are building an egg which is not on direct dependencies.
@@ -496,7 +498,7 @@ class Minimerge(object):
                     if not pyversions:
                         pyversions.append(pythons[:].pop()[1])
 
-                # do nothing if we have no meta in dependencies and no python 
+                # do nothing if we have no meta in dependencies and no python
                 # too. python is not always a dependency :)
                 else:
                     pass
