@@ -26,17 +26,17 @@ class TarUnpacker(interfaces.IUnpacker):
         self.config = config
         interfaces.IUnpacker.__init__(self, 'tar',  config)
 
-    def unpack(self, file, dest = './', opts=None):
+    def unpack(self, filep, dest = './', opts=None):
         """Update a package.
         Exceptions:
             - InvalidUrlError
         Arguments:
-            - file: file to unpack
+            - filep: file to unpack
             - dest : destination folder.
             - opts : arguments for the unpacker
         """
         try:
-            tar = tarfile.open(file)
+            tar = tarfile.open(filep)
             if not os.path.isdir(dest):
                 os.makedirs(dest)
             # use extract as extractall does not exist in python 2.4

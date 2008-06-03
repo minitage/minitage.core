@@ -96,10 +96,10 @@ class StaticFetcher(interfaces.IFetcher):
                 data = urllib\
                         .urlopen(uri, proxies = self._proxies)\
                         .read()
-                file = open(filepath,'w')
-                file.write(data)
-                file.flush()
-                file.close()
+                filep = open(filepath,'w')
+                filep.write(data)
+                filep.flush()
+                filep.close()
             except Exception, e:
                 message = 'Can\'t download file \'%s\'' % filename
                 message += 'from \'%s\' .\n\t%s' % (uri, e)
@@ -121,13 +121,6 @@ class StaticFetcher(interfaces.IFetcher):
                 message = 'Can\'t install file %s in its destination %s.'
                 raise StaticFetchError(message % (filepath, dest))
 
-    def fetch_or_update(self, dest, uri, opts = None):
-        """See interface."""
-        if os.path.isdir(dest):
-            self.update(dest, uri, opts)
-        else:
-            self.fetch(dest, uri, opts)
-
     def match(self, switch):
         """See interface."""
         if switch in ['static']:
@@ -140,4 +133,8 @@ class StaticFetcher(interfaces.IFetcher):
         """
         return False
 
+
+    def is_valid_src_uri(self, uri):
+        """Nothing to do there."""
+        pass
 # vim:set et sts=4 ts=4 tw=80:

@@ -14,33 +14,26 @@
 
 __docformat__ = 'restructuredtext en'
 
-"""
-helpers functions
-"""
-import datetime
 import logging
 import md5
 import os
 import re
-import setuptools.archive_util
-import sha
 import shutil
-import sys
 import tempfile
 import urllib2
 import urlparse
 
 import  minitage.core.core
 
-def splitstrip(list, token=None):
+def splitstrip(l, token=None):
     """Split a list and return non stripped elements."""
     return [elem \
-            for elem in list.split(token) \
+            for elem in l.split(token) \
             if elem.strip()]
 
-def md5sum(file):
+def md5sum(filep):
     """Return the md5 sium of a file"""
-    fobj = open(file,'rb')
+    fobj = open(filep,'rb')
     m = md5.new()
     while True:
         d = fobj.read(8096)
@@ -49,9 +42,9 @@ def md5sum(file):
         m.update(d)
     return m.hexdigest()
 
-def test_md5(file, md5sum_ref):
+def test_md5(filep, md5sum_ref):
     """Test if file match md5 md5sum."""
-    if md5sum(file) == md5sum_ref:
+    if md5sum(filep) == md5sum_ref:
         return True
 
     return False
@@ -64,7 +57,7 @@ def remove_path(path):
     elif os.path.exists(path):
         os.remove(path)
 
-def append_env_var(env, var ,sep=":", before=True):
+def append_env_var(env, var, sep=":", before=True):
     """Append text to a environnement variable.
     @param env String variable to set
     @param before append before or after the variable
@@ -72,7 +65,7 @@ def append_env_var(env, var ,sep=":", before=True):
     for path in var:
         if before:
             os.environ[env] = "%s%s%s" % (
-                path,sep,os.environ.get(env, '')
+                path, sep, os.environ.get(env, '')
             )
         else:
             os.environ[env] = "%s%s%s" % (
@@ -94,9 +87,10 @@ def substitute(filename, search_re, replacement):
     shutil.move(newfilename, filename)
 
 def system(c, log=None):
+    """Execute a command."""
     if log:
         log.info("Running %s" % c)
-    ret =os.system(c)
+    ret = os.system(c)
     if ret:
         raise SystemError('Failed', c)
     return ret
@@ -104,7 +98,7 @@ def system(c, log=None):
 def get_from_cache(url,
                    download_cache = None,
                    logger = None,
-                   md5 = None,
+                   file_md5 = None,
                    offline = False):
     """Get a file from the buildout download cache.
     Arguments:
@@ -136,7 +130,7 @@ def get_from_cache(url,
             fname = os.path.join(download_cache, filename)
 
     # do not download if we have the file
-    file_present=os.path.exists(fname)
+    file_present = os.path.exists(fname)
     if file_present:
         logger.debug(
             'Using cache file in %s' % fname
@@ -175,21 +169,21 @@ def get_from_cache(url,
                 'Downloading %s in %s' % (url,fname)
             )
             open(fname,'w').write(urllib2.urlopen(url).read())
-            if md5:
-                if not test_md5(fname, md5):
+            if file_md5:
+                if not test_md5(fname, file_md5):
                     raise  minitage.core.core.MinimergeError(
                         'MD5SUM mismatch for %s: Good:%s != Bad:%s' % (
                             fname,
-                            md5,
+                            file_md5,
                             md5sum(fname)
                         )
                     )
 
         except Exception, e:
             if tmp2 is not None:
-               shutil.rmtree(tmp2)
+                shutil.rmtree(tmp2)
             if download_cache:
-               os.remove(fname)
+                os.remove(fname)
             raise minitage.core.core.MinimergeError(
                 'Failed download for %s:\t%s' % (url, e)
             )

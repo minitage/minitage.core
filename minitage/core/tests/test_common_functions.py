@@ -103,7 +103,7 @@ class TestCommon(unittest.TestCase):
             core.MinimergeError,
             common.get_from_cache,
             'file://%s' % file,
-            md5 = 'false'
+            file_md5 = 'false'
         )
 
         ret = common.get_from_cache('file://%s' % file,)

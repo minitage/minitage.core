@@ -98,6 +98,15 @@ m_sfx = '(([a-zA-Z]|\d)+(-([a-zA-Z]|\d)+)*)'
 versioned_rxp = '^(%s%s)$' % (m_sfx, sufix)
 packageversion_re = re.compile(versioned_rxp)
 
+def check_minibuild_name(name):
+    """Check if a minibuild is well named.
+    Exceptions:
+        - InvalidMinibuildNameError if self.name is not a valid minibuild filename.
+    """
+    if packageversion_re.match(name):
+        return True
+    return False 
+
 class Minilay(collections.LazyLoadedDict):
     """Minilays are list of minibuilds.
     they have a special loaded attribute to lazy load them.
@@ -183,15 +192,6 @@ class Minibuild(object):
         self.category = None
         self.loaded = None
 
-    def check_minibuild_name(self, name):
-        """Check if a minibuild is well named.
-        Exceptions:
-            - InvalidMinibuildNameError if self.name is not a valid minibuild filename.
-        """
-        if packageversion_re.match(name):
-            return True
-        return False
-
     def __getattribute__(self, attr):
         """Lazyload stuff."""
         lazyloaded = ['config', 'url', 'category', 'src_md5',
@@ -208,7 +208,7 @@ class Minibuild(object):
         Exceptions
             - MinibuildException
         """
-        if not self.check_minibuild_name(self.name):
+        if not check_minibuild_name(self.name):
             message = 'Invalid minibuild name : \'%s\'' % self.name
             raise InvalidMinibuildNameError(message)
 

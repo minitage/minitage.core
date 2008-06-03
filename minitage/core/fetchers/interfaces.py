@@ -16,11 +16,8 @@ __docformat__ = 'restructuredtext en'
 
 import re
 import os
-import subprocess
 import shutil
 import logging
-import time
-import tempfile
 
 from minitage.core import interfaces
 
@@ -116,13 +113,15 @@ class IFetcher(interfaces.IProduct):
               we got from or a new one.
     """
 
-    def __init__(self, name, executable = None , config = None, metadata_directory = None):
+    def __init__(self, name, executable = None , 
+                 config = None, metadata_directory = None):
         """
         Attributes:
             - name : name of the fetcher
             - executable : path to the executable. Either absolute or local.
             - metadata_directory: optionnal, the metadata directory for the scm
         """
+        interfaces.IProduct.__init__(self)
         self.name = name
         self.executable = None
         self.metadata_directory = metadata_directory
@@ -130,6 +129,7 @@ class IFetcher(interfaces.IProduct):
             config = {}
         self.config = config
         self.executable = executable
+        self._scm_found = None
 
 
     def update(self, dest, uri, opts=None):
@@ -141,7 +141,7 @@ class IFetcher(interfaces.IProduct):
             - opts : arguments for the fetcher
             - offline: weither we are offline or online
         """
-        raise interfaces.NotImplementedError('The method is not implemented')
+        raise NotImplementedError('The method is not implemented')
 
     def fetch(self, dest, uri, ops=None):
         """Fetch a package.
@@ -152,7 +152,7 @@ class IFetcher(interfaces.IProduct):
             - opts : arguments for the fetcher
             - offline: weither we are offline or online
         """
-        raise interfaces.NotImplementedError('The method is not implemented')
+        raise NotImplementedError('The method is not implemented')
 
     def fetch_or_update(self, dest, uri, opts = None):
         """Fetch or update a package (call the one of those 2 methods).
@@ -161,18 +161,21 @@ class IFetcher(interfaces.IProduct):
             - opts : arguments for the fetcher
             - offline: weither we are offline or online
         """
-        raise interfaces.NotImplementedError('The method is not implemented')
+        if os.path.isdir(dest):
+            self.update(dest, uri, opts)
+        else:
+            self.fetch(dest, uri, opts) 
 
     def is_valid_src_uri(self, uri):
         """Valid an uri.
         Return:
             boolean if the uri is valid or not
         """
-        raise interfaces.NotImplementedError('The method is not implemented')
+        raise NotImplementedError('The method is not implemented')
 
     def match(self, switch):
         """Test if the switch match the module."""
-        raise interfaces.NotImplementedError('The method is not implemented')
+        raise NotImplementedError('The method is not implemented')
 
 
     def _check_scm_presence(self):
@@ -191,7 +194,8 @@ class IFetcher(interfaces.IProduct):
     def _scm_cmd(self, command):
         """Helper to run scm commands."""
         self._check_scm_presence()
-        logging.getLogger(__logger__).debug('Running %s %s ' % (self.executable, command))
+        logging.getLogger(__logger__).debug(
+            'Running %s %s ' % (self.executable, command))
         #p = subprocess.Popen('%s %s' % (self.executable, command),
         #                     shell=True, 
         #                     stdin=subprocess.PIPE,
@@ -201,7 +205,8 @@ class IFetcher(interfaces.IProduct):
         #ret = p.wait()
         #print p.stdout.read()
         # temp. using system because i have hangs with Popen
-        #ret = os.spawnlp(os.P_WAIT, self.executable, self.executable, command.split()) 
+        #ret = os.spawnlp(os.P_WAIT, self.executable, 
+        #               self.executable, command.split()) 
         la = [self.executable]+command.split()
         ret = os.spawnvp(os.P_WAIT,   
                          self.executable, 
@@ -220,7 +225,7 @@ class IFetcher(interfaces.IProduct):
             - True if the uri in the working copy changed
         """
 
-        raise interfaces.NotImplementedError('The method is not implemented')
+        raise NotImplementedError('The method is not implemented')
 
     def _remove_versionned_directories(self, dest):
         """Remove all directories which contains history.
@@ -229,9 +234,9 @@ class IFetcher(interfaces.IProduct):
             - dest the working copy
         """
         not_versionned = ['part']
-        for file in os.listdir(dest):
+        for filep in os.listdir(dest):
             if not file in not_versionned:
-                path = '%s/%s' % (dest, file)
+                path = '%s/%s' % (dest, filep)
                 if os.path.isdir(path):
                     shutil.rmtree(path)
                 else:

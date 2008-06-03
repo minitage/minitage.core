@@ -15,9 +15,7 @@
 __docformat__ = 'restructuredtext en'
 
 import os
-import sys
 import logging
-import distutils
 
 
 from minitage.core.makers  import interfaces
@@ -119,13 +117,13 @@ class BuildoutMaker(interfaces.IMaker):
                         self.logger
                     )
             else:
-                    self.logger.info('Installing parts')
-                    minitage.core.common.system(
-                        './bin/buildout %s ' % (
-                            ' '.join(argv),
-                        ),
-                        self.logger
-                    )
+                self.logger.info('Installing parts')
+                minitage.core.common.system(
+                    './bin/buildout %s ' % (
+                        ' '.join(argv),
+                    ),
+                    self.logger
+                )
         except Exception, instance:
             os.chdir(cwd)
             raise BuildoutError('Buildout failed: :\n\t%s' % instance)

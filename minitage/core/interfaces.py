@@ -15,21 +15,13 @@
 __docformat__ = 'restructuredtext en'
 
 import ConfigParser
-import imp
-import types
-import pkg_resources
 
 class InterfaceError(Exception):
-    """General Interface Error."""
+    """eneral Interface Error."""
 
 
 class InvalidConfigForFactoryError(InterfaceError):
     """Invalid config file Error."""
-
-
-class NotImplementedError(InterfaceError):
-    """Method is not implemented in the child class."""
-
 
 class InvalidComponentClassPathError(InterfaceError):
     """Component class path was not found."""
@@ -37,7 +29,6 @@ class InvalidComponentClassPathError(InterfaceError):
 
 class InvalidComponentClassError(InterfaceError):
     """Component Class is not valid."""
-
 
 class IFactory(object):
     """Interface implementing the design pattern 'factory'.
@@ -77,16 +68,16 @@ class IFactory(object):
                 for section in self.sections:
                     del self.sections[section]['__name__']
                 self.section = self.config._sections[self.name]
-            except KeyError, e:
-                message = 'You must provide a [%s] section with '
-                message += 'appropriate content for this factory.'
-                raise InvalidConfigForFactoryError(message % self.name)
+            except KeyError:
+                message = 'You must provide a [%s] section with '\
+                        ' appropriate content for this factory.\n'
+                raise InvalidConfigForFactoryError(message % (self.name))
 
         # for each class in the config File, try to instantiate and register
         # the type/plugin in the factory dict.
         self.registerDict(self.section)
 
-    def registerDict(self, dict):
+    def registerDict(self, d):
         """For each item/class in the dict:
         Try to instantiate and register.
         Arguments:
@@ -96,28 +87,27 @@ class IFactory(object):
         """
         # the type/plugin in the factory dict.
         #
-        for key in dict:
+        for key in d:
             try:
-                smodule, sklass = dict[key].strip().split(':')
+                smodule, sklass = d[key].strip().split(':')
                 module = __import__(smodule, None, None, [''])
                 klass = getattr(module, sklass)
-            except Exception,e:
-                 message = 'Invalid Component: \'%s/%s\'' % (key, dict[key])
-                 raise InvalidComponentClassPathError(message)
+            except Exception:
+                message = 'Invalid Component: \'%s/%s\'' % (key, d[key])
+                raise InvalidComponentClassPathError(message)
             self.register(key, klass)
 
-    def register(self, type, klass):
+    def register(self, ltype, klass):
         """Register a product with its factory.
         Arguments
             - type: type to register
             - klass: klass the factory must intanciate
         """
         # little check that we have instance
-        # XXX: find better.
         if not  isinstance(klass, str):
-            self.products[type] = klass
+            self.products[ltype] = klass
         else:
-            message = 'Invalid Component: \'%s/%s\' ' % (type, klass)
+            message = 'Invalid Component: \'%s/%s\' ' % (ltype, klass)
             message += 'does not point to a valid class.'
             raise InvalidComponentClassError()
 

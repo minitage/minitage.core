@@ -16,13 +16,14 @@ __docformat__ = 'restructuredtext en'
 
 import os
 
+from minitage.core.unpackers import interfaces
+
 try:
     import zipfile
 except:
-    message = 'You must have python compiled with zlib support'
-    raise interfaces.UnpackerRuntimeError(message)
+    msg = 'You must have python compiled with zlib support'
+    raise interfaces.UnpackerRuntimeError(msg)
 
-from minitage.core.unpackers import interfaces
 
 class ZipUnpacker(interfaces.IUnpacker):
     """Util to unpack a tar package to somewhere."""
@@ -31,19 +32,19 @@ class ZipUnpacker(interfaces.IUnpacker):
         self.config = config
         interfaces.IUnpacker.__init__(self, 'unzip', config)
 
-    def unpack(self, file, dest = './', opts=None):
+    def unpack(self, filep, dest = './', opts=None):
         """Update a package.
         Exceptions:
             - InvalidUrlError
         Arguments:
-            - file: file to unpack
+            - filep: file to unpack
             - dest : destination folder.
             - opts : arguments for the unpacker
         """
         try:
             if not os.path.isdir(dest):
                 os.makedirs(dest)
-            zfobj = zipfile.ZipFile(file)
+            zfobj = zipfile.ZipFile(filep)
             for name in zfobj.namelist():
                 if name.endswith('/'):
                     os.mkdir(os.path.join(dest, name))

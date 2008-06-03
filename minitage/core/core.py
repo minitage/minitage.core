@@ -243,13 +243,17 @@ class Minimerge(object):
         fetcherFactory = IFetcherFactory(self._config_path)
         destination = '%s/%s' % (dest_container, package.name)
         if not os.path.exists(destination):
-            self.logger.info('Fetching package %s from %s.' % (package.name,package.src_uri))
+            self.logger.info('Fetching package %s from %s.' % (
+                package.name,package.src_uri)
+            )
             fetcherFactory(package.src_type).fetch(
                 destination,
                 package.src_uri,
             )
         if self._update:
-            self.logger.info('Updating package %s from %s.' % (package.name,package.src_uri))
+            self.logger.info('Updating package %s from %s.' % (
+                package.name,package.src_uri)
+            )
             fetcherFactory(package.src_type).update(
                 destination,
                 package.src_uri,
@@ -362,7 +366,7 @@ class Minimerge(object):
             if packages:
                 self.logger.info('Packages:')
                 for p in packages:
-                        self.logger.info('\t\t* %s' % p.name)
+                    self.logger.info('\t\t* %s' % p.name)
 
             stop = False
             answer = ''
@@ -374,7 +378,8 @@ class Minimerge(object):
 
             if self._pretend \
                or not answer.lower() in valid_answers:
-                self.logger.info('Running in pretend mode or user choosed to abort')
+                self.logger.info('Running in pretend mode or'
+                                 ' user choosed to abort')
                 stop = True
 
             if not stop:
@@ -430,7 +435,7 @@ class Minimerge(object):
         # select wich version of python are really needed.
         pyversions = []
         selected_pyver = {}
-        metas=[]
+        metas = []
         pythons = [('python-%s' % version, version) \
                    for version in PYTHON_VERSIONS]
         ALL = False
@@ -463,12 +468,12 @@ class Minimerge(object):
                    or package.category == 'eggs':
                     metas.append(package)
 
-            # if we got meta packages but no particular python versions on the run,
-            # we need to select the righ(s) versions to install
+            # if we got meta packages but no particular python versions 
+            # on the run, we need to select the righ(s) versions to install
             if not pyversions:
                 if metas:
-                    # look if we hav allready installed pythons and select the first
-                    # 'more recent' and exists
+                    # look if we hav allready installed pythons and select 
+                    # the first 'more recent' and exists
                     mostrecentpy = pythons[:]
                     mostrecentpy.reverse()
                     for python, version in mostrecentpy:
@@ -482,16 +487,17 @@ class Minimerge(object):
                                 pyversions.append(version)
                             break
 
-                    # if we havent got any python version, and no python is already
-                    # installed, we will need to merge one.
+                    # if we havent got any python version, and no python is 
+                    # already installed, we will need to merge one.
                     # eggs must have meta-python in their dependencies, so if we
                     # are building an egg which is not on direct dependencies.
-                    # We will select at least the most recent python version there.
+                    # We will select at least the most recent python version
+                    # there.
                     if not pyversions:
                         pyversions.append(pythons[:].pop()[1])
 
-                # do nothing if we have no meta in dependencies and no python too.
-                # python is not always a dependency :)
+                # do nothing if we have no meta in dependencies and no python 
+                # too. python is not always a dependency :)
                 else:
                     pass
 
@@ -546,9 +552,14 @@ class Minimerge(object):
         # create default minilay dir in case
         if not os.path.isdir(os.path.join(self._prefix,'minilays')):
             os.makedirs(os.path.join(self._prefix,'minilays'))
-        default_minilays_pathes_urls = [(os.path.join(self._prefix,'minilays', minilay),
-                             '/'.join((urlbase, minilay)))\
-                             for minilay in default_minilays]
+
+        default_minilays_pathes_urls = [(os.path.join(
+                                           self._prefix,
+                                           'minilays',
+                                           minilay),
+                                           '/'.join((urlbase, minilay))
+                                       )\
+            for minilay in default_minilays]
         for d, url in default_minilays_pathes_urls:
             if not os.path.exists(d):
                 hg.fetch(d, url)
@@ -571,7 +582,12 @@ class Minimerge(object):
     def _init_logging(self):
         """Initialize logging system."""
         # configure logging system$
-        logging.config.fileConfig(self._config_path)
+        try:
+            logging.config.fileConfig(self._config_path)
+        except:
+            # just a stdout handler
+            h = logging.StreamHandler()
+            logging.root.addHandler(h)
         logging.root.setLevel(0)
         self.logger = logging.getLogger('minitage.core')
         self.logger.info('(Re)Initializing minitage logging system.')

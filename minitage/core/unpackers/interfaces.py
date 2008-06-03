@@ -14,10 +14,7 @@
 
 __docformat__ = 'restructuredtext en'
 
-import re
-import os
 import subprocess
-import shutil
 
 from minitage.core import interfaces
 
@@ -93,26 +90,28 @@ class IUnpacker(interfaces.IProduct):
             - name : name of the unpacker
             - executable : path to the executable. Either absolute or local.
         """
+        interfaces.IProduct.__init__(self)
         self.name = name
+        self.executable = None
         if not config:
             config = {}
         self.config = config
 
-    def unpack(self, file, dest, opts=None):
+    def unpack(self, filep, dest, opts=None):
         """Update a package.
         Exceptions:
             - InvalidUrlError
         Arguments:
-            - file: file to unpack
+            - filep: file to unpack
             - dest : destination folder.
             - opts : arguments for the unpacker
         """
-        raise interfaces.NotImplementedError('The method is not implemented')
+        raise NotImplementedError('The method is not implemented')
 
     def match(self, switch):
         """Test if the switch match the module.
         switch is there an absolute pathname"""
-        raise interfaces.NotImplementedError('The method is not implemented')
+        raise NotImplementedError('The method is not implemented')
 
     def _unpack_cmd(self, command):
         """Helper to run unpack commands."""
@@ -121,6 +120,6 @@ class IUnpacker(interfaces.IProduct):
         ret = p.wait()
         if ret != 0:
             message = '%s failed to achieve correctly.' % self.name
-            raise UnpackerRuntimmeError(message)
+            raise UnpackerRuntimeError(message)
 
 # vim:set et sts=4 ts=4 tw=80:

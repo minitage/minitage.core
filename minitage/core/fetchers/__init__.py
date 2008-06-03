@@ -14,8 +14,8 @@
 
 __docformat__ = 'restructuredtext en'
 
-from scm import HgFetcher, SvnFetcher
-from static import StaticFetcher
-from interfaces import IFetcherFactory, IFetcher
+from minitage.core.fetchers.scm import HgFetcher, SvnFetcher
+from minitage.core.fetchers.static import StaticFetcher
+from minitage.core.fetchers.interfaces import IFetcherFactory, IFetcher
 
 # vim:set et sts=4 ts=4 tw=80:

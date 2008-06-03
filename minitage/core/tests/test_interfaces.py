@@ -57,12 +57,12 @@ item1=minitage.core.tests.test_interfaces:test
         self.assertEquals(i.products['item1'].__name__, 'test')
         self.assertRaises(interfaces.InvalidComponentClassError,
                           i.register, 'foo', 'foo.Bar')
-        self.assertRaises(interfaces.NotImplementedError, i.__call__, 'foo')
+        self.assertRaises(NotImplementedError, i.__call__, 'foo')
 
     def testProduct(self):
         """testProduct"""
         p = interfaces.IProduct()
-        self.assertRaises(interfaces.NotImplementedError, p.match, 'foo')
+        self.assertRaises(NotImplementedError, p.match, 'foo')
 
 if __name__ == '__main__':
     suite = unittest.TestSuite()

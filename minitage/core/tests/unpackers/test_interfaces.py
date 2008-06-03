@@ -25,9 +25,9 @@ class testInterfaces(unittest.TestCase):
     def testIUnpacker(self):
         """testIUnpacker"""
         i = unpackers.interfaces.IUnpacker('ls', 'ls')
-        self.assertRaises(interfaces.NotImplementedError,
+        self.assertRaises(NotImplementedError,
                           i.unpack, 'foo', 'bar')
-        self.assertRaises(interfaces.NotImplementedError,
+        self.assertRaises(NotImplementedError,
                           i.match, 'foo')
 
     def testInit(self):

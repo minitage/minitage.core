@@ -17,7 +17,6 @@ __docformat__ = 'restructuredtext en'
 import os
 import subprocess
 import re
-import shutil
 import datetime
 import logging
 
@@ -185,7 +184,7 @@ class HgFetcher(interfaces.IFetcher):
         if not os.path.isdir('%s/%s' % (dest, self.metadata_directory)):
             return True
         elif uri != self.get_uri(dest):
-                return True
+            return True
         return False
 
 
@@ -261,13 +260,6 @@ class SvnFetcher(interfaces.IFetcher):
                 raise InvalidMercurialRepositoryError(message)
         else:
             raise interfaces.InvalidUrlError('this uri \'%s\' is invalid' % uri)
-
-    def fetch_or_update(self, dest, uri, opts = None):
-        """See interface."""
-        if os.path.isdir(dest):
-            self.update(dest, uri, opts)
-        else:
-            self.fetch(dest, uri, opts)
 
     def is_valid_src_uri(self, uri):
         """See interface."""

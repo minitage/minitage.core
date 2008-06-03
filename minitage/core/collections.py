@@ -18,6 +18,7 @@ class LazyLoadedList(list):
     """Just in time objects loading"""
 
     def __init__(self, *kw, **kwargs):
+        list.__init__(self)
         self.loaded = False
 
     def isLoaded(self):
@@ -59,6 +60,7 @@ class LazyLoadedDict(dict):
 
     def __init__(self):
         """returns True is the minilay has been loaded"""
+        dict.__init__(self)
         self.items = []
         self.loaded = False
 

@@ -116,7 +116,7 @@ class IMaker(interfaces.IProduct):
             - directory : directory where the packge is
             - opts : arguments for the maker
         """
-        raise interfaces.NotImplementedError('The method is not implemented')
+        raise NotImplementedError('The method is not implemented')
 
     def install(self, directory, ops=None):
         """Make a package.
@@ -126,17 +126,17 @@ class IMaker(interfaces.IProduct):
             - dir : directory where the packge is
             - opts : arguments for the maker
         """
-        raise interfaces.NotImplementedError('The method is not implemented')
+        raise NotImplementedError('The method is not implemented')
 
     def match(self, switch):
         """Return true if the product match the switch."""
-        raise interfaces.NotImplementedError('The method is not implemented')
+        raise NotImplementedError('The method is not implemented')
 
 
     def get_options(self, minimerge, minibuild, **kwargs):
         """Return a dict of needed options
         according to a minibuild and a minimerge instance and for the other
         packages to be built in the session."""
-        raise interfaces.NotImplementedError('The method is not implemented')
+        raise NotImplementedError('The method is not implemented')
 
 # vim:set et sts=4 ts=4 tw=80:

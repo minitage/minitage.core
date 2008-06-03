@@ -53,7 +53,7 @@ class testMinibuilds(unittest.TestCase):
         valid_names.append('test-1.0_rTIP')
         for i in valid_names:
             # will fail if raise error anyway
-            self.assertTrue(mb.check_minibuild_name(i))
+            self.assertTrue(objects.check_minibuild_name(i))
         invalid_names = []
         invalid_names.append('test-')
         invalid_names.append('test-1.0_prout4')
@@ -67,7 +67,7 @@ class testMinibuilds(unittest.TestCase):
         invalid_names.append('meta-')
         for i in invalid_names:
             # will fail if raise error anyway
-            self.assertFalse(mb.check_minibuild_name(i))
+            self.assertFalse(objects.check_minibuild_name(i))
         minibuild1 = """
         [minibuild]
         dependencies=python
