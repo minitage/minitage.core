@@ -19,6 +19,8 @@ import os
 import subprocess
 import shutil
 import logging
+import time
+import tempfile
 
 from minitage.core import interfaces
 
@@ -190,9 +192,21 @@ class IFetcher(interfaces.IProduct):
         """Helper to run scm commands."""
         self._check_scm_presence()
         logging.getLogger(__logger__).debug('Running %s %s ' % (self.executable, command))
-        p = subprocess.Popen('echo "there";%s %s;echo "there"' % (self.executable, command),
-                             shell=True, stdout=subprocess.PIPE)
-        ret = p.wait()
+        #p = subprocess.Popen('%s %s' % (self.executable, command),
+        #                     shell=True, 
+        #                     stdin=subprocess.PIPE,
+        #                     stdout=subprocess.PIPE,
+        #                     stderr=subprocess.PIPE, 
+        #                    )
+        #ret = p.wait()
+        #print p.stdout.read()
+        # temp. using system because i have hangs with Popen
+        #ret = os.spawnlp(os.P_WAIT, self.executable, self.executable, command.split()) 
+        la = [self.executable]+command.split()
+        ret = os.spawnvp(os.P_WAIT,   
+                         self.executable, 
+                         la
+                        ) 
         if ret != 0:
             message = '%s failed to achieve correctly.' % self.name
             raise FetcherRuntimeError(message)
