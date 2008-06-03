@@ -253,7 +253,7 @@ class SvnFetcher(interfaces.IFetcher):
         args = opts.get('args','')
         if self.is_valid_src_uri(uri):
             self._scm_cmd('co %s -r %s %s %s' % (args, revision, uri, dest))
-            self.log('SVN checkout completed')
+            self.log.info('SVN checkout completed')
             if not os.path.isdir('%s/%s' % (dest, self.metadata_directory)):
                 message = 'Unexpected fetch error on \'%s\'\n' % uri
                 message += 'The directory \'%s\' is not '
