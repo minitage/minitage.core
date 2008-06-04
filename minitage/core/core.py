@@ -239,10 +239,38 @@ class Minimerge(object):
              fetch the package.
            - The fetcher exception.
         """
-        self.logger.info('Will fetch package %s.' % (package.name))
+        self.logger.debug('Will fetch package %s.' % (package.name))
         dest_container = '%s/%s' % (self._prefix, package.category)
         fetcherFactory = IFetcherFactory(self._config_path)
         destination = '%s/%s' % (dest_container, package.name)
+        # add maybe the scm to the path if it is avalaible
+        fetcher = fetcherFactory(package.src_type)
+        # in dependencies dir.
+        #try to add scms merged via minitage to the path.
+        deps = os.path.join(
+            self.getPrefix(), 'dependencies')
+        scm = getattr(fetcher, 'executable', None)
+        if scm:
+            for path in os.listdir(deps):
+                fp = os.path.join(
+                    deps,
+                    path, 
+                    'parts', 'part', 'bin')
+                if os.path.exists(
+                    os.path.join(fp, scm)):
+                    self.logger.debug(
+                        'Adding %s to your path, this will '
+                        'enable %s \'scm\'.' % (fp, scm)
+                    )
+                    os.environ['PATH'] = '%s%s%s' % (
+                        fp, ':', os.environ['PATH']
+                    ) 
+        # add also minitage top /bin directory
+        os.environ['PATH'] = '%s%s%s' % (
+            os.path.join(self._prefix, 'bin'),
+            ':',
+            os.environ['PATH']
+        )
         # create categ dir
         if not os.path.isdir(dest_container):
             os.makedirs(dest_container)
@@ -250,7 +278,7 @@ class Minimerge(object):
             self.logger.info('Fetching package %s from %s.' % (
                 package.name,package.src_uri)
             )
-            fetcherFactory(package.src_type).fetch(
+            fetcher.fetch(
                 destination,
                 package.src_uri,
             )
@@ -258,7 +286,7 @@ class Minimerge(object):
             self.logger.info('Updating package %s from %s.' % (
                 package.name,package.src_uri)
             )
-            fetcherFactory(package.src_type).update(
+            fetcher.update(
                 destination,
                 package.src_uri,
             )
@@ -350,7 +378,7 @@ class Minimerge(object):
             if self._jump:
                 # cut jumped dependencies.
                 packages = self._cut_jumped_packages(packages)
-                self.logger.info('Shrinking packages away. _1/2_' )
+                self.logger.debug('Shrinking packages away. _1/2_' )
 
             # cut pythons we do not need !
             # also get the parts to do in 'eggs' buildout
@@ -362,7 +390,7 @@ class Minimerge(object):
 
             # cut jumped dependencies again.
             if self._jump:
-                self.logger.info('Shrinking packages away. _2/2_')
+                self.logger.debug('Shrinking packages away. _2/2_')
                 packages = self._cut_jumped_packages(packages)
 
             self.logger.info('Action:\t%s' % self._action)
@@ -599,3 +627,8 @@ class Minimerge(object):
     def getUpgrade(self):
         """Accessor."""
         return self._upgrade
+
+    def getPrefix(self):
+        """Accessor."""
+        return self._prefix
+
