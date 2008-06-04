@@ -12,7 +12,7 @@
 # Free Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 __docformat__ = 'restructuredtext en'
-version = '0.0.4'
+__version__ = '0.4.0_alpha1'
 
 import os
 import sys
@@ -561,6 +561,10 @@ class Minimerge(object):
         """Sync or install our minilays."""
         # install our default minilays
         self.logger.info('Syncing minilays')
+        version = '.'.join( __version__.split('.')[:2])
+        import pdb;pdb.set_trace()  ## Breakpoint ##
+
+
         default_minilays = [s.strip() \
                             for s in self._config._sections\
                             .get('minimerge', {})\

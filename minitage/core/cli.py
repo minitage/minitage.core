@@ -21,9 +21,8 @@ from minitage.core import core
 
 
 usage = """
-Some run sample usages:
-%(arg)s [Options] minibuildn  \t\t\t\t: Installs  package(s)
-%(arg)s [Options] -j m  a b m ... n  \t\t\t: Installs  package(s) from 'm' to 'n'
+%(arg)s [Options] minibuildn  \t\t\t: Installs  package(s)
+%(arg)s [Options] -j m  a b m ... n  \t\t: Installs  package(s) from 'm' to 'n'
 %(arg)s [Options] -rm minibuild ... minibuildn  \t: Uninstall package(s)
 %(arg)s [Options] -uU minibuild ... minibuildn  \t: Update/Upgrade package(s)
 %(arg)s [Options] -RuU minibuild ... minibuildn  \t: Update/Upgrade/rebuild package(s)
@@ -112,7 +111,7 @@ def do_read_options():
                              action='store_true', dest='ask',
                              help = ask_help),
     ]
-    parser = optparse.OptionParser(version=core.version,
+    parser = optparse.OptionParser(version=core.__version__,
                                    usage=usage,
                                    option_list=option_list)
     (options, args) = parser.parse_args()

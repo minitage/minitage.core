@@ -16,14 +16,13 @@ import re
 
 
 from setuptools import setup, find_packages
+from minitage.core.core import __version__
 prefix = os.path.abspath(sys.exec_prefix)
 setupdir =  os.path.dirname(
     os.path.abspath(__file__)
-) 
+)
 
 os.chdir(setupdir)
-
-version = '0.0.4'
 name = 'minitage.core'
 
 def read(rnames):
@@ -33,7 +32,7 @@ def read(rnames):
 
 setup(
     name=name,
-    version=version,
+    version=__version__,
     description="A meta package-manager to install projects on UNIX Systemes.",
     long_description= (
         read('share/minitage/README.txt')
@@ -85,4 +84,4 @@ if not os.path.isdir('%s/eggs' % prefix):
 if not os.path.isdir('%s/dependencies' % prefix):
     os.mkdir('%s/dependencies' % prefix)
 if not os.path.isdir('%s/logs' % prefix):
-    os.mkdir('%s/logs' % prefix) 
+    os.mkdir('%s/logs' % prefix)
