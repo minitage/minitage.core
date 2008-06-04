@@ -59,8 +59,6 @@ class EmptyMinibuildError(MinibuildException):
 class InvalidMinibuildNameError(MinibuildException):
     """The minibuild was not well named."""
 
-
-
 class MinilayException(Exception):
     """General Minilay Error."""
 
@@ -70,13 +68,13 @@ class InvalidMinilayPath(MinilayException):
 
 
 """ valid categories to install into"""
-VALID_CATEGORIES = ['meta', 'instances', 'eggs', 'dependencies', 'zope', 'django', 'tg']
+VALID_CATEGORIES = ['meta', 'instances', 'eggs', 'dependencies', 'zope', 'django', 'tg', 'misc']
 """ valud install methods to use"""
 VALID_INSTALL_METHODS = ['buildout']
 """valid fetch methods to use:
  - hg: mercurial
  - svn: subversion"""
-VALID_FETCH_METHODS = ['svn', 'hg']
+VALID_FETCH_METHODS = ['svn', 'hg', 'static']
 UNAME = os.uname()[0].lower()
 
 # minibuilds name checkers
@@ -105,7 +103,7 @@ def check_minibuild_name(name):
     """
     if packageversion_re.match(name):
         return True
-    return False 
+    return False
 
 class Minilay(collections.LazyLoadedDict):
     """Minilays are list of minibuilds.
@@ -239,14 +237,18 @@ class Minibuild(object):
 
         # our install method, can be empty
         self.install_method = section.get('install_method','').strip()
+        im_re = re.compile('^([a-zA-Z0-9]+)$')
+        im_bypass = section.get('install-method-bypass', False) 
         if self.install_method  \
            and not self.install_method in VALID_INSTALL_METHODS:
-            message = 'The \'%s\' install method is invalid for %s'
-            raise InvalidInstallMethodError(
-                message % (
-                    self.install_method, self.path
+            if not (im_bypass 
+                    and im_re.match(self.install_method)): 
+                message = 'The \'%s\' install method is invalid for %s'
+                raise InvalidInstallMethodError(
+                    message % (
+                        self.install_method, self.path
+                    )
                 )
-            )
 
         # src_uri is where we will fetch from
         self.src_uri = section.get('src_uri','').strip()
@@ -274,14 +276,19 @@ class Minibuild(object):
                 message = 'You must specify a category for the \'%s\' minibuild'
                 raise MissingCategoryError(message % self.path)
             # check we got a valid category to install into
+            # (we wan pass a flag to bypass it)
+            categ_re = re.compile('^([a-zA-Z0-9]+)$')
+            categ_bypass = section.get('category-bypass', False)
             if not self.category in VALID_CATEGORIES:
-                message = 'the minibuild \'%s\' has an invalid category: %s.\n'
-                message += '\tvalid ones are: %s'
-                raise InvalidCategoryError(message % (
-                    self.path,
-                    self.category,
-                    VALID_CATEGORIES)
-                )
+                if not (categ_bypass 
+                        and categ_re.match(self.category)):
+                    message = 'the minibuild \'%s\' has an invalid category: %s.\n'
+                    message += '\tvalid ones are: %s'
+                    raise InvalidCategoryError(message % (
+                        self.path,
+                        self.category,
+                        VALID_CATEGORIES)
+                    )
 
         # misc metadata, optionnal
         self.url = section.get('url','').strip()

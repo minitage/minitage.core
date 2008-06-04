@@ -230,6 +230,7 @@ category=invalid
         open(mb_path,'w').write(minibuild)
         mb = api.Minibuild(path=mb_path)
         self.assertRaises(objects.InvalidCategoryError, mb.load)
+
         minibuild = """
 [minibuild]
 src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
@@ -240,6 +241,32 @@ install_method=buildout
         open(mb_path,'w').write(minibuild)
         mb = api.Minibuild(path=mb_path)
         self.assertRaises(objects.MissingCategoryError, mb.load)
+
+        minibuild = """
+[minibuild]
+src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
+src_type=hg
+install_method=buildout
+category=hehe/bypassed
+category-bypass = true
+"""
+        mb = None
+        open(mb_path,'w').write(minibuild)
+        mb = api.Minibuild(path=mb_path)
+        self.assertRaises(objects.InvalidCategoryError, mb.load) 
+
+        minibuild = """
+[minibuild]
+src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
+src_type=hg
+install_method=buildout
+category=bypassed
+category-bypass = true
+"""
+        mb = None
+        open(mb_path,'w').write(minibuild)
+        mb = api.Minibuild(path=mb_path)
+        self.assertEquals(mb.category, 'bypassed')  
 
     def testMinibuildWithoutInstallMethodNeitherDependencies(self):
         """testMinibuildWithoutInstallMethodNeitherDependencies"""
@@ -299,6 +326,35 @@ category=invalid
     def setUp(self):
         """."""
         open(mb_path,'w').write('')
+
+
+    def testInvalidInstallMethod(self):
+        """testInvalidInstallMethod."""
+        minibuild = """
+[minibuild]
+src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
+src_type=hg
+install_method=buildoutaaaaaaaaaaaaa
+category=zope
+"""
+        mb = None
+        open(mb_path,'w').write(minibuild)
+        mb = api.Minibuild(path=mb_path)
+        self.assertRaises(objects.InvalidInstallMethodError, mb.load) 
+
+        minibuild = """
+[minibuild]
+src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
+src_type=hg
+install_method=buildoutaaaaaaaaaaaaa
+category=zope
+install-method-bypass = true
+"""
+        mb = None
+        open(mb_path,'w').write(minibuild)
+        mb = api.Minibuild(path=mb_path)
+        self.assertEquals(mb.install_method, 'buildoutaaaaaaaaaaaaa')
+ 
 
 if __name__ == '__main__':
     suite = unittest.TestSuite()
