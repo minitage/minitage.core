@@ -125,6 +125,7 @@ class Minimerge(object):
                                   .get('minimerge', {}).get('debug', False))
         self._fetchonly = options.get('fetchonly', False)
         self._update = options.get('update', False)
+        self._upgrade = options.get('upgrade', True)
         self._pretend = options.get('pretend', False)
         self._ask = options.get('ask', False)
         self._offline = options.get('offline', self._config._sections\
@@ -593,3 +594,8 @@ class Minimerge(object):
         logging.root.setLevel(0)
         self.logger = logging.getLogger('minitage.core')
         self.logger.info('(Re)Initializing minitage logging system.')
+
+
+    def getUpgrade(self):
+        """Accessor."""
+        return self._upgrade

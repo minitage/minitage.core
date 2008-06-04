@@ -96,6 +96,22 @@ class BuildoutMaker(interfaces.IMaker):
             if isinstance(parts, str):
                 parts = parts.split()
 
+
+            # Try to upgrade only if we need to
+            # (we chech only when we have a .installed.cfg file
+            installed_cfg = os.path.join(directory, '.installed.cfg')
+            if not opts.get('upgrade', True)\
+               and os.path.exists(installed_cfg):
+                self.logger.info('Buildout will not run in %s'
+                            ' as there is a .installed.cfg file'
+                            ' indicating us that the software is already'
+                            ' installed but minimerge is running in'
+                            ' no-update mode. If you want to try'
+                            ' to update/rebuild it unconditionnaly,'
+                            ' please relaunch with -uUR.' % directory)
+                return
+
+
             # running buildout in our internal way
             if not os.path.exists(
                 os.path.join(
@@ -156,6 +172,10 @@ class BuildoutMaker(interfaces.IMaker):
             parts = ['site-packages-%s' % ver for ver in vers]
 
         options['parts'] = parts
+
+        # prevent buildout from running if we have already installed stuff
+        # and do not want to upgrade.
+        options['upgrade'] = minimerge.getUpgrade()
 
         return options
 

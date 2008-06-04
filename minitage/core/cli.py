@@ -21,8 +21,12 @@ from minitage.core import core
 
 
 usage = """
-%(arg)s [Options] [ -j minibuild ]  minibuild ... minibuildn  : Installs  package(s)."
-%(arg)s [Options] -rm minibuild ... minibuildn  : Uninstall package(s)"
+Some run sample usages:
+%(arg)s [Options] minibuildn  \t\t\t\t: Installs  package(s)
+%(arg)s [Options] -j m  a b m ... n  \t\t\t: Installs  package(s) from 'm' to 'n'
+%(arg)s [Options] -rm minibuild ... minibuildn  \t: Uninstall package(s)
+%(arg)s [Options] -uU minibuild ... minibuildn  \t: Update/Upgrade package(s)
+%(arg)s [Options] -RuU minibuild ... minibuildn  \t: Update/Upgrade/rebuild package(s)
 """ % {'arg': sys.argv[0]}
 
 
@@ -49,56 +53,64 @@ def do_read_options():
                 'minibuild specified in that option'
     fetchonly_help = 'Fetch the packages but do not build yet'
     delete_help = 'Remove selected packages'
-    reinstall_help = 'Uncondionnaly reinstall packages'
+    reinstall_help = 'Unconditionnaly rebuild/reinstall packages'
     install_help = 'Installs packages (default action)'
     nodeps_help = 'Squizzes all dependencies'
     config_help = 'Alternate config file. By default it\'s searched in '\
-                  '%s/etc/minimerge.cfg and '\
-                  '~/.minimerge.cfg' % sys.exec_prefix
+                  '%s/etc/minimerge.cfg.' % sys.exec_prefix
     pretend_help = 'Do nothing, show what will be done'
-    update_help = 'Update packages prior to compilation step automaticly'
+    update_help = 'Update packages from where they come '\
+            'prior to compilation step automaticly'
     ask_help = 'Do nothing, show what will be done and ask to continue'
+    upgrade_help = 'Will try to rebuild already installed sofware. if '\
+            'you need to be sure that all will be rebuilt, activate '\
+            'also the -R flag. If you want minimerge to update '\
+            'the packages from where they come, please activate '\
+            'also the -U flag.'
 
     option_list = [
-        optparse.make_option('-a', '--ask',
-                             action='store_true', dest='ask',
-                             help = ask_help),
-        optparse.make_option('-s', '--sync',
-                             action='store_true', dest='sync',
-                             help = nodeps_help),
-        optparse.make_option('--rm',
-                             action='store_true', dest='delete',
-                             help = delete_help),
-        optparse.make_option('-i', '--install',
-                             action='store_true', dest='install',
-                             help = install_help),
-        optparse.make_option('-o', '--offline',
-                             action='store_true', dest='offline',
-                             help = offline_help),
         optparse.make_option('-c', '--config',
                              action='store', dest='config',
                              help = config_help),
         optparse.make_option('-d', '--debug',
                              action='store_true', dest='debug',
                              help = debug_help),
-        optparse.make_option('-j', '--jump',
-                             action='store', dest='jump',
-                             help = jump_help),
+        optparse.make_option('-o', '--offline',
+                             action='store_true', dest='offline',
+                             help = offline_help),
+        optparse.make_option('-s', '--sync',
+                             action='store_true', dest='sync',
+                             help = nodeps_help),
         optparse.make_option('-f', '--fetchonly',
                              action='store_true', dest='fetchonly',
                              help = fetchonly_help),
+        optparse.make_option('-i', '--install',
+                             action='store_true', dest='install',
+                             help = install_help),
         optparse.make_option('-U', '--update',
                              action='store_true', dest='update',
                              help = update_help),
+        optparse.make_option('-u', '--upgrade',
+                             action='store_true', dest='upgrade',
+                             help = upgrade_help),
         optparse.make_option('-R', '--reinstall',
                              action='store_true', dest='reinstall',
                              help = reinstall_help),
-        optparse.make_option('-p', '--pretend',
-                             action='store_true', dest='pretend',
-                             help = pretend_help),
+        optparse.make_option('--rm',
+                             action='store_true', dest='delete',
+                             help = delete_help),
         optparse.make_option('-N', '--nodeps',
                              action='store_true', dest='nodeps',
                              help = nodeps_help),
+        optparse.make_option('-j', '--jump',
+                             action='store', dest='jump',
+                             help = jump_help),
+        optparse.make_option('-p', '--pretend',
+                             action='store_true', dest='pretend',
+                             help = pretend_help),
+        optparse.make_option('-a', '--ask',
+                             action='store_true', dest='ask',
+                             help = ask_help),
     ]
     parser = optparse.OptionParser(version=core.version,
                                    usage=usage,
@@ -163,6 +175,7 @@ def do_read_options():
         'config': options.config,
         'pretend': options.pretend,
         'update': options.update,
+        'upgrade': options.upgrade,
         'ask': options.ask,
     }
     return minimerge_options
