@@ -102,7 +102,7 @@ class BuildoutMaker(interfaces.IMaker):
             installed_cfg = os.path.join(directory, '.installed.cfg')
             if not opts.get('upgrade', True)\
                and os.path.exists(installed_cfg):
-                self.logger.info('Buildout will not run in %s'
+                self.logger.debug('Buildout will not run in %s'
                             ' as there is a .installed.cfg file'
                             ' indicating us that the software is already'
                             ' installed but minimerge is running in'
