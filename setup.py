@@ -35,9 +35,9 @@ setup(
     version=__version__,
     description="A meta package-manager to install projects on UNIX Systemes.",
     long_description= (
-        read('share/minitage/README.txt')
+        read('README.txt')
         + '\n' +
-        read('share/minitage/CHANGES.txt')
+        read('CHANGES.txt')
     ),
     classifiers=[
         'Framework :: Buildout',
@@ -48,21 +48,20 @@ setup(
     ],
     keywords='development buildout',
     author='Mathieu Pasquet',
-    author_email='kiorky@minitage.com',
+    author_email='kiorky@cryptelium.net',
     url='http://cheeseshop.python.org/pypi/%s' % name,
     license='GPL',
     packages=find_packages(exclude=['ez_setup']),
-    namespace_packages=['minitage.core'],
+    namespace_packages=['minitage', 'minitage.core'],
     install_requires = ['virtualenv', 'zc.buildout', 'setuptools',],
     tests_require = [],
     test_suite = '%s.tests.test_suite' % name,
     zip_safe = False,
     include_package_data = True,
     entry_points = {},
-    package_dir={'etc': 'etc', '/share/minitage':'/share/minitage'},
+    package_dir={'etc': 'etc', },
     data_files = [
         ('%s/etc' % sys.exec_prefix, ['etc/minimerge.cfg']),
-        ('%s/share/minitage' % sys.exec_prefix, ['share/minitage/README.txt','share/minitage/CHANGES.txt']),
         ('%s/minilays' % sys.exec_prefix, []),
     ],
     scripts=['bin/minimerge'],

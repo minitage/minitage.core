@@ -1,0 +1,22 @@
+.. changelog::
+
+0.4_alpha1
+-----------
+
+This is a pre release, minitage is working. But it is not empty from bugs.
+Feel free to give your feedback :)
+
+    - Minimerge totally rewritten in python
+    - Support for conditionnal dependencies toward python version
+    - Support for eggs in addition of site-packages added to the PYTHONPATH
+    - Support for conditionnal (OS) dependencies
+    - Lot of improvments on error handling
+    - Logging mode
+    - Configuration via a file is now possible
+
+up to 0.3
+----------
+    - not public, nothing to see there.
+
+
+
