@@ -1,3 +1,7 @@
+
+
+SHORT INTRO
+============
 Minitage is a deployment tool that allows you to forget compilation and other
 crasy stuff.
 Il will allow you to:
@@ -16,4 +20,4 @@ You can have more information:
     * on http://trac.minitage.org
     * on irc : #minitage @ irc.freenode.net
 
-    
+
