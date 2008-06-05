@@ -77,3 +77,27 @@ minitage, you can give a try to the egg in developement mode?
         python setup.py develop
 
 
+
+Syncing packages
+=================
+
+    To sync all your minilays
+
+        If you need to, fire your virtualenv::
+
+            source ~/minitage/bin/activate
+
+        Sync
+
+            minimerge -s
+
+
+
+
+
+
+
+
+
+
+
