@@ -42,6 +42,16 @@ What will it never do
     - Windows implementation seems to be difficult. Some effort may be done
       to try but it's not the priority
 
+History
+=======
+Project was itialized at Makina Corpus (http://www.makina-corpus.com), the firm 
+where i am working. 
+We have projects that need a lot of dependencies and it was hard to deploy
+them in all of eterogeneous production servers.
+
+
+
+
 Credits
 ========
 
