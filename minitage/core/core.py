@@ -251,19 +251,22 @@ class Minimerge(object):
             self.getPrefix(), 'dependencies')
         scm = getattr(fetcher, 'executable', None)
         if scm:
-            for path in os.listdir(deps):
-                fp = os.path.join(
-                    deps,
-                    path, 
-                    'parts', 'part', 'bin')
-                if os.path.exists(
-                    os.path.join(fp, scm)):
-                    self.logger.debug(
-                        'Adding %s to your path, this will '
-                        'enable %s \'scm\'.' % (fp, scm)
-                    )
-                    os.environ['PATH'] = '%s%s%s' % (
-                        fp, ':', os.environ['PATH']
+            # do we minimerged yet
+            # and added a dependency directory?
+            if os.path.exists(deps):
+                for path in os.listdir(deps):
+                    fp = os.path.join(
+                        deps,
+                        path, 
+                        'parts', 'part', 'bin')
+                    if os.path.exists(
+                        os.path.join(fp, scm)):
+                        self.logger.debug(
+                            'Adding %s to your path, this will '
+                            'enable %s \'scm\'.' % (fp, scm)
+                        )
+                        os.environ['PATH'] = '%s%s%s' % (
+                            fp, ':', os.environ['PATH']
                     ) 
         # add also minitage top /bin directory
         os.environ['PATH'] = '%s%s%s' % (

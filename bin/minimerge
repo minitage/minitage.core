@@ -27,6 +27,8 @@ You seem to be running minitage for the first time.
         for dir in (os.path.split(config)[0],
                     os.path.join(sys.exec_prefix, 'minilays'),
                     os.path.join(sys.exec_prefix, 'logs'),
+                    os.path.join(sys.exec_prefix, 'eggs', 'cache'),
+                    os.path.join(sys.exec_prefix, 'eggs', 'develop-cache'),
                     os.path.join(sys.exec_prefix, 'share', 'minitage'),
                    ):
             if not os.path.isdir(dir):
