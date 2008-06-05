@@ -1,7 +1,9 @@
-.. changelog::
+Changes
+***********************************************
+
 
 0.4_alpha1
------------
+============
 
 This is a pre release, minitage is working. But it is not empty from bugs.
 Feel free to give your feedback :)
@@ -14,9 +16,11 @@ Feel free to give your feedback :)
     - Logging mode
     - Configuration via a file is now possible
 
+
 up to 0.3
-----------
-    - not public, nothing to see there.
+==========
+
+- not public, nothing to see there.
 
 
 

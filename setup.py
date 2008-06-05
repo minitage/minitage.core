@@ -17,6 +17,8 @@ import re
 
 from setuptools import setup, find_packages
 from minitage.core.core import __version__
+
+
 prefix = os.path.abspath(sys.exec_prefix)
 setupdir =  os.path.dirname(
     os.path.abspath(__file__)
@@ -35,9 +37,10 @@ setup(
     version=__version__,
     description="A meta package-manager to install projects on UNIX Systemes.",
     long_description= (
-        read('README.txt')
+        read('share/minitage/README.txt')
         + '\n' +
-        read('CHANGES.txt')
+        read('share/minitage/CHANGES.txt')
+        + '\n' 
     ),
     classifiers=[
         'Framework :: Buildout',
@@ -59,28 +62,24 @@ setup(
     zip_safe = False,
     include_package_data = True,
     entry_points = {},
-    package_dir={'etc': 'etc', },
+    package_dir={'etc': 'etc', 'share/minitage': 'share/minitage',},
     data_files = [
-        ('%s/etc' % sys.exec_prefix, ['etc/minimerge.cfg']),
-        ('%s/minilays' % sys.exec_prefix, []),
+        ('etc', ['etc/minimerge.cfg']),
+        ('share/minitage'  , ['share/minitage/README.txt']),
+        ('share/minitage' , ['share/minitage/CHANGES.txt']),
+        ('minilays', []),
     ],
     scripts=['bin/minimerge'],
 )
 
-# path to setup.py
-config = os.path.join(
-    setupdir, 'etc', 'minimerge.cfg'
-)
-p_config = os.path.abspath('%s/etc/minimerge.cfg' % prefix)
-prefixed = re.sub('%PREFIX%',prefix,open(config,'r').read())
-if not os.path.isdir('%s/etc' % prefix):
-    os.mkdir('%s/etc' % prefix)
-# write default config
-open(p_config,'w').write(prefixed)
+## path to setup.py
+#config = os.path.join(
+#    setupdir, 'etc', 'minimerge.cfg'
+#)
+#p_config = os.path.abspath('%s/etc/minimerge.cfg' % prefix)
+#prefixed = re.sub('%PREFIX%',prefix,open(config,'r').read())
+#if not os.path.isdir('%s/etc' % prefix):
+#    os.mkdir('%s/etc' % prefix)
+## write default config
+#open(p_config,'w').write(prefixed)
 
-if not os.path.isdir('%s/eggs' % prefix):
-    os.mkdir('%s/eggs' % prefix)
-if not os.path.isdir('%s/dependencies' % prefix):
-    os.mkdir('%s/dependencies' % prefix)
-if not os.path.isdir('%s/logs' % prefix):
-    os.mkdir('%s/logs' % prefix)
