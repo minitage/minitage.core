@@ -562,7 +562,6 @@ class Minimerge(object):
         # install our default minilays
         self.logger.info('Syncing minilays')
         version = '.'.join( __version__.split('.')[:2])
-        import pdb;pdb.set_trace()  ## Breakpoint ##
 
 
         default_minilays = [s.strip() \
