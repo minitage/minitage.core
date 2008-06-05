@@ -1,6 +1,28 @@
 Installation instructions
 ***************************
 
+Python
+=======
+You need a python with setuptools, zlib, bz2 and ssl support.
+
+Try that in your interpretery::
+
+>>> import tarfile
+>>> import zipfile
+>>> import bz2
+>>> import _ssl
+>>> import zlib
+>>> import setuptools
+>>>
+
+If you do not have that, you can give a try to my pyboostrapper that bootstrap
+a python somewhere::
+
+    wget http://hg.minitage.org/hg/minitage/shell/file/tip/PyBootstrapper.sh
+    chmod +x PyBootstrapper.sh
+    ./PyBootstrapper.sh /path/to/pythonPrefix
+
+
 Using virtualenv
 =================
 You 'd better to use `virtualenv <http://pypi.python.org/pypi/virtualenv/1.1>`_ ,
