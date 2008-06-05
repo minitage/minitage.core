@@ -69,7 +69,12 @@ setup(
         ('share/minitage' , ['share/minitage/CHANGES.txt']),
         ('minilays', []),
     ],
-    scripts=['bin/minimerge'],
+    entry_points = {
+        'console_scripts': [
+            'minimerge = minitage.core.launchers.minimerge:launch',
+        ],
+    }
+
 )
 
 ## path to setup.py
