@@ -1,4 +1,3 @@
-
 Short introduction
 **********************
 
@@ -44,13 +43,31 @@ What will it never do
 
 History
 =======
+
 Project was itialized at Makina Corpus (http://www.makina-corpus.com), the firm 
-where i am working. 
-We have projects that need a lot of dependencies and it was hard to deploy
-them in all of eterogeneous production servers.
+where i am actually working. 
 
+We have projects that need a lot of dependencies. so, in the one hand, it was hard to deploy
+them in all of eterogeneous production servers. And on the other hand, setup
+developers box cost us a lot of time.
 
+So we started to use sh, inmaintenable!
 
+We went on builout, but monolothic/extended buildout were hard to maintain too
+and their impacts on already installed stuff were difficult to predict (oups
+it has done rm -rf parts !).
+
+So, i started to think to a tool that allow us to use multiple buildouts and
+let us deal with dependencies. Minitage was born.
+
+Up to 0.3, the implementation was in bash, that was well working but because
+of the language, it was quite limited/restrictive. We got also problems
+inherent to bash. Errors handling is painfull. It is all but user friendly.
+
+With the 0.4, i had in mind to rewrite it in python and to integrate a lot of
+QA in the build process. A lot of things were added too like metadata in
+minibuilds, execution logging. I have done also a total migration to mercurial
+which allow more flexibility and yes, mercurial is in python.
 
 Credits
 ========

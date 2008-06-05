@@ -39,6 +39,8 @@ setup(
     long_description= (
         read('share/minitage/README.txt')
         + '\n' +
+        read('share/minitage/INSTALL.txt')
+        + '\n' +
         read('share/minitage/CHANGES.txt')
         + '\n' 
     ),
