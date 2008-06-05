@@ -87,7 +87,7 @@ Syncing packages
 
             source ~/minitage/bin/activate
 
-        Sync
+        Sync::
 
             minimerge -s
 
