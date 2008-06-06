@@ -65,7 +65,6 @@ setup(
     test_suite = '%s.tests.test_suite' % name,
     zip_safe = False,
     include_package_data = True,
-    entry_points = {},
     package_dir={'etc': 'etc', 'share/minitage': 'share/minitage',},
     data_files = [
         ('etc', ['etc/minimerge.cfg']),

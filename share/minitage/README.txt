@@ -44,7 +44,7 @@ What will it never do
 History
 =======
 
-Project was itialized at Makina Corpus (http://www.makina-corpus.com), the firm 
+Project was initialized at Makina Corpus (http://www.makina-corpus.com), the firm 
 where i am actually working. 
 
 We have projects that need a lot of dependencies. so, in the one hand, it was hard to deploy
@@ -76,7 +76,7 @@ Credits
 
     - It is licensed under the GPL-2 license.
 
-    -You can have more information:
+    - You can have more information:
 
         - on http://trac.minitage.org
         - on irc : #minitage @ irc.freenode.net
