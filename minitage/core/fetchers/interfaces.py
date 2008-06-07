@@ -235,8 +235,8 @@ class IFetcher(interfaces.IProduct):
         """
         not_versionned = ['part']
         for filep in os.listdir(dest):
-            if not file in not_versionned:
-                path = '%s/%s' % (dest, filep)
+            if not filep in not_versionned:
+                path = os.path.join(dest, filep)
                 if os.path.isdir(path):
                     shutil.rmtree(path)
                 else:

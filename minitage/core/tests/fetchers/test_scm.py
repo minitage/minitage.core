@@ -71,11 +71,11 @@ class testHg(unittest.TestCase):
         hg = scm.HgFetcher()
         hg.fetch(opts['dest'], 'file://%s' % opts['path'])
         self.assertTrue(os.path.isdir('%s/%s' % (opts['dest'], '.hg')))
-        os.mkdir('%s/%s' % (opts['dest'],'part'))
+        os.mkdir(os.path.join(opts['dest'],'part'))
         hg._remove_versionned_directories(opts['dest'])
-        self.assertTrue(os.path.isdir('%s/%s' % (opts['dest'],'part')))
-        self.assertFalse(os.path.isdir('%s/%s' % (opts['dest'],'.hg')))
-        self.assertFalse(os.path.isfile('%s/%s' % (opts['dest'],'file2')))
+        self.assertTrue(os.path.isdir(  os.path.join(opts['dest'],'part')))
+        self.assertFalse(os.path.isdir( os.path.join(opts['dest'],'.hg')))
+        self.assertFalse(os.path.isfile(os.path.join(opts['dest'],'file2')))
         hg.update(opts['dest'], 'file://%s' % opts['path'])
         self.assertTrue(os.path.isdir('%s/%s' % (opts['dest'], '.hg')))
 
@@ -192,7 +192,7 @@ class testSvn(unittest.TestCase):
         svn = scm.SvnFetcher()
         svn.executable = 'notsvn'
         # shell will not find that command, heh
-        self.assertRaises(interfaces.FetcherRuntimeError,
+        self.assertRaises(interfaces.FetcherNotInPathError,
                           svn.fetch, 'somewhere', 'file://nowhere')
 
         svn = scm.SvnFetcher()
