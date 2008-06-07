@@ -57,7 +57,7 @@ setup(
     url='http://cheeseshop.python.org/pypi/%s' % name,
     license='GPL',
     packages=find_packages(exclude=['ez_setup']),
-    namespace_packages=['minitage', 'minitage.core'],
+    namespace_packages=['minitage', name],
     install_requires = ['virtualenv', 
                         'zc.buildout', 
                         'setuptools',],

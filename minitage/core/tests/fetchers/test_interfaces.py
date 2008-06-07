@@ -58,12 +58,10 @@ class testInterfaces(unittest.TestCase):
         """testInit"""
         f = fetchers.interfaces.IFetcher('ls', 'ls', metadata_directory='.ls')
         self.assertEquals(f.name,'ls')
-        self.assertEquals(f.executable,'/bin/ls')
+        self.assertEquals(f.executable,'ls')
         self.assertEquals(f.metadata_directory,'.ls')
         f = fetchers.interfaces.IFetcher('ls','/bin/ls')
         self.assertEquals(f.executable,'/bin/ls')
-        self.assertRaises(fetchers.interfaces.FetcherNotInPathError,
-                          fetchers.interfaces.IFetcher, 'ls','/bin/notfoundheh')
 
     def testFactory(self):
         """testFactory"""
