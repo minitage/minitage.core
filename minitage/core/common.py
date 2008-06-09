@@ -18,11 +18,13 @@ import logging
 import md5
 import os
 import re
+import sys
 import shutil
 import tempfile
 import urllib2
 import urlparse
 
+from pkg_resources import Requirement, resource_filename
 import  minitage.core.core
 
 def splitstrip(l, token=None):
@@ -189,4 +191,61 @@ def get_from_cache(url,
             )
 
     return fname
+
+def first_run():
+    ## first time create default config !
+    prefix = os.path.abspath(sys.exec_prefix)
+    config = os.path.join(prefix, 'etc', 'minimerge.cfg')
+    mm_version = minitage.core.core.__version__
+    if not os.path.isfile(config): 
+        print """\n\n
+====================================================
+\t\tWELCOME TO THE MINITAGE WORLD
+====================================================
+
+You seem to be running minitage for the first time.
+
+\t* Creating some default stuff...
+\t* Generating default config: %s """ % config
+        print '\t* Creating minilays dir'
+        for dir in (os.path.split(config)[0],
+                    os.path.join(sys.exec_prefix, 'minilays'),
+                    os.path.join(sys.exec_prefix, 'logs'),
+                    os.path.join(sys.exec_prefix, 'eggs', 'cache'),
+                    os.path.join(sys.exec_prefix, 'eggs', 'develop-cache'),
+                    os.path.join(sys.exec_prefix, 'share', 'minitage'),
+                   ):
+            if not os.path.isdir(dir):
+                os.makedirs(dir)
+        tconfig = resource_filename(Requirement.parse(
+            'minitage.core == %s' % mm_version),
+            'etc/minimerge.cfg')
+        changelog= resource_filename(Requirement.parse(
+            'minitage.core == %s' % mm_version),
+            'share/minitage/CHANGES.txt')
+        readme= resource_filename(Requirement.parse(
+            'minitage.core == %s' % mm_version),
+            'share/minitage/README.txt')
+        prefixed = re.sub('%PREFIX%',prefix,open(tconfig,'r').read())
+        open(config, 'w').write(prefixed)
+        print '\t* Installing CHANGELOG.'
+        shutil.copy(changelog,
+                    os.path.join(
+                        sys.exec_prefix,
+                        'share', 'minitage',
+                        'CHANGES.txt'
+                    )
+                   )
+        print '\t* Installing README.'
+        shutil.copy(readme,
+                    os.path.join(
+                        sys.exec_prefix,
+                        'share', 'minitage',
+                        'README.TXT'
+                    )
+                   )
+        print '\n\n'     
+
+
+
 # vim:set et sts=4 ts=4 tw=80:

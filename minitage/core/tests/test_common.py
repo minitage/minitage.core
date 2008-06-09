@@ -15,6 +15,7 @@ __docformat__ = 'restructuredtext en'
 
 import os
 import sys
+from minitage.core.common import first_run
 
 eggs = os.environ.get('MINITAGE_CORE_EGG_PATH', None)
 setup = os.environ.get('MINITAGE_CORE_SETUPPY', None)
@@ -33,6 +34,7 @@ def createMinitageEnv(directory):
               # can be python-ver or python
               $(ls %(path)s/bin/easy_install) -H None -f "%(eggs)s" zc.buildout
               $(ls %(path)s/bin/python*) %(setup)s install
+              $(ls %(path)s/bin/python*) -c 'from minitage.core.common import first_run;first_run()'
               """ % {
                   'eggs': eggs,
                   'path': directory,
