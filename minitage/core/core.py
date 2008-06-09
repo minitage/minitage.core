@@ -12,7 +12,7 @@
 # Free Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 __docformat__ = 'restructuredtext en'
-__version__ = '0.4.0_alpha1'
+__version__ = '0.4.0_alpha3'
 
 import os
 import sys
@@ -157,7 +157,9 @@ class Minimerge(object):
         self._minilays = [objects.Minilay(path = os.path.expanduser(dir)) \
                          for dir in minilays_search_paths if os.path.isdir(dir)]
 
-    def _find_minibuild(self, package):
+
+
+    def find_minibuild(self, package):
         """
         @param package str minibuild to find
         Exceptions
@@ -172,7 +174,7 @@ class Minimerge(object):
         message = 'The minibuild \'%s\' was not found' % package
         raise MinibuildNotFoundError(message)
 
-    def _find_minibuilds(self, packages):
+    def find_minibuilds(self, packages):
         """
         @param package list minibuild to find
         Exceptions
@@ -186,7 +188,7 @@ class Minimerge(object):
             cpackages.append(self._find_minibuild(package))
         return cpackages
 
-    def _compute_dependencies(self, packages = None, ancestors = None):
+    def compute_dependencies(self, packages = None, ancestors = None):
         """
         @param package list list of packages to get the deps
         @param ancestors list list of tuple(ancestor,level of dependency)
@@ -316,11 +318,7 @@ class Minimerge(object):
                 options = {}
 
                 # installation prefix
-                ipath = os.path.join(
-                    self._prefix,
-                    package.category,
-                    package.name
-                )
+                ipath = self.get_install_path(package)
 
                 # get the maker right for the install method
                 maker = mf(package.install_method)
@@ -638,3 +636,16 @@ class Minimerge(object):
         """Accessor."""
         return self._prefix
 
+    def get_install_path(self, package):
+        """Get a minibuild install path location."""
+        # installation prefix
+        return os.path.join(
+            self._prefix,
+            package.category,
+            package.name
+        ) 
+    
+    # api: do not break code
+    _find_minibuilds = find_minibuilds 
+    _find_minibuild = find_minibuild 
+    _compute_dependencies = compute_dependencies 

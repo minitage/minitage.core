@@ -39,9 +39,6 @@ class testMinimerge(unittest.TestCase):
         test_common.createMinitageEnv(path)
         os.makedirs(minilay)
 
-
-
-
         minibuilds = [
 """
 [minibuild]
