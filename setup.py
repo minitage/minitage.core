@@ -60,6 +60,7 @@ setup(
     namespace_packages=['minitage', name],
     install_requires = ['virtualenv', 
                         'zc.buildout', 
+                        'mercurial', 
                         'setuptools',],
     tests_require = [],
     test_suite = '%s.tests.test_suite' % name,
