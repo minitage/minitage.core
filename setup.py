@@ -15,8 +15,7 @@ import sys
 import re
 
 from setuptools import setup, find_packages
-__version__ = '0.4.0_alpha6'
-
+from minitage.core.core import __version__
 
 prefix = os.path.abspath(sys.exec_prefix)
 setupdir =  os.path.dirname(
@@ -59,7 +58,6 @@ setup(
     namespace_packages=['minitage', name],
     install_requires = ['virtualenv', 
                         'zc.buildout', 
-                        'mercurial', 
                         'setuptools',],
     tests_require = [],
     test_suite = '%s.tests.test_suite' % name,

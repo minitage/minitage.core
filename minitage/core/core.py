@@ -12,7 +12,7 @@
 # Free Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 __docformat__ = 'restructuredtext en'
-__version__ = '0.4.0'
+__version__ = '0.4.0_alpha8'
 
 import os
 import sys

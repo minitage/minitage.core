@@ -1,5 +1,8 @@
 Changes
 ***********************************************
+0.4_alpha8
+===========
+    - restore previous version scheme
 
 a0.4_alpha5
 ============
