@@ -14,9 +14,8 @@ import os
 import sys
 import re
 
-
 from setuptools import setup, find_packages
-from minitage.core.core import __version__
+__version__ = '0.4.0_alpha6'
 
 
 prefix = os.path.abspath(sys.exec_prefix)
