@@ -1,5 +1,9 @@
 Changes
 ***********************************************
+0.4_alpha9
+===========
+    - reinforce buildout code
+ 
 0.4_alpha8
 ===========
     - restore previous version scheme
