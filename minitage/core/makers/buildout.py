@@ -15,6 +15,7 @@
 __docformat__ = 'restructuredtext en'
 
 import os
+import sys
 import logging
 
 
@@ -118,10 +119,16 @@ class BuildoutMaker(interfaces.IMaker):
                     directory,
                     'bin',
                     'buildout')):
-                minitage.core.common.system(
-                    'buildout bootstrap',
-                    self.logger
-                )
+                if os.path.exists('bootstrap.py'):
+                    minitage.core.common.system(
+                        '%s bootstrap.py' % sys.executable,
+                        self.logger
+                    ) 
+                else:
+                    minitage.core.common.system(
+                        'buildout bootstrap',
+                        self.logger
+                    )
             if parts:
                 for part in parts:
                     self.logger.info('Installing single part: %s' % part)
