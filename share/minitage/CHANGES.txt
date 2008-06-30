@@ -1,5 +1,12 @@
 Changes
 ***********************************************
+
+0.4_alpha10
+============
+    - Add support for variables in minibuilds setted in minitage configuration
+      file. Use $name in minibuilds and set it in the [minitage.variables]
+      section.
+
 0.4_alpha9
 ===========
     - reinforce buildout code

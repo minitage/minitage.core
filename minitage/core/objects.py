@@ -91,7 +91,7 @@ mn_sfx = '((-\d+((\.\d+)*([a-z]?)))?)'
 # complete sufix
 sufix = '((%s(_(%s|%s|%s|%s))*)*)' % (mn_sfx, p_sfx, n_sfx, s_sfx, v_sfx)
 # packagename : aZ1-az123
-m_sfx = '(([a-zA-Z]|\d)+(-([a-zA-Z]|\d)+)*)'
+m_sfx = '(^([a-zA-Z]|\d)+(-([a-zA-Z]|\d)+)*)'
 # assemble prefixes
 versioned_rxp = '^(%s%s)$' % (m_sfx, sufix)
 packageversion_re = re.compile(versioned_rxp)
@@ -115,9 +115,11 @@ class Minilay(collections.LazyLoadedDict):
         - path: path to the minilay
     """
 
-    def __init__(self, path=None, *kw, **kwargs):
+    def __init__(self, path=None, minitage_config=None, *kw, **kwargs):
         collections.LazyLoadedDict.__init__(self, *kw, **kwargs)
         self.path = path
+        self.minitage_config = minitage_config
+
         if not os.path.isdir(self.path):
             message = 'This is an invalid directory: \'%s\'' % self.path
             raise InvalidMinilayPath(message)
@@ -129,7 +131,7 @@ class Minilay(collections.LazyLoadedDict):
             minibuilds = []
             # 0 is valid
             if item is not None:
-                minibuild = '%s/%s' % (self.path, item)
+                minibuild = os.path.join(self.path, item)
                 if os.path.isfile(minibuild):
                     minibuilds.append(item)
             else:
@@ -138,7 +140,8 @@ class Minilay(collections.LazyLoadedDict):
             for minibuild in minibuilds:
                 if minibuild not in self.items:
                     self[minibuild] = Minibuild(
-                        path='%s/%s' % (self.path,minibuild)
+                        path = os.path.join(self.path, minibuild),
+                        minitage_config = self.minitage_config
                     )
                     self.items.append(minibuild)
 
@@ -167,7 +170,7 @@ class Minibuild(object):
       - install_method : how to install (valid methods are 'buildout')
       """
 
-    def __init__(self, path, *kw, **kwargs):
+    def __init__(self, path, minitage_config = None, *kw, **kwargs):
         """
         Arguments
             path: path to the minibuild file. This minibuild file is pytthon
@@ -188,6 +191,7 @@ class Minibuild(object):
         self.src_uri = None
         self.url = None
         self.category = None
+        self.minitage_config = minitage_config
         self.loaded = None
 
     def __getattribute__(self, attr):
@@ -238,11 +242,11 @@ class Minibuild(object):
         # our install method, can be empty
         self.install_method = section.get('install_method','').strip()
         im_re = re.compile('^([a-zA-Z0-9]+)$')
-        im_bypass = section.get('install-method-bypass', False) 
+        im_bypass = section.get('install-method-bypass', False)
         if self.install_method  \
            and not self.install_method in VALID_INSTALL_METHODS:
-            if not (im_bypass 
-                    and im_re.match(self.install_method)): 
+            if not (im_bypass
+                    and im_re.match(self.install_method)):
                 message = 'The \'%s\' install method is invalid for %s'
                 raise InvalidInstallMethodError(
                     message % (
@@ -280,7 +284,7 @@ class Minibuild(object):
             categ_re = re.compile('^([a-zA-Z0-9]+)$')
             categ_bypass = section.get('category-bypass', False)
             if not self.category in VALID_CATEGORIES:
-                if not (categ_bypass 
+                if not (categ_bypass
                         and categ_re.match(self.category)):
                     message = 'the minibuild \'%s\' has an invalid category: %s.\n'
                     message += '\tvalid ones are: %s'
@@ -301,5 +305,30 @@ class Minibuild(object):
             message += 'for a meta minibuild in \'%s\''
             raise EmptyMinibuildError( message % self.path)
 
+        self.parse_vars()
+
         return self
+    def parse_vars(self):
+        variables = getattr(self.minitage_config, '_sections', {}).get(
+            'minitage.variables', {}
+        )
+        # allow 2 pass variables
+        # to construct variables with variables inside. 
+        for i in (1,2):
+            for key in self.__dict__:
+                var = re.compile('\$\{([^}]*)\}', re.M)
+                item = self.__dict__[key]
+                if item:
+                    if '${' in str(item):
+                        for pattern in var.findall(item):
+                            if pattern in variables:
+                                setattr(
+                                    self,
+                                    key,
+                                    getattr(self, key).replace(
+                                        '${%s}' % pattern, 
+                                        variables[pattern]
+                                    )
+                                )
+
 # vim:set et sts=4 ts=4 tw=80:

@@ -19,6 +19,8 @@ import os
 import shutil
 import sys
 import unittest
+import StringIO
+import tempfile
 
 from minitage.core import api, objects
 from minitage.core.tests import test_common
@@ -69,14 +71,14 @@ class testMinibuilds(unittest.TestCase):
             # will fail if raise error anyway
             self.assertFalse(objects.check_minibuild_name(i))
         minibuild1 = """
-        [minibuild]
-        dependencies=python
-        src_type=hg
-        src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
-        install_method=buildout
-        category=eggs
+[minibuild]
+dependencies=python
+src_type=hg
+src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
+install_method=buildout
+category=eggs
         """
-        nvmbp = 'notvalidminibuildnamewhichisuniquetothistestforminitage-'
+        nvmbp ='/tmp/notvalidforminitage-'
         open(nvmbp,'w').write(minibuild1)
         mb = api.Minibuild(path=nvmbp)
         self.assertRaises(objects.InvalidMinibuildNameError, mb.load)
@@ -355,6 +357,44 @@ install-method-bypass = true
         mb = api.Minibuild(path=mb_path)
         self.assertEquals(mb.install_method, 'buildoutaaaaaaaaaaaaa')
  
+    def testVars(self):
+        """testVars"""
+        minibuild = """
+[minibuild]
+category=eggs
+dependencies=python
+install_method=buildout
+src_type=hg
+src_uri=${minitage-eggs}/${minitage-dependencies}
+src_opts=${minitage-misc}
+"""
+        configs = """
+[minitage.variables]
+minitage-dependencies = http://hg.minitage.org/minitage/buildouts/dependencies
+minitage-misc = ${minitage-eggs}/${minitage-dependencies}
+minitage-eggs = http://hg.minitage.org/minitage/buildouts/eggs  
+""" 
+        s = tempfile.mkstemp()[1]
+        f = open(s, 'w')
+        f.write(configs)
+        f = open(s, 'r')
+        config = ConfigParser.ConfigParser()
+        config.readfp(f)
+        open(mb_path,'w').write(minibuild)
+        mb = api.Minibuild(path=mb_path, 
+                           minitage_config=config
+                           )
+        mb.load()
+        self.assertEquals('http://hg.minitage.org'
+                          '/minitage/buildouts/eggs'
+                          '/http://hg.minitage.org'
+                          '/minitage/buildouts'
+                          '/dependencies', mb.src_opts) 
+        self.assertEquals('http://hg.minitage.org'
+                          '/minitage/buildouts/eggs'
+                          '/http://hg.minitage.org'
+                          '/minitage/buildouts'
+                          '/dependencies', mb.src_uri)  
 
 if __name__ == '__main__':
     suite = unittest.TestSuite()

@@ -12,13 +12,14 @@
 # Free Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 __docformat__ = 'restructuredtext en'
-__version__ = '0.4.0_alpha9'
+__version__ = '0.4.0_alpha10'
 
 import os
 import sys
 import ConfigParser
 import logging, logging.config
 import re
+import copy
 
 from minitage.core import objects
 from minitage.core.fetchers.interfaces import IFetcherFactory
@@ -154,10 +155,10 @@ class Minimerge(object):
 
         # filtering valid ones
         # and mutating into real Minilays objects
-        self._minilays = [objects.Minilay(path = os.path.expanduser(dir)) \
-                         for dir in minilays_search_paths if os.path.isdir(dir)]
-
-
+        self._minilays = [objects.Minilay(
+            path = os.path.expanduser(dir),
+            minitage_config = copy.deepcopy(self._config)) \
+            for dir in minilays_search_paths if os.path.isdir(dir)]
 
     def find_minibuild(self, package):
         """
@@ -259,7 +260,7 @@ class Minimerge(object):
                 for path in os.listdir(deps):
                     fp = os.path.join(
                         deps,
-                        path, 
+                        path,
                         'parts', 'part', 'bin')
                     if os.path.exists(
                         os.path.join(fp, scm)):
@@ -269,7 +270,7 @@ class Minimerge(object):
                         )
                         os.environ['PATH'] = '%s%s%s' % (
                             fp, ':', os.environ['PATH']
-                    ) 
+                    )
         # add also minitage top /bin directory
         os.environ['PATH'] = '%s%s%s' % (
             os.path.join(self._prefix, 'bin'),
@@ -643,9 +644,9 @@ class Minimerge(object):
             self._prefix,
             package.category,
             package.name
-        ) 
-    
+        )
+
     # api: do not break code
-    _find_minibuilds = find_minibuilds 
-    _find_minibuild = find_minibuild 
-    _compute_dependencies = compute_dependencies 
+    _find_minibuilds = find_minibuilds
+    _find_minibuild = find_minibuild
+    _compute_dependencies = compute_dependencies
