@@ -399,12 +399,13 @@ class BzrFetcher(interfaces.IFetcher):
     def is_valid_src_uri(self, uri):
         """See interface."""
         match = interfaces.URI_REGEX.match(uri)
+        bzrmatch = re.compile('[a-zA-Z1-9]*:(.*)').match(uri)
         if match \
            and match.groups()[1] \
            in ['file', 'bzr', 'sftp', 'http', 
                'https', 'bzr+http', 'bzr+https',
                'bzr+ssh', 'svn+file',
-               'svn', 'svn+http', 'svn+https']:
+               'svn', 'svn+http', 'svn+https'] or bzrmatch:
             return True
         return False
 
