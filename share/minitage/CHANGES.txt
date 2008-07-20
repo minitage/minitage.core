@@ -1,6 +1,10 @@
 Changes
 ***********************************************
 
+0.4_alpha11
+============
+    - bzr DVCS integration
+
 0.4_alpha10
 ============
     - Add support for variables in minibuilds setted in minitage configuration

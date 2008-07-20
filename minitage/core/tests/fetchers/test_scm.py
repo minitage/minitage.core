@@ -29,6 +29,104 @@ opts = dict(
 
 prefix = os.getcwd()
 
+class testBzr(unittest.TestCase):
+    """testBzr"""
+
+    def setUp(self):
+        """."""
+        os.chdir(prefix)
+        os.system("""
+                 mkdir -p  %(path)s          
+                 cd %(path)s                 
+                 echo '666'>file             
+                 bzr init                    
+                 bzr add .                   
+                 bzr ci -m 'initial import'  
+                 echo '666'>file2            
+                 bzr add                     
+                 bzr ci -m 'second revision' 
+                 """ % opts)
+
+    def tearDown(self):
+        """."""
+        for dir in [ opts['path'], opts['dest']]:
+            if os.path.isdir(dir):
+                shutil.rmtree(dir)
+
+    def testUrlChanged(self):
+        """testUrlChanged"""
+        bzr = scm.BzrFetcher()
+        bzr.fetch(opts['dest'], 'file://%s' % opts['path'])
+        self.assertTrue(os.path.isdir('%s/%s' % (opts['dest'], '.bzr')))
+        self.assertFalse(
+            bzr._has_uri_changed(
+                opts['dest'],
+                'file://%s' % opts['path'],
+            )
+        )
+        self.assertTrue(bzr._has_uri_changed('hehe_changed', opts['dest']))
+
+    def testRemoveVersionnedDirs(self):
+        """testRemoveVersionnedDirs"""
+        bzr = scm.BzrFetcher()
+        bzr.fetch(opts['dest'], 'file://%s' % opts['path'])
+        self.assertTrue(os.path.isdir('%s/%s' % (opts['dest'], '.bzr')))
+        os.mkdir(os.path.join(opts['dest'],'part'))
+        bzr._remove_versionned_directories(opts['dest'])
+        self.assertTrue(os.path.isdir(  os.path.join(opts['dest'],'part')))
+        self.assertFalse(os.path.isdir( os.path.join(opts['dest'],'.bzr')))
+        self.assertFalse(os.path.isfile(os.path.join(opts['dest'],'file2')))
+        bzr.update(opts['dest'], 'file://%s' % opts['path'])
+        self.assertTrue(os.path.isdir('%s/%s' % (opts['dest'], '.bzr')))
+         
+    def testScmInvalidUri(self):
+        """testScmInvalidUri"""
+        bzr = scm.BzrFetcher()
+        self.assertRaises(interfaces.InvalidUrlError,
+                          bzr.fetch, 'somewhere', 'invalidsrcuri')
+
+
+    def testFetch(self):
+        """testFetch"""
+        bzr = scm.BzrFetcher()
+        bzr.fetch(opts['dest'], 'file://%s' % opts['path'])
+        self.assertTrue(os.path.isdir('%s/%s' % (opts['dest'], '.bzr')))
+
+    def testFetchToParticularRevision(self):
+        """testFetchToParticularRevision"""
+        bzr = scm.BzrFetcher()
+        bzr.fetch(opts['dest'], 'file://%s' % opts['path'], dict(revision=0))
+        self.assertTrue(os.path.isdir('%s/%s' % (opts['dest'], '.bzr')))
+        self.assertFalse(os.path.isfile('%s/%s' % (opts['dest'], 'file2')))
+
+    def testUpdate(self):
+        """testUpdate"""
+        bzr = scm.BzrFetcher()
+        bzr.fetch(opts['dest'], 'file://%s' % opts['path'], dict(revision=0))
+        self.assertTrue(os.path.isdir('%s/%s' % (opts['dest'], '.bzr')))
+        bzr.update(opts['dest'], 'file://%s' % opts['path'])
+        self.assertTrue(os.path.isfile('%s/%s' % (opts['dest'], 'file2')))
+        bzr.update(opts['dest'], 'file://%s' % opts['path'], dict(revision=0))
+        self.assertFalse(os.path.isfile('%s/%s' % (opts['dest'], 'file2')))
+
+    def testFetchOrUpdate_fetch(self):
+        """testFetchOrUpdate_fetch"""
+        bzr = scm.BzrFetcher()
+        bzr.fetch_or_update(opts['dest'], 'file://%s' % opts['path'])
+        self.assertTrue(os.path.isfile('%s/%s' % (opts['dest'], 'file2')))
+        self.assertTrue(os.path.isdir('%s/%s' % (opts['dest'], '.bzr')))
+
+    def testFetchOrUpdate_update(self):
+        """testFetchOrUpdate_update"""
+        bzr = scm.BzrFetcher()
+        bzr.fetch(opts['dest'], 'file://%s' % opts['path'], dict(revision=0))
+        self.assertTrue(os.path.isdir('%s/%s' % (opts['dest'], '.bzr')))
+        self.assertFalse(os.path.isfile('%s/%s' % (opts['dest'], 'file2')))
+        bzr.fetch_or_update(opts['dest'], 'file://%s' % opts['path'])
+        self.assertTrue(os.path.isfile('%s/%s' % (opts['dest'], 'file2')))
+
+         
+
 class testHg(unittest.TestCase):
     """testHg"""
 
@@ -246,6 +344,7 @@ class testSvn(unittest.TestCase):
 
 if __name__ == '__main__':
     suite = unittest.TestSuite()
+    suite.addTest(unittest.makeSuite(testBzr))
     suite.addTest(unittest.makeSuite(testHg))
     suite.addTest(unittest.makeSuite(testSvn))
     unittest.TextTestRunner(verbosity=2).run(suite)
