@@ -14,7 +14,7 @@
 
 __docformat__ = 'restructuredtext en'
 
-from minitage.core.fetchers.scm import HgFetcher, SvnFetcher
+from minitage.core.fetchers.scm import HgFetcher, SvnFetcher, BzrFetcher
 from minitage.core.fetchers.static import StaticFetcher
 from minitage.core.fetchers.interfaces import IFetcherFactory, IFetcher
 
