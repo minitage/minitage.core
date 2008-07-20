@@ -68,6 +68,7 @@ class IFetcherFactory(interfaces.IFactory):
         self.registerDict(
             {
                 'hg': 'minitage.core.fetchers:HgFetcher',
+                'bzr': 'minitage.core.fetchers:BzrFetcher',
                 'svn': 'minitage.core.fetchers:SvnFetcher',
                 'static': 'minitage.core.fetchers:StaticFetcher',
             }
