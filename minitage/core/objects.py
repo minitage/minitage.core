@@ -74,7 +74,7 @@ VALID_INSTALL_METHODS = ['buildout']
 """valid fetch methods to use:
  - hg: mercurial
  - svn: subversion"""
-VALID_FETCH_METHODS = ['svn', 'hg', 'static']
+VALID_FETCH_METHODS = ['svn', 'hg', 'static', 'cvs', 'bzr', 'darcs', 'git' , 'monotone']
 UNAME = os.uname()[0].lower()
 
 # minibuilds name checkers
