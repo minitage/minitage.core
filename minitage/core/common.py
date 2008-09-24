@@ -197,7 +197,7 @@ def first_run():
     prefix = os.path.abspath(sys.exec_prefix)
     config = os.path.join(prefix, 'etc', 'minimerge.cfg')
     mm_version = minitage.core.core.__version__
-    if not os.path.isfile(config): 
+    if not os.path.isfile(config):
         print """\n\n
 ====================================================
 \t\tWELCOME TO THE MINITAGE WORLD
@@ -244,7 +244,7 @@ You seem to be running minitage for the first time.
                         'README.TXT'
                     )
                    )
-        print '\n\n'     
+        print '\n\n'
 
 
 

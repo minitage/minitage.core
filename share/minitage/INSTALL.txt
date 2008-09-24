@@ -18,7 +18,7 @@ Try that in your interpretery::
 If you do not have that, you can give a try to my pyboostrapper that bootstrap
 a python somewhere::
 
-    wget http://hg.minitage.org/hg/minitage/shell/file/tip/PyBootstrapper.sh
+    wget http://hg.minitage.org/hg/minitage/shell/raw-file/tip/PyBootstrapper.sh
     chmod +x PyBootstrapper.sh
     ./PyBootstrapper.sh /path/to/pythonPrefix
 
@@ -62,7 +62,7 @@ A stable version
 
     - Install minitage::
 
-        easy_install minitage.core
+        easy_install -U mercurial minitage.core
 
     - Sync its packages (all its minilays in minitage terminology).::
 
@@ -112,14 +112,4 @@ Syncing packages
         Sync::
 
             minimerge -s
-
-
-
-
-
-
-
-
-
-
 

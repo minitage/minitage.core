@@ -40,7 +40,7 @@ setup(
         read('share/minitage/INSTALL.txt')
         + '\n' +
         read('share/minitage/CHANGES.txt')
-        + '\n' 
+        + '\n'
     ),
     classifiers=[
         'Framework :: Buildout',
@@ -56,8 +56,8 @@ setup(
     license='GPL',
     packages=find_packages(exclude=['ez_setup']),
     namespace_packages=['minitage', name],
-    install_requires = ['virtualenv', 
-                        'zc.buildout', 
+    install_requires = ['virtualenv',
+                        'zc.buildout',
                         'setuptools',],
     tests_require = [],
     test_suite = '%s.tests.test_suite' % name,

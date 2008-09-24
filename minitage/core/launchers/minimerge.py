@@ -7,21 +7,21 @@ import re
 import shutil
 
 from minitage.core.cli import do_read_options
-from minitage.core import core 
+from minitage.core import core
 from minitage.core.common import first_run
 
 def launch():
     try:
         prefix = os.path.abspath(sys.exec_prefix)
         config = os.path.join(prefix, 'etc', 'minimerge.cfg')
-        if not os.path.isfile(config): 
+        if not os.path.isfile(config):
             first_run()
-        
+
         options = do_read_options()
         minimerge = core.Minimerge(options)
         minimerge.main()
     except Exception, e:
-        raise
+        #raise
         sys.stderr.write('Minimerge executation failed:\n')
         sys.stderr.write('\t%s\n' % e)
 
