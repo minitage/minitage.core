@@ -1,5 +1,13 @@
 Changes
 ***********************************************
+0.4.2
+============
+    - Remove the backtrace from the launcher when minimerge fails
+
+0.4.1
+============
+    - Release version
+
 0.4_alpha12
 ============
     - Fix scm type validator
@@ -17,7 +25,7 @@ Changes
 0.4_alpha9
 ===========
     - reinforce buildout code
- 
+
 0.4_alpha8
 ===========
     - restore previous version scheme
@@ -27,7 +35,7 @@ a0.4_alpha5
     - add mercurial explicit dependency
 
 0.4_alpha4
-============ 
+============
     - remove old minilay
 
 0.4_alpha1

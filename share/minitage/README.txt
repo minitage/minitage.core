@@ -1,6 +1,10 @@
 Short introduction
 **********************
 
+This documentation abstract is far from complete and can be out dated.
+
+Please refer to: http://www.minitage.org/doc/rst  for further information.
+
 
 What is minitage
 =================
