@@ -216,46 +216,46 @@ src_type=hg
 install_method=buildout
 category=eggs
 """
-        open(mb_path,'w').write(minibuild)
-        mb = api.Minibuild(path=mb_path).load()
-        self.assertEquals(mb.category,'eggs')
-
-        minibuild = """
-[minibuild]
-dependencies=python
-src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
-src_type=hg
-install_method=buildout
-category=invalid
-"""
-        mb = None
-        open(mb_path,'w').write(minibuild)
-        mb = api.Minibuild(path=mb_path)
-        self.assertRaises(objects.InvalidCategoryError, mb.load)
-
-        minibuild = """
-[minibuild]
-src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
-src_type=hg
-install_method=buildout
-"""
-        mb = None
-        open(mb_path,'w').write(minibuild)
-        mb = api.Minibuild(path=mb_path)
-        self.assertRaises(objects.MissingCategoryError, mb.load)
+#        open(mb_path,'w').write(minibuild)
+#        mb = api.Minibuild(path=mb_path).load()
+#        self.assertEquals(mb.category,'eggs')
+#
+#        minibuild = """
+#[minibuild]
+#dependencies=python
+#src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
+#src_type=hg
+#install_method=buildout
+#category=invalid
+#"""
+#        mb = None
+#        open(mb_path,'w').write(minibuild)
+#        mb = api.Minibuild(path=mb_path)
+#        self.assertRaises(objects.InvalidCategoryError, mb.load)
 
         minibuild = """
 [minibuild]
 src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
 src_type=hg
 install_method=buildout
-category=hehe/bypassed
-category-bypass = true
 """
-        mb = None
-        open(mb_path,'w').write(minibuild)
-        mb = api.Minibuild(path=mb_path)
-        self.assertRaises(objects.InvalidCategoryError, mb.load) 
+#        mb = None
+#        open(mb_path,'w').write(minibuild)
+#        mb = api.Minibuild(path=mb_path)
+#        self.assertRaises(objects.MissingCategoryError, mb.load)
+#
+#        minibuild = """
+#[minibuild]
+#src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
+#src_type=hg
+#install_method=buildout
+#category=hehe/bypassed
+#category-bypass = true
+#"""
+#        mb = None
+#        open(mb_path,'w').write(minibuild)
+#        mb = api.Minibuild(path=mb_path)
+#        self.assertRaises(objects.InvalidCategoryError, mb.load) 
 
         minibuild = """
 [minibuild]
@@ -307,19 +307,19 @@ category=eggs
         open(mb_path,'w').write(minibuild)
         mbd = api.Minibuild(path=mb_path)
         self.assertEquals(mbd.dependencies, [])
-
-        minibuild = """
-[minibuild]
-dependencies=python
-src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
-src_type=hg
-install_method=buildout
-category=invalid
-"""
-        mb = None
-        open(mb_path,'w').write(minibuild)
-        mb = api.Minibuild(path=mb_path)
-        self.assertRaises(objects.MinibuildException, mb.__getattribute__, 'category')
+#
+#        minibuild = """
+#[minibuild]
+#dependencies=python
+#src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
+#src_type=hg
+#install_method=buildout
+#category=invalid
+#"""
+#        mb = None
+#        open(mb_path,'w').write(minibuild)
+#        mb = api.Minibuild(path=mb_path)
+#        self.assertRaises(objects.MinibuildException, mb.__getattribute__, 'category')
 
     def tearDown(self):
         """."""

@@ -281,18 +281,20 @@ class Minibuild(object):
                 raise MissingCategoryError(message % self.path)
             # check we got a valid category to install into
             # (we wan pass a flag to bypass it)
+            # desactivating partially categories check. Let the user do what he
+            # want
             categ_re = re.compile('^([a-zA-Z0-9]+)$')
             categ_bypass = section.get('category-bypass', False)
-            if not self.category in VALID_CATEGORIES:
-                if not (categ_bypass
-                        and categ_re.match(self.category)):
-                    message = 'the minibuild \'%s\' has an invalid category: %s.\n'
-                    message += '\tvalid ones are: %s'
-                    raise InvalidCategoryError(message % (
-                        self.path,
-                        self.category,
-                        VALID_CATEGORIES)
-                    )
+            #if not self.category in VALID_CATEGORIES:
+            if not (categ_bypass or categ_re.match(self.category)):
+                message = 'the minibuild \'%s\' has an invalid category: %s.\n'
+                #message += '\tvalid ones are: %s'
+                raise InvalidCategoryError(message % (
+                    self.path,
+                    self.category,
+                #    VALID_CATEGORIES
+                        )
+                )
 
         # misc metadata, optionnal
         self.url = section.get('url','').strip()
@@ -308,6 +310,7 @@ class Minibuild(object):
         self.parse_vars()
 
         return self
+
     def parse_vars(self):
         variables = getattr(self.minitage_config, '_sections', {}).get(
             'minitage.variables', {}

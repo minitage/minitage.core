@@ -2,6 +2,10 @@ Changes
 ***********************************************
 0.4.2
 ============
+    - Remove the category check
+
+0.4.2
+============
     - Remove the backtrace from the launcher when minimerge fails
 
 0.4.1
