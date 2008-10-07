@@ -607,7 +607,7 @@ class Minimerge(object):
         for minilay in self._minilays:
             path = minilay.path
             type = None
-            for strscm in ['hg', 'svn']:
+            for strscm in ['hg', 'svn', 'bzr']:
                 if os.path.isdir('%s/.%s' % (path, strscm)):
                     scm = f(strscm)
                     self.logger.info('Syncing %s from %s [via %s]' % (
