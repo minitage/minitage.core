@@ -51,6 +51,7 @@ def do_read_options():
     jump_help = 'Squizze prior dependencies to the '\
                 'minibuild specified in that option'
     fetchonly_help = 'Fetch the packages but do not build yet'
+    fetchfirst_help = 'Fetch the packages first before building them'
     delete_help = 'Remove selected packages'
     reinstall_help = 'Unconditionnaly rebuild/reinstall packages'
     install_help = 'Installs packages (default action)'
@@ -80,9 +81,12 @@ def do_read_options():
         optparse.make_option('-s', '--sync',
                              action='store_true', dest='sync',
                              help = nodeps_help),
-        optparse.make_option('-f', '--fetchonly',
+        optparse.make_option('-F', '--fetchonly',
                              action='store_true', dest='fetchonly',
                              help = fetchonly_help),
+         optparse.make_option('-f', '--fetchfirst',
+                             action='store_true', dest='fetchfirst',
+                             help = fetchfirst_help), 
         optparse.make_option('-i', '--install',
                              action='store_true', dest='install',
                              help = install_help),
@@ -167,6 +171,7 @@ def do_read_options():
         'packages': args,
         'debug': options.debug,
         'fetchonly': options.fetchonly,
+        'fetchfirst': options.fetchfirst,
         'nodeps': options.nodeps,
         'offline': options.offline,
         'jump': options.jump,

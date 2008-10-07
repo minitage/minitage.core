@@ -1,5 +1,11 @@
 Changes
 ***********************************************
+0.4.4
+============
+    - Add an option (-f)
+        - when set : fetch all before build
+        - when not set : fetch and build each package one after another
+
 0.4.2
 ============
     - Remove the category check

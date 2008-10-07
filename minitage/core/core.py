@@ -12,7 +12,7 @@
 # Free Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 __docformat__ = 'restructuredtext en'
-__version__ = '0.4.3'
+__version__ = '0.4.4'
 
 import os
 import sys
@@ -76,6 +76,7 @@ class Minimerge(object):
                 - packages: packages list to handle *mandatory*
                 - debug: debug mode
                 - fetchonly: just get the packages
+                - fetchfirst: if True, fetch all packages before building
                 - offline: do not try to connect outside
                 - nodeps: Squizzes all dependencies
                 - action: what to do *mandatory*
@@ -125,6 +126,7 @@ class Minimerge(object):
         self._debug = options.get('debug', self._config._sections\
                                   .get('minimerge', {}).get('debug', False))
         self._fetchonly = options.get('fetchonly', False)
+        self._fetchfirst = options.get('fetchfirst', False)
         self._update = options.get('update', False)
         self._upgrade = options.get('upgrade', True)
         self._pretend = options.get('pretend', False)
@@ -418,16 +420,30 @@ class Minimerge(object):
             if not stop:
                 if answer:
                     self.logger.info('User choosed to continue')
-                # fetch if not offline
-                if not (self._offline or self._action == 'delete'):
+
+                # fetch first, or just in time
+                if self._fetchfirst:
+                    # fetch all first, build after
                     for package in packages:
                         if not package.name.startswith('meta-'):
-                            self._fetch(package)
-
-                # if we do not want just to fetch, let's go ,
-                # (install|delete|reinstall) baby.
-                if not self._fetchonly:
-                    self._do_action(self._action, packages, pyvers)
+                            # fetch if not offline
+                            if not (self._offline or self._action == 'delete'):
+                                self._fetch(package)
+                    # if we do not want just to fetch, let's go ,
+                    # (install|delete|reinstall) baby.
+                    if not self._fetchonly:
+                        self._do_action(self._action, packages, pyvers)
+                else:
+                    # just in time fetch
+                    for package in packages:
+                        if not package.name.startswith('meta-'):
+                            # fetch if not offline
+                            if not (self._offline or self._action == 'delete'):
+                                self._fetch(package)
+                            # if we do not want just to fetch, let's go ,
+                            if not self._fetchonly:
+                                # (install|delete|reinstall) baby.
+                                self._do_action(self._action, [package], pyvers)
 
     def _select_pythons(self, packages):
         """Get pythons to build into dependencies.
