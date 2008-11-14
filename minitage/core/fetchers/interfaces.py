@@ -163,7 +163,11 @@ class IFetcher(interfaces.IProduct):
             - offline: weither we are offline or online
         """
         if os.path.isdir(dest):
-            self.update(dest, uri, opts)
+            if not self.metadata_directory or os.path.isdir(
+                os.path.join(dest, self.metadata_directory)):
+                self.update(dest, uri, opts)
+            else:
+                self.fetch(dest, uri, opts)  
         else:
             self.fetch(dest, uri, opts) 
 
