@@ -9,3 +9,7 @@ bin/buildout
 bin/testrunner
 .installed.cfg
 lib
+bin/activate
+bin/easy.*
+bin/python
+include
