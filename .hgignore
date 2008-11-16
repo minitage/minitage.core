@@ -4,3 +4,7 @@ dist/*
 build\/
 
 
+eggs
+bin/buildout
+bin/testrunner
+.installed.cfg
