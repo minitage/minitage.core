@@ -54,7 +54,8 @@ setup(
     author_email='kiorky@cryptelium.net',
     url='http://cheeseshop.python.org/pypi/%s' % name,
     license='GPL',
-    packages=find_packages(exclude=['ez_setup']),
+    packages=find_packages('src'),
+    package_dir = {'': 'src'},
     namespace_packages=['minitage', name],
     install_requires = ['virtualenv',
                         'zc.buildout',
@@ -64,6 +65,7 @@ setup(
     zip_safe = False,
     include_package_data = True,
     package_dir={'etc': 'etc', 'share/minitage': 'share/minitage',},
+    extras_require={'test': ['IPython', 'zope.testing', 'mocker']},
     data_files = [
         ('etc', ['etc/minimerge.cfg']),
         ('share/minitage'  , ['share/minitage/README.txt']),
