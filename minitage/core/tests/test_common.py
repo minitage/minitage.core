@@ -27,18 +27,21 @@ def createMinitageEnv(directory):
 
     if os.path.exists(os.path.expanduser(directory)):
         raise Exception("Please (re)move %s before test" % directory)
+    # faking dev mode
+    module =  os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
     os.system("""
               mkdir %(path)s
               virtualenv %(path)s
               source %(path)s/bin/activate
               # can be python-ver or python
-              $(ls %(path)s/bin/easy_install) -H None -f "%(eggs)s" zc.buildout
-              $(ls %(path)s/bin/python*) %(setup)s install
+              $(ls %(path)s/bin/easy_install) -f "%(eggs)s" zc.buildout
+              export PYTHONPATH=%(module)s:$PYTHONPATH
               $(ls %(path)s/bin/python*) -c 'from minitage.core.common import first_run;first_run()'
               """ % {
                   'eggs': eggs,
                   'path': directory,
                   'setup': setup,
+                  'module': module,
               }
              )
 

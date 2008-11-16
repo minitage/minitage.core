@@ -17,8 +17,8 @@ __version__ = '0.4.5'
 import os
 import sys
 import ConfigParser
-import logging, logging.config
-import re
+import logging
+import logging.config
 import copy
 
 from minitage.core import objects
@@ -84,16 +84,18 @@ class Minimerge(object):
                 - config: configuration file path *mandatory*
                 -flags :
 
-                    - ask
-                    - pretend
+                    - ask: prompt to continue
+                    - pretend: do nothing that print what would be done.
+                    - verbose: True to be verbose.
         """
+        self.verbose = options.get('verbose', False)
         self._config_path = os.path.expanduser(options.get('config'))
         if not os.path.isfile(self._config_path):
             message = 'The config file is invalid: %s' % self._config_path
             raise InvalidConfigFileError(message)
 
         if not options.get('nolog', False):
-            self._init_logging()
+            self._init_logging(self.verbose)
 
         if options is None:
             options = {}
@@ -333,6 +335,7 @@ class Minimerge(object):
                 # set offline and debug mode
                 options['offline'] = self._offline
                 options['debug'] = self._debug
+                options['verbose'] = self.verbose
 
                 # finally, time to act.
                 if not os.path.isdir(ipath):
@@ -373,7 +376,7 @@ class Minimerge(object):
         else:
             packages = self._packages
             # compute dependencies
-            self.logger.info('Calculating dependencies.')
+            self.logger.debug('Calculating dependencies.')
             if not self._nodeps:
                 packages = self._compute_dependencies(self._packages)
             else:
@@ -397,11 +400,11 @@ class Minimerge(object):
                 self.logger.debug('Shrinking packages away. _2/2_')
                 packages = self._cut_jumped_packages(packages)
 
-            self.logger.info('Action:\t%s' % self._action)
+            self.logger.debug('Action:\t%s' % self._action)
             if packages:
-                self.logger.info('Packages:')
+                self.logger.debug('Packages:')
                 for p in packages:
-                    self.logger.info('\t\t* %s' % p.name)
+                    self.logger.debug('\t\t* %s' % p.name)
 
             stop = False
             answer = ''
@@ -578,7 +581,7 @@ class Minimerge(object):
     def _sync(self):
         """Sync or install our minilays."""
         # install our default minilays
-        self.logger.info('Syncing minilays')
+        self.logger.info('Syncing minilays.')
         version = '.'.join( __version__.split('.')[:2])
 
 
@@ -623,15 +626,18 @@ class Minimerge(object):
         for minilay in self._minilays:
             path = minilay.path
             type = None
-            for strscm in ['hg', 'svn', 'bzr']:
+            # querying scm factory for registered scms
+            # and removing static
+            scms = [key for key in f.products.keys() if key != 'static']
+            for strscm in scms:
                 if os.path.isdir('%s/.%s' % (path, strscm)):
                     scm = f(strscm)
                     self.logger.info('Syncing %s from %s [via %s]' % (
                         path, scm.get_uri(path), strscm))
-                    scm.update(dest=path)
+                    scm.update(dest=path, uri=scm.get_uri(path), verbose=self.verbose)
+        self.logger.info('Syncing done.')
 
-
-    def _init_logging(self):
+    def _init_logging(self, verbose=False):
         """Initialize logging system."""
         # configure logging system$
         try:
@@ -640,9 +646,13 @@ class Minimerge(object):
             # just a stdout handler
             h = logging.StreamHandler()
             logging.root.addHandler(h)
-        logging.root.setLevel(0)
+        if self.verbose:
+            logging.root.setLevel(0)
+        else:
+            logging.root.setLevel(logging.INFO)
+
         self.logger = logging.getLogger('minitage.core')
-        self.logger.info('(Re)Initializing minitage logging system.')
+        self.logger.debug('(Re)Initializing minitage logging system.')
 
 
     def getUpgrade(self):

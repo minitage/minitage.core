@@ -86,7 +86,7 @@ def do_read_options():
                              help = fetchonly_help),
          optparse.make_option('-f', '--fetchfirst',
                              action='store_true', dest='fetchfirst',
-                             help = fetchfirst_help), 
+                             help = fetchfirst_help),
         optparse.make_option('-i', '--install',
                              action='store_true', dest='install',
                              help = install_help),
@@ -114,6 +114,9 @@ def do_read_options():
         optparse.make_option('-a', '--ask',
                              action='store_true', dest='ask',
                              help = ask_help),
+        optparse.make_option('-v', '--verbose',
+                             action='store_true', dest='verbose',
+                             help = 'Be verbose.'),
     ]
     parser = optparse.OptionParser(version=core.__version__,
                                    usage=usage,
@@ -167,20 +170,21 @@ def do_read_options():
         raise core.InvalidConfigFileError(message)
 
     minimerge_options = {
-        'path': path,
-        'packages': args,
+        'action': options.action,
+        'ask': options.ask,
+        'config': options.config,
         'debug': options.debug,
-        'fetchonly': options.fetchonly,
         'fetchfirst': options.fetchfirst,
+        'fetchonly': options.fetchonly,
+        'jump': options.jump,
         'nodeps': options.nodeps,
         'offline': options.offline,
-        'jump': options.jump,
-        'action': options.action,
-        'config': options.config,
+        'packages': args,
+        'path': path,
         'pretend': options.pretend,
         'update': options.update,
         'upgrade': options.upgrade,
-        'ask': options.ask,
+        'verbose': options.verbose,
     }
     return minimerge_options
 

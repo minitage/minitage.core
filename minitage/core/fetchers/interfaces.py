@@ -20,6 +20,7 @@ import shutil
 import logging
 
 from minitage.core import interfaces
+import minitage.core.common
 
 class IFetcherError(Exception):
     """General Fetcher Error."""
@@ -51,7 +52,7 @@ class FetcherRuntimeError(IFetcherError):
 dscms = 'git|hg|bzr|mtn'
 p = 'ssh|http|https|ftp|sftp|file'
 scms = 'svn|svn\+ssh|cvs'
-URI_REGEX = re.compile('^((%s|%s|%s):\/\/(.*))$' % (dscms, p , scms))
+URI_REGEX = re.compile('^(\/|((%s|%s|%s)(:\/\/)))' % (dscms, p , scms))
 __logger__ = 'minitage.interfaces'
 
 class IFetcherFactory(interfaces.IFactory):
@@ -114,7 +115,7 @@ class IFetcher(interfaces.IProduct):
               we got from or a new one.
     """
 
-    def __init__(self, name, executable = None , 
+    def __init__(self, name, executable = None ,
                  config = None, metadata_directory = None):
         """
         Attributes:
@@ -133,7 +134,7 @@ class IFetcher(interfaces.IProduct):
         self._scm_found = None
 
 
-    def update(self, dest, uri, opts=None):
+    def update(self, dest, uri, opts=None, verbose=False):
         """Update a package.
         Exceptions:
             - InvalidUrlError
@@ -144,7 +145,7 @@ class IFetcher(interfaces.IProduct):
         """
         raise NotImplementedError('The method is not implemented')
 
-    def fetch(self, dest, uri, ops=None):
+    def fetch(self, dest, uri, ops=None, verbose=False):
         """Fetch a package.
         Exceptions:
             - InvalidUrlError
@@ -155,21 +156,22 @@ class IFetcher(interfaces.IProduct):
         """
         raise NotImplementedError('The method is not implemented')
 
-    def fetch_or_update(self, dest, uri, opts = None):
+    def fetch_or_update(self, dest, uri, opts = None, verbose=False):
         """Fetch or update a package (call the one of those 2 methods).
         Arguments:
             - uri : check out/update uri
             - opts : arguments for the fetcher
             - offline: weither we are offline or online
+            - verbose: set to True to be verbose
         """
         if os.path.isdir(dest):
             if not self.metadata_directory or os.path.isdir(
                 os.path.join(dest, self.metadata_directory)):
-                self.update(dest, uri, opts)
+                self.update(dest, uri, opts, verbose)
             else:
-                self.fetch(dest, uri, opts)  
+                self.fetch(dest, uri, opts, verbose)
         else:
-            self.fetch(dest, uri, opts) 
+            self.fetch(dest, uri, opts, verbose)
 
     def is_valid_src_uri(self, uri):
         """Valid an uri.
@@ -194,32 +196,14 @@ class IFetcher(interfaces.IProduct):
         if not getattr(self, '_scm_found', False):
             message = '%s is not in your path, ' % self.executable
             message += 'please install it or maybe get it into your PATH'
-            raise FetcherNotInPathError(message) 
+            raise FetcherNotInPathError(message)
 
-    def _scm_cmd(self, command):
+    def _scm_cmd(self, command, verbose=False):
         """Helper to run scm commands."""
         self._check_scm_presence()
         logging.getLogger(__logger__).debug(
             'Running %s %s ' % (self.executable, command))
-        #p = subprocess.Popen('%s %s' % (self.executable, command),
-        #                     shell=True, 
-        #                     stdin=subprocess.PIPE,
-        #                     stdout=subprocess.PIPE,
-        #                     stderr=subprocess.PIPE, 
-        #                    )
-        #ret = p.wait()
-        #print p.stdout.read()
-        # temp. using system because i have hangs with Popen
-        #ret = os.spawnlp(os.P_WAIT, self.executable, 
-        #               self.executable, command.split()) 
-        la = [self.executable]+command.split()
-        ret = os.spawnvp(os.P_WAIT,   
-                         self.executable, 
-                         la
-                        ) 
-        if ret != 0:
-            message = '%s failed to achieve correctly.' % self.name
-            raise FetcherRuntimeError(message)
+        minitage.core.common.Popen('%s %s' % (self.executable, command), verbose)
 
     def _has_uri_changed(self, dest, uri):
         """Does the uri we fetch from in the working changed or not.

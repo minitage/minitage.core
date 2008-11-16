@@ -48,7 +48,7 @@ class StaticFetcher(interfaces.IFetcher):
             self._proxies = None
         interfaces.IFetcher.__init__(self, 'static', config = config)
 
-    def update(self, dest, uri, opts=None):
+    def update(self, dest, uri, opts=None, verbose=False):
         """Update a package.
         Arguments:
             - uri : check out/update uri
@@ -67,7 +67,7 @@ class StaticFetcher(interfaces.IFetcher):
 
         self.fetch(dest, uri, opts)
 
-    def fetch(self, dest, uri, opts=None):
+    def fetch(self, dest, uri, opts=None, verbose=False):
         """Fetch a package.
         Arguments:
             - uri : check out/update uri

@@ -31,7 +31,7 @@ __logger__ = 'minitage.makers.buildout'
 class BuildoutMaker(interfaces.IMaker):
     """Buildout Maker.
     """
-    def __init__(self, config = None):
+    def __init__(self, config = None, verbose=False):
         """Init a buildout maker object.
         Arguments
             - config keys:
@@ -120,36 +120,36 @@ class BuildoutMaker(interfaces.IMaker):
                     'bin',
                     'buildout')):
                 if os.path.exists('bootstrap.py'):
-                    minitage.core.common.system(
+                    minitage.core.common.Popen(
                         '%s bootstrap.py' % sys.executable,
-                        self.logger
+                        opts.get('verbose', False)
                     ) 
                 else:
-                    minitage.core.common.system(
+                    minitage.core.common.Popen(
                         'buildout bootstrap',
-                        self.logger
+                        opts.get('verbose', False)
                     )
             if parts:
                 for part in parts:
                     self.logger.info('Installing single part: %s' % part)
-                    minitage.core.common.system(
+                    minitage.core.common.Popen(
                         './bin/buildout %s install %s ' % (
                             ' '.join(argv),
                             part
                         ),
-                        self.logger
+                        opts.get('verbose', False)
                     )
             else:
-                self.logger.info('Installing parts')
-                minitage.core.common.system(
+                self.logger.debug('Installing parts')
+                minitage.core.common.Popen(
                     './bin/buildout %s ' % (
                         ' '.join(argv),
                     ),
-                    self.logger
+                    opts.get('verbose', False)
                 )
         except Exception, instance:
             os.chdir(cwd)
-            raise BuildoutError('Buildout failed: :\n\t%s' % instance)
+            raise BuildoutError('Buildout failed:\n\t%s' % instance)
         os.chdir(cwd)
 
     def get_options(self, minimerge, minibuild, **kwargs):

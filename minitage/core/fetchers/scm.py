@@ -27,6 +27,8 @@ __logger__ = 'minitage.fetchers.scm'
 class InvalidMercurialRepositoryError(interfaces.InvalidRepositoryError):
     """Mercurial repository is invalid."""
 
+class InvalidBazaarRepositoryError(interfaces.InvalidRepositoryError):
+    """Bazaar repository is invalid."""
 
 class OfflineModeRestrictionError(interfaces.IFetcherError):
     """Restriction error in offline mode."""
@@ -45,7 +47,7 @@ class HgFetcher(interfaces.IFetcher):
         interfaces.IFetcher.__init__(self, 'mercurial', 'hg', config, '.hg')
         self.log = logging.getLogger(__logger__)
 
-    def update(self, dest, uri = None, opts=None):
+    def update(self, dest, uri = None, opts=None, verbose=False):
         """Update a package.
         Arguments:
             - uri : check out/update uri
@@ -67,17 +69,17 @@ class HgFetcher(interfaces.IFetcher):
         if not uri or self.is_valid_src_uri(uri):
             if uri and self._has_uri_changed(dest, uri):
                 self._remove_versionned_directories(dest)
-                self._scm_cmd('init %s' % (dest))
+                self._scm_cmd('init %s' % (dest), verbose)
                 if not os.path.isdir('%s/%s' % (dest, self.metadata_directory)):
                     message = 'Unexpected fetch error on \'%s\'\n' % uri
                     message += 'The directory \'%s\' is not '
                     message += 'a valid mercurial repository' % (dest)
                     raise InvalidMercurialRepositoryError(message)
             if uri:
-                self._scm_cmd('pull -f %s -R %s' % (uri, dest))
+                self._scm_cmd('pull -f %s -R %s' % (uri, dest), verbose)
             else:
-                self._scm_cmd('pull -f -R %s' % (dest))
-            self._scm_cmd('  up -r %s -R %s ' % (revision, dest))
+                self._scm_cmd('pull -f -R %s' % (dest), verbose)
+            self._scm_cmd('  up -r %s -R %s ' % (revision, dest), verbose)
             if not os.path.isdir('%s/%s' % (dest, self.metadata_directory)):
                 message = 'Unexpected fetch error on \'%s\'\n' % uri
                 message += 'The directory \'%s\' is not '
@@ -86,7 +88,7 @@ class HgFetcher(interfaces.IFetcher):
         else:
             raise interfaces.InvalidUrlError('this uri \'%s\' is invalid' % uri)
 
-    def fetch(self, dest, uri, opts=None):
+    def fetch(self, dest, uri, opts=None, verbose=False):
         """Fetch a package.
         Arguments:
             - uri : check out/update uri
@@ -111,8 +113,8 @@ class HgFetcher(interfaces.IFetcher):
                       % (dest, datetime.datetime.now().strftime('%d%m%y%H%M%S'))
                      )
         if self.is_valid_src_uri(uri):
-            self._scm_cmd('clone %s %s %s' % (args, uri, dest))
-            self._scm_cmd('up  -r %s %s -R %s' % (revision, args, dest))
+            self._scm_cmd('clone %s %s %s' % (args, uri, dest), verbose)
+            self._scm_cmd('up  -r %s %s -R %s' % (revision, args, dest), verbose)
             if not os.path.isdir('%s/%s' % (dest, self.metadata_directory)):
                 message = 'Unexpected fetch error on \'%s\'\n' % uri
                 message += 'The directory \'%s\' is not '
@@ -132,8 +134,8 @@ class HgFetcher(interfaces.IFetcher):
         """See interface."""
         match = interfaces.URI_REGEX.match(uri)
         if match \
-           and match.groups()[1] \
-           in ['file', 'hg', 'ssh', 'http', 'https']:
+           and (match.groups()[2] in ['file', 'hg', 'ssh', 'http', 'https', '/']
+                or match.groups()[0] == '/'):
             return True
         return False
 
@@ -201,7 +203,7 @@ class SvnFetcher(interfaces.IFetcher):
         interfaces.IFetcher.__init__(self, 'subversion', 'svn', config, '.svn')
         self.log = logging.getLogger(__logger__)
 
-    def update(self, dest, uri = None, opts=None):
+    def update(self, dest, uri = None, opts=None, verbose=False):
         """Update a package.
         Arguments:
             - uri : check out/update uri
@@ -223,7 +225,7 @@ class SvnFetcher(interfaces.IFetcher):
         if not uri or self.is_valid_src_uri(uri):
             if uri and self._has_uri_changed(dest, uri):
                 self._remove_versionned_directories(dest)
-            self._scm_cmd('up %s -r %s %s' % (args, revision, dest))
+            self._scm_cmd('up %s -r %s %s' % (args, revision, dest), verbose)
             if not os.path.isdir('%s/%s' % (dest, self.metadata_directory)):
                 message = 'Unexpected fetch error on \'%s\'\n' % uri
                 message += 'The directory \'%s\' is not '
@@ -232,7 +234,7 @@ class SvnFetcher(interfaces.IFetcher):
         else:
             raise interfaces.InvalidUrlError('this uri \'%s\' is invalid' % uri)
 
-    def fetch(self, dest, uri, opts=None):
+    def fetch(self, dest, uri, opts=None, verbose=False):
         """Fetch a package.
         Arguments:
             - uri : check out/update uri
@@ -251,7 +253,7 @@ class SvnFetcher(interfaces.IFetcher):
         revision = opts.get('revision','HEAD')
         args = opts.get('args','')
         if self.is_valid_src_uri(uri):
-            self._scm_cmd('co %s -r %s %s %s' % (args, revision, uri, dest))
+            self._scm_cmd('co %s -r %s %s %s' % (args, revision, uri, dest), verbose)
             self.log.info('SVN checkout completed')
             if not os.path.isdir('%s/%s' % (dest, self.metadata_directory)):
                 message = 'Unexpected fetch error on \'%s\'\n' % uri
@@ -265,7 +267,7 @@ class SvnFetcher(interfaces.IFetcher):
         """See interface."""
         match = interfaces.URI_REGEX.match(uri)
         if match \
-           and match.groups()[1] \
+           and match.groups()[2] \
            in ['file', 'svn', 'svn+ssh', 'http', 'https']:
             return True
         return False
@@ -315,7 +317,7 @@ class BzrFetcher(interfaces.IFetcher):
         interfaces.IFetcher.__init__(self, 'bazaar', 'bzr', config, '.bzr')
         self.log = logging.getLogger(__logger__)
 
-    def update(self, dest, uri = None, opts=None):
+    def update(self, dest, uri = None, opts=None, verbose=False):
         """Update a package.
         Arguments:
             - uri : check out/update uri
@@ -337,16 +339,16 @@ class BzrFetcher(interfaces.IFetcher):
         if not uri or self.is_valid_src_uri(uri):
             if uri and self._has_uri_changed(dest, uri):
                 self._remove_versionned_directories(dest)
-                self._scm_cmd('init %s' % (dest))
+                self._scm_cmd('init %s' % (dest), verbose)
                 if not os.path.isdir('%s/%s' % (dest, self.metadata_directory)):
                     message = 'Unexpected fetch error on \'%s\'\n' % uri
                     message += 'The directory \'%s\' is not '
                     message += 'a valid bazaar repository' % (dest)
                     raise InvalidBazaarRepositoryError(message)
             if uri:
-                self._scm_cmd('pull --overwrite -r%s %s -d %s' % (revision, uri, dest))
+                self._scm_cmd('pull --overwrite -r%s %s -d %s' % (revision, uri, dest), verbose)
             else:
-                self._scm_cmd('pull --overwrite -r%s    -d %s' % (revision, dest))
+                self._scm_cmd('pull --overwrite -r%s    -d %s' % (revision, dest), verbose)
             if not os.path.isdir('%s/%s' % (dest, self.metadata_directory)):
                 message = 'Unexpected fetch error on \'%s\'\n' % uri
                 message += 'The directory \'%s\' is not '
@@ -355,7 +357,8 @@ class BzrFetcher(interfaces.IFetcher):
         else:
             raise interfaces.InvalidUrlError('this uri \'%s\' is invalid' % uri)
 
-    def fetch(self, dest, uri, opts=None):
+
+    def fetch(self, dest, uri, opts=None, verbose=False):
         """Fetch a package.
         Arguments:
             - uri : check out/update uri
@@ -380,7 +383,7 @@ class BzrFetcher(interfaces.IFetcher):
                       % (dest, datetime.datetime.now().strftime('%d%m%y%H%M%S'))
                      )
         if self.is_valid_src_uri(uri):
-            self._scm_cmd('checkout  -r %s %s %s %s' % (revision, args, uri, dest))
+            self._scm_cmd('checkout  -r %s %s %s %s' % (revision, args, uri, dest), verbose)
             if not os.path.isdir('%s/%s' % (dest, self.metadata_directory)):
                 message = 'Unexpected fetch error on \'%s\'\n' % uri
                 message += 'The directory \'%s\' is not '
@@ -401,7 +404,7 @@ class BzrFetcher(interfaces.IFetcher):
         match = interfaces.URI_REGEX.match(uri)
         bzrmatch = re.compile('[a-zA-Z1-9]*:(.*)').match(uri)
         if match \
-           and match.groups()[1] \
+           and match.groups()[2] \
            in ['file', 'bzr', 'sftp', 'http', 
                'https', 'bzr+http', 'bzr+https',
                'bzr+ssh', 'svn+file',

@@ -23,6 +23,7 @@ import shutil
 import tempfile
 import urllib2
 import urlparse
+import subprocess
 
 from pkg_resources import Requirement, resource_filename
 import  minitage.core.core
@@ -96,6 +97,31 @@ def system(c, log=None):
     if ret:
         raise SystemError('Failed', c)
     return ret
+
+def Popen(command, verbose=False):
+    stdout = subprocess.PIPE
+    if verbose:
+        stdout = sys.stdout
+    p = subprocess.Popen(command,
+                         shell=True,
+                         stdin=subprocess.PIPE,
+                         stdout=stdout,
+                         stderr=subprocess.PIPE,
+                        )
+    ret = p.wait()
+    if ret != 0:
+        error = ''
+        if not verbose:
+            error =  p.stdout.read() 
+        
+        message = '%s\n%s' % (error,
+                            '----------------------------------------------------------\n'
+                            '\'%s\' failed!\n'
+                            '\tPlease report all the above backtrace along\n'
+                            '\t with your bug report.\n'
+                            '----------------------------------------------------------\n' % (command)
+                           )
+        raise minitage.core.core.MinimergeError(message)
 
 def get_from_cache(url,
                    download_cache = None,
@@ -245,7 +271,5 @@ You seem to be running minitage for the first time.
                     )
                    )
         print '\n\n'
-
-
 
 # vim:set et sts=4 ts=4 tw=80:
