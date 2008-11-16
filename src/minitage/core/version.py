@@ -13,15 +13,6 @@
 # GNU General Public License for more details.
 
 __docformat__ = 'restructuredtext en'
-import unittest
-from fetchers import (test_interfaces,
-                      test_scm,
-                      test_static,)
-def test_suite():
-    suite = unittest.TestSuite()
-    for m in (#test_interfaces,
-              test_scm,
-              test_static,):
-        suite.addTest(m.test_suite())
-    return suite
+__version__ = '0.4.6'
+
 # vim:set et sts=4 ts=4 tw=80:

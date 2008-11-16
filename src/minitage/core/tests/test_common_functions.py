@@ -18,7 +18,7 @@ import unittest
 import tempfile
 import os
 
-from minitage.core import common, core
+from minitage.core import common
 
 path = tempfile.mkdtemp('minitagetestcomon')
 tf = '%s/a'  % path
@@ -93,14 +93,14 @@ class TestCommon(unittest.TestCase):
         download_cache = tempfile.mkdtemp()
         open(file, 'w').write('foo')
         self.assertRaises(
-            core.MinimergeError,
+            common.MinimergeError,
             common.get_from_cache,
             'file://%s' % file,
-            filename,
+            download_cache,
             offline = True
         )
         self.assertRaises(
-            core.MinimergeError,
+            common.MinimergeError,
             common.get_from_cache,
             'file://%s' % file,
             file_md5 = 'false'
@@ -123,7 +123,5 @@ if __name__ == '__main__':
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(TestCommon))
     unittest.TextTestRunner(verbosity=2).run(suite)
-
-
 
 # vim:set et sts=4 ts=4 tw=80:

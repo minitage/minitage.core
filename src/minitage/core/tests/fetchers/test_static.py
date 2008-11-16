@@ -64,6 +64,11 @@ class testStatic(unittest.TestCase):
         static = staticm.StaticFetcher({'minimerge': {'http-proxies': 'a a a'}})
         self.assertEquals(static._proxies, ['a', 'a', 'a'])
 
+def test_suite():            
+    suite = unittest.TestSuite()
+    suite.addTest(unittest.makeSuite(testStatic))
+    return suite 
+
 if __name__ == '__main__':
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(testStatic))

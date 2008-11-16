@@ -48,7 +48,7 @@ class TestBuildout(unittest.TestCase):
         if os.path.isdir(path):
             shutil.rmtree(path)
         if os.path.isdir(ipath):
-                shutil.rmtree(ipath) 
+            shutil.rmtree(ipath) 
 
     def testDelete(self):
         """testDelete"""
@@ -133,11 +133,11 @@ install_method=buildout
         options = buildout.get_options(minimerge, minibuild, **pyvers)
         minibuild.category = 'zope'
         options = buildout.get_options(minimerge, minibuild, **pyvers)
-        self.assertFalse('parts' in options)
+        self.assertEquals(options['parts'], [])
 
-if __name__ == '__main__':
+def test_suite():
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(TestBuildout))
-    unittest.TextTestRunner(verbosity=2).run(suite)
+    return suite
 
 # vim:set et sts=4 ts=4 tw=80:

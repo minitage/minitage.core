@@ -14,14 +14,14 @@
 
 __docformat__ = 'restructuredtext en'
 import unittest
-from fetchers import (test_interfaces,
-                      test_scm,
-                      test_static,)
+from makers import (test_interfaces,
+                    test_buildout,
+                   )
 def test_suite():
     suite = unittest.TestSuite()
-    for m in (#test_interfaces,
-              test_scm,
-              test_static,):
+    for m in (test_interfaces,
+              test_buildout,
+             ):
         suite.addTest(m.test_suite())
     return suite
 # vim:set et sts=4 ts=4 tw=80:

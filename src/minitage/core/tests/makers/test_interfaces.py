@@ -15,8 +15,7 @@
 __docformat__ = 'restructuredtext en'
 
 import unittest
-from minitage.core import interfaces, makers
-from minitage.core.makers import buildout
+from minitage.core import  makers
 
 class TestInterfaces(unittest.TestCase):
     """TestInterfaces"""
@@ -31,7 +30,7 @@ class TestInterfaces(unittest.TestCase):
         self.assertRaises(NotImplementedError,
                           i.match, 'foo')
         self.assertRaises(NotImplementedError,
-                          i.get_options, 'foo', 'foo') 
+                          i.get_options, 'foo', 'foo')
 
     def testFactory(self):
         """testFactory"""
@@ -42,10 +41,9 @@ class TestInterfaces(unittest.TestCase):
         self.assertEquals(buildout.__module__,
                           makers.buildout.BuildoutMaker\
                           .__module__)
-
-if __name__ == '__main__':
+def test_suite():
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(TestInterfaces))
-    unittest.TextTestRunner(verbosity=2).run(suite)
+    return suite
 
 # vim:set et sts=4 ts=4 tw=80:

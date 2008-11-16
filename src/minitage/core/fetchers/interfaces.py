@@ -203,7 +203,10 @@ class IFetcher(interfaces.IProduct):
         self._check_scm_presence()
         logging.getLogger(__logger__).debug(
             'Running %s %s ' % (self.executable, command))
-        minitage.core.common.Popen('%s %s' % (self.executable, command), verbose)
+        try:
+            minitage.core.common.Popen('%s %s' % (self.executable, command), verbose)
+        except Exception, e:
+            raise FetcherRuntimeError(e.message)
 
     def _has_uri_changed(self, dest, uri):
         """Does the uri we fetch from in the working changed or not.

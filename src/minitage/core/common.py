@@ -26,7 +26,9 @@ import urlparse
 import subprocess
 
 from pkg_resources import Requirement, resource_filename
-import  minitage.core.core
+from minitage.core.version import __version__
+
+class MinimergeError(Exception): pass
 
 def splitstrip(l, token=None):
     """Split a list and return non stripped elements."""
@@ -121,7 +123,7 @@ def Popen(command, verbose=False):
                             '\t with your bug report.\n'
                             '----------------------------------------------------------\n' % (command)
                            )
-        raise minitage.core.core.MinimergeError(message)
+        raise MinimergeError(message)
 
 def get_from_cache(url,
                    download_cache = None,
@@ -173,7 +175,7 @@ def get_from_cache(url,
     if not file_present:
         if offline:
             # no file in the cache, but we are staying offline
-            raise minitage.core.core.MinimergeError(
+            raise MinimergeError(
                 "Offline mode: file from %s not found in the cache at %s" %
                 (url, download_cache)
             )
@@ -199,7 +201,7 @@ def get_from_cache(url,
             open(fname,'w').write(urllib2.urlopen(url).read())
             if file_md5:
                 if not test_md5(fname, file_md5):
-                    raise  minitage.core.core.MinimergeError(
+                    raise MinimergeError(
                         'MD5SUM mismatch for %s: Good:%s != Bad:%s' % (
                             fname,
                             file_md5,
@@ -212,7 +214,7 @@ def get_from_cache(url,
                 shutil.rmtree(tmp2)
             if download_cache:
                 os.remove(fname)
-            raise minitage.core.core.MinimergeError(
+            raise MinimergeError(
                 'Failed download for %s:\t%s' % (url, e)
             )
 
@@ -222,7 +224,7 @@ def first_run():
     ## first time create default config !
     prefix = os.path.abspath(sys.exec_prefix)
     config = os.path.join(prefix, 'etc', 'minimerge.cfg')
-    mm_version = minitage.core.core.__version__
+    mm_version = __version__
     if not os.path.isfile(config):
         print """\n\n
 ====================================================

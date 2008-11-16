@@ -164,10 +164,13 @@ def do_read_options():
                 break
 
     # be sure to be with full path object.
-    options.config = os.path.expanduser(options.config)
+    if not options.config:
+        message = 'The configuration file specified does not exist'
+        raise core.InvalidConfigFileError(message)
     if not os.path.isfile(options.config):
         message = 'The configuration file specified does not exist'
         raise core.InvalidConfigFileError(message)
+    options.config = os.path.expanduser(options.config)
 
     minimerge_options = {
         'action': options.action,

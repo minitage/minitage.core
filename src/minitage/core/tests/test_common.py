@@ -30,8 +30,10 @@ def createMinitageEnv(directory):
         raise Exception("Please (re)move %s before test" % directory)
     # faking dev mode
     module =  os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
+    os.chdir('/')
     os.system("""
               mkdir %(path)s
+              cd /
               virtualenv %(path)s
               source %(path)s/bin/activate
               # can be python-ver or python

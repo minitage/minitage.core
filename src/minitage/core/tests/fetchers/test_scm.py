@@ -20,6 +20,7 @@ import os
 import tempfile
 
 from minitage.core.fetchers import scm, interfaces
+from minitage.core.common import MinimergeError
 
 opts = dict(
     path=os.path.expanduser(tempfile.mkdtemp()),
@@ -265,7 +266,7 @@ class testSvn(unittest.TestCase):
             )
         )
         self.assertTrue(svn._has_uri_changed(opts['wc'], 'hehe_changed'))
-
+#
     def testRemoveVersionnedDirs(self):
         """testRemoveVersionnedDirs"""
         svn = scm.SvnFetcher()
@@ -341,6 +342,13 @@ class testSvn(unittest.TestCase):
         self.assertFalse(os.path.isfile('%s/%s' % (opts['wc'], 'file2')))
         svn.fetch_or_update(opts['wc'], 'file://%s' % opts['path'])
         self.assertTrue(os.path.isfile('%s/%s' % (opts['wc'], 'file2')))
+
+def test_suite():            
+    suite = unittest.TestSuite()
+    suite.addTest(unittest.makeSuite(testBzr))
+    suite.addTest(unittest.makeSuite(testHg))
+    suite.addTest(unittest.makeSuite(testSvn)) 
+    return suite  
 
 if __name__ == '__main__':
     suite = unittest.TestSuite()

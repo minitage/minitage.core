@@ -15,7 +15,8 @@
 __docformat__ = 'restructuredtext en'
 
 import unittest
-from minitage.core import interfaces, fetchers
+import minitage.core.interfaces as interfaces
+import minitage.core.fetchers as fetchers
 from minitage.core.fetchers import scm
 
 class testInterfaces(unittest.TestCase):
@@ -76,6 +77,9 @@ class testInterfaces(unittest.TestCase):
                           fetchers.scm.SvnFetcher.__module__)
         self.assertEquals(hg.__module__,
                           fetchers.scm.HgFetcher.__module__)
+def test_suite():            
+    suite = unittest.TestSuite()
+    return suite   
 
 if __name__ == '__main__':
     suite = unittest.TestSuite()

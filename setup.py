@@ -20,7 +20,7 @@ from setuptools import setup, find_packages
 __version__ = '0.0.4'
 if os.path.isdir("src"):
     sys.path.append("src")
-from minitage.core.core import __version__
+from minitage.core.version import __version__
 
 name = 'minitage.core'
 

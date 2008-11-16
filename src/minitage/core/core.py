@@ -12,7 +12,6 @@
 # Free Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 __docformat__ = 'restructuredtext en'
-__version__ = '0.4.5'
 
 import os
 import sys
@@ -22,8 +21,9 @@ import logging.config
 import copy
 
 from minitage.core import objects
-from minitage.core.fetchers.interfaces import IFetcherFactory
-from minitage.core.makers.interfaces   import IMakerFactory
+from minitage.core.fetchers import interfaces as fetchers
+from minitage.core.makers import interfaces as makers
+from minitage.core.version import __version__
 
 class MinimergeError(Exception):
     """General Minimerge Error"""
@@ -248,7 +248,7 @@ class Minimerge(object):
         """
         self.logger.debug('Will fetch package %s.' % (package.name))
         dest_container = '%s/%s' % (self._prefix, package.category)
-        fetcherFactory = IFetcherFactory(self._config_path)
+        fetcherFactory = fetchers.IFetcherFactory(self._config_path)
         destination = '%s/%s' % (dest_container, package.name)
         # add maybe the scm to the path if it is avalaible
         fetcher = fetcherFactory(package.src_type)
@@ -314,7 +314,7 @@ class Minimerge(object):
 
         maker_kwargs = {}
 
-        mf = IMakerFactory(self._config_path)
+        mf = makers.IMakerFactory(self._config_path)
         for package in packages:
             # if we are an egg, we maybe will have python versions setted.
             maker_kwargs['python_versions'] = pyvers.get(package.name, None)
@@ -598,7 +598,7 @@ class Minimerge(object):
             version
         )
 
-        f = IFetcherFactory(self._config_path)
+        f = fetchers.IFetcherFactory(self._config_path)
         hg = f(minimerge_section\
                .get('minilays_scm','')\
                .strip()

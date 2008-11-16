@@ -405,7 +405,7 @@ class BzrFetcher(interfaces.IFetcher):
         bzrmatch = re.compile('[a-zA-Z1-9]*:(.*)').match(uri)
         if match \
            and match.groups()[2] \
-           in ['file', 'bzr', 'sftp', 'http', 
+           in ['file', 'bzr', 'sftp', 'http',
                'https', 'bzr+http', 'bzr+https',
                'bzr+ssh', 'svn+file',
                'svn', 'svn+http', 'svn+https'] or bzrmatch:
@@ -444,7 +444,7 @@ class BzrFetcher(interfaces.IFetcher):
             dest_uri = re.sub(
                 '([^=]*=)\s*(.*)',
                 '\\2',
-                process.stdout.read().strip() 
+                process.stdout.read().strip()
             )
             os.chdir(cwd)
             return dest_uri
@@ -462,7 +462,7 @@ class BzrFetcher(interfaces.IFetcher):
         elif uri != self.get_uri(dest):
             return True
         return False
- 
+
 
 
 
