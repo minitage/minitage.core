@@ -67,6 +67,11 @@ class TestCli(unittest.TestCase):
             minimerge = api.Minimerge(opts)
             self.assertTrue(getattr(minimerge, '_%s' % mode, False))
 
+def test_suite():            
+    suite = unittest.TestSuite()
+    suite.addTest(unittest.makeSuite(TestCli)) 
+    return suite
+
 if __name__ == '__main__':
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(TestCli))

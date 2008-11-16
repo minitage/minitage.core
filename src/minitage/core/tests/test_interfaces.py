@@ -63,6 +63,10 @@ item1=minitage.core.tests.test_interfaces:test
         """testProduct"""
         p = interfaces.IProduct()
         self.assertRaises(NotImplementedError, p.match, 'foo')
+def test_suite():            
+    suite = unittest.TestSuite()
+    suite.addTest(unittest.makeSuite(testInterfaces)) 
+    return suite     
 
 if __name__ == '__main__':
     suite = unittest.TestSuite()

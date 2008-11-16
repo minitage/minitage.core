@@ -15,12 +15,13 @@ __docformat__ = 'restructuredtext en'
 
 import os
 import sys
+import unittest
 from minitage.core.common import first_run
 
 eggs = os.environ.get('MINITAGE_CORE_EGG_PATH', None)
 setup = os.environ.get('MINITAGE_CORE_SETUPPY', None)
-if not setup:
-    raise Exception("Please set the 'MINITAGE_CORE_SETUPPY' variable pointing to the setup.py file of the minitage distribution")
+#if not setup:
+#    raise Exception("Please set the 'MINITAGE_CORE_SETUPPY' variable pointing to the setup.py file of the minitage distribution")
 
 def createMinitageEnv(directory):
     """Initialise a minitage in a particular directory."""
@@ -198,5 +199,8 @@ class test:
         open('testres','w').write('part') """)
     bootstrap_buildout(ipath)
 
+def test_suite():            
+    suite = unittest.TestSuite()
+    return suite  
 
 

@@ -107,6 +107,11 @@ class testLazyLoadedDicts(unittest.TestCase):
         item = lazyLoadedDict[0]
         self.assertTrue(len(lazyLoadedDict.items) == 1)
 
+def test_suite():            
+    suite = unittest.TestSuite()
+    suite.addTest(unittest.makeSuite(testLazyLoadedLists))
+    suite.addTest(unittest.makeSuite(testLazyLoadedDicts))
+    return suite 
 
 if __name__ == '__main__':
     suite = unittest.TestSuite()

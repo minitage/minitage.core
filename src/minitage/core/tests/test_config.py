@@ -53,6 +53,11 @@ EOF""" % mydict
         # cleanup
         os.remove(path)
 
+def test_suite():            
+    suite = unittest.TestSuite()
+    suite.addTest(unittest.makeSuite(testConfig))
+    return suite    
+
 if __name__ == '__main__':
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(testConfig))

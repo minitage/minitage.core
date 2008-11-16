@@ -577,6 +577,11 @@ install_method=buildout""")
         )
         self.assertTrue(os.path.isfile('%s/%s' % (minilay, 'minibuild-1000')))
 
+def test_suite():            
+    suite = unittest.TestSuite()
+    suite.addTest(unittest.makeSuite(testMinimerge))
+    return suite      
+
 if __name__ == '__main__':
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(testMinimerge))

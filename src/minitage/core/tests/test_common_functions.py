@@ -114,6 +114,10 @@ class TestCommon(unittest.TestCase):
             open(ret).read(),
             'foo'
         )
+def test_suite():            
+    suite = unittest.TestSuite()
+    suite.addTest(unittest.makeSuite(TestCommon)) 
+    return suite   
 
 if __name__ == '__main__':
     suite = unittest.TestSuite()

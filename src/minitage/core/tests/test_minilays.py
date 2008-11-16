@@ -95,7 +95,7 @@ dependencies=python
 src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
 src_type=hg
 install_method=buildout
-category=invalid
+category=in/va/lid
 """
         open('%s/minibuild-1' % minilay1, 'w').write(minibuild)
         minilay = api.Minilay(path=minilay1)
@@ -194,6 +194,11 @@ category=eggs
         for m in ['minibuild-3', 'minibuild-4']:
             self.assertFalse(m in minilay2.keys())
         self.assertFalse(minilay2.loaded)
+
+def test_suite():            
+    suite = unittest.TestSuite()
+    suite.addTest(unittest.makeSuite(testMinilays)) 
+    return suite       
 
 if __name__ == '__main__':
     suite = unittest.TestSuite()

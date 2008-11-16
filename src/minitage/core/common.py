@@ -252,7 +252,7 @@ You seem to be running minitage for the first time.
         readme= resource_filename(Requirement.parse(
             'minitage.core == %s' % mm_version),
             'share/minitage/README.txt')
-        prefixed = re.sub('%PREFIX%',prefix,open(tconfig,'r').read())
+        prefixed = re.sub('%PREFIX%',prefix, open(tconfig,'r').read())
         open(config, 'w').write(prefixed)
         print '\t* Installing CHANGELOG.'
         shutil.copy(changelog,

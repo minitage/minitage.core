@@ -395,6 +395,10 @@ minitage-eggs = http://hg.minitage.org/minitage/buildouts/eggs
                           '/http://hg.minitage.org'
                           '/minitage/buildouts'
                           '/dependencies', mb.src_uri)  
+def test_suite():            
+    suite = unittest.TestSuite()
+    suite.addTest(unittest.makeSuite(testMinibuilds))
+    return suite        
 
 if __name__ == '__main__':
     suite = unittest.TestSuite()
