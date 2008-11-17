@@ -12,38 +12,28 @@
 # Free Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 import os
-import sys
 
 from setuptools import setup, find_packages
 
-# workaround to get version
-__version__ = '0.0.4'
-if os.path.isdir("src"):
-    sys.path.append("src")
-from minitage.core.version import __version__
-
 name = 'minitage.core'
-
-prefix = os.path.abspath(sys.exec_prefix)
-setupdir =  os.path.dirname(
-    os.path.abspath(__file__)
-)
+version = '0.4.7'
 
 def read(rnames):
+    setupdir =  os.path.dirname( os.path.abspath(__file__))
     return open(
         os.path.join(setupdir, rnames)
     ).read()
 
 setup(
-    name=name,
-    version=__version__,
+    name = name,
+    version = version,
     description="A meta package-manager to install projects on UNIX Systemes.",
-    long_description= (
-        read('src/share/minitage/README.txt')
+    long_description = (
+        read('share/minitage/README.txt')
         + '\n' +
-        read('src/share/minitage/INSTALL.txt')
+        read('share/minitage/INSTALL.txt')
         + '\n' +
-        read('src/share/minitage/CHANGES.txt')
+        read('share/minitage/CHANGES.txt')
         + '\n'
     ),
     classifiers=[
@@ -53,28 +43,25 @@ setup(
         'Topic :: Software Development :: Build Tools',
         'Topic :: Software Development :: Libraries :: Python Modules',
     ],
-    keywords='development buildout',
-    author='Mathieu Pasquet',
-    author_email='kiorky@cryptelium.net',
-    url='http://cheeseshop.python.org/pypi/%s' % name,
-    license='GPL',
-    #namespace_packages=['minitage', name],
-    install_requires = ['virtualenv',
-                        'zc.buildout',
-                        'setuptools',],
-    tests_require = [],
-    test_suite = '%s.tests.test_suite' % name,
+    keywords = 'development buildout',
+    author = 'Mathieu Pasquet',
+    author_email = 'kiorky@cryptelium.net',
+    url = 'http://cheeseshop.python.org/pypi/%s' % name,
+    license = 'GPL',
+    namespace_packages = ['minitage', name],
+    install_requires = ['virtualenv', 'zc.buildout', 'setuptools',],
     zip_safe = False,
-    packages=find_packages('src'),
-    package_dir={'src/etc': 'etc', 'src/share/minitage': 'share/minitage', '': 'src'},
-    extras_require={'test': ['IPython', 'zope.testing', 'mocker']},
-    #data_files = [
-    #    ('etc', ['etc/minimerge.cfg']),
-    #    ('share/minitage'  , ['share/minitage/README.txt']),
-    #    ('share/minitage' , ['share/minitage/CHANGES.txt']),
-    #    ('minilays', []),
-    #],
     include_package_data = True,
+    packages = find_packages(),
+    #packages = find_packages('src'),
+    #package_dir = {'': 'src'},
+    extras_require={'test': ['IPython', 'zope.testing', 'mocker']},
+    data_files = [
+        ('etc', ['etc/minimerge.cfg']),
+        ('share/minitage', ['share/minitage/README.txt']),
+        ('share/minitage', ['share/minitage/CHANGES.txt']),
+        ('minilays', []),
+    ],
     entry_points = {
         'console_scripts': [
             'minimerge = minitage.core.launchers.minimerge:launch',
