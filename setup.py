@@ -16,13 +16,8 @@ import sys
 
 from setuptools import setup, find_packages
 
-version = 'x.x.x'
-if os.path.isdir("src"):
-    sys.path.insert(0, 'src')
-    from minitage.core.version import __version__
-    version = __version__
-
 name = 'minitage.core'
+version = '0.4.8'
 
 def read(rnames):
     setupdir =  os.path.dirname( os.path.abspath(__file__))

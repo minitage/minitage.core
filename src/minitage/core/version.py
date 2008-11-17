@@ -12,7 +12,9 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
+import pkg_resources
+
 __docformat__ = 'restructuredtext en'
-__version__ = '0.4.7'
+__version__ = version = pkg_resources.require('minitage.core')[0].version
 
 # vim:set et sts=4 ts=4 tw=80:

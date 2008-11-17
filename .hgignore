@@ -13,3 +13,4 @@ bin/activate
 bin/easy.*
 bin/python
 include
+bin/ipython
