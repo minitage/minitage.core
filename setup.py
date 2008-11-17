@@ -12,11 +12,17 @@
 # Free Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 import os
+import sys
 
 from setuptools import setup, find_packages
 
+version = 'x.x.x'
+if os.path.isdir("src"):
+    sys.path.insert(0, 'src')
+    from minitage.core.version import __version__
+    version = __version__
+
 name = 'minitage.core'
-version = '0.4.7'
 
 def read(rnames):
     setupdir =  os.path.dirname( os.path.abspath(__file__))
@@ -43,7 +49,7 @@ setup(
         'Topic :: Software Development :: Build Tools',
         'Topic :: Software Development :: Libraries :: Python Modules',
     ],
-    keywords = 'development buildout',
+    #keywords = 'development buildout',
     author = 'Mathieu Pasquet',
     author_email = 'kiorky@cryptelium.net',
     url = 'http://cheeseshop.python.org/pypi/%s' % name,
@@ -52,9 +58,8 @@ setup(
     install_requires = ['virtualenv', 'zc.buildout', 'setuptools',],
     zip_safe = False,
     include_package_data = True,
-    packages = find_packages(),
-    #packages = find_packages('src'),
-    #package_dir = {'': 'src'},
+    packages = find_packages('src'),
+    package_dir = {'': 'src'},
     extras_require={'test': ['IPython', 'zope.testing', 'mocker']},
     data_files = [
         ('etc', ['etc/minimerge.cfg']),
