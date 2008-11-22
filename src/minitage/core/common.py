@@ -110,12 +110,11 @@ def Popen(command, verbose=False):
                          stdout=stdout,
                          stderr=subprocess.PIPE,
                         )
+    if not verbose:
+        error =  p.stdout.read()  
     ret = p.wait()
     if ret != 0:
         error = ''
-        if not verbose:
-            error =  p.stdout.read() 
-        
         message = '%s\n%s' % (error,
                             '----------------------------------------------------------\n'
                             '\'%s\' failed!\n'
