@@ -114,9 +114,12 @@ def do_read_options():
         optparse.make_option('-a', '--ask',
                              action='store_true', dest='ask',
                              help = ask_help),
-        optparse.make_option('-v', '--verbose',
-                             action='store_true', dest='verbose',
-                             help = 'Be verbose.'),
+        #optparse.make_option('-v', '--verbose',
+        #                     action='store_true', dest='verbose',
+        #                     help = 'Be verbose.'),
+        optparse.make_option('-q', '--quiet',
+                             action='store_true', dest='quiet',
+                             help = 'Be quiet (Experimental, be warned!).'), 
     ]
     parser = optparse.OptionParser(version=core.__version__,
                                    usage=usage,
@@ -187,7 +190,7 @@ def do_read_options():
         'pretend': options.pretend,
         'update': options.update,
         'upgrade': options.upgrade,
-        'verbose': options.verbose,
+        'verbose': not options.quiet,
     }
     return minimerge_options
 

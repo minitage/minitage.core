@@ -1,5 +1,10 @@
 Changes
 ***********************************************
+0.4.21
+=======
+
+    - quiet mode is now optionnal are there are numerous bugs with it.
+
 0.4.8
 ===========
     - Maintenance release

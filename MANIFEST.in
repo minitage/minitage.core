@@ -1,7 +1,6 @@
 include *.txt 
 include *.py  
 include *.cfg
-include etc/minimerge.cfg
-include share/minitage/*
+include src/etc/minimerge.cfg
 
 

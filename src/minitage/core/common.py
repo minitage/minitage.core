@@ -240,7 +240,6 @@ You seem to be running minitage for the first time.
                     os.path.join(sys.exec_prefix, 'logs'),
                     os.path.join(sys.exec_prefix, 'eggs', 'cache'),
                     os.path.join(sys.exec_prefix, 'eggs', 'develop-cache'),
-                    os.path.join(sys.exec_prefix, 'share', 'minitage'),
                    ):
             if not os.path.isdir(dir):
                 os.makedirs(dir)
@@ -255,22 +254,6 @@ You seem to be running minitage for the first time.
             'share/minitage/README.txt')
         prefixed = re.sub('%PREFIX%',prefix, open(tconfig,'r').read())
         open(config, 'w').write(prefixed)
-        print '\t* Installing CHANGELOG.'
-        shutil.copy(changelog,
-                    os.path.join(
-                        sys.exec_prefix,
-                        'share', 'minitage',
-                        'CHANGES.txt'
-                    )
-                   )
-        print '\t* Installing README.'
-        shutil.copy(readme,
-                    os.path.join(
-                        sys.exec_prefix,
-                        'share', 'minitage',
-                        'README.TXT'
-                    )
-                   )
         print '\n\n'
 
 # vim:set et sts=4 ts=4 tw=80:

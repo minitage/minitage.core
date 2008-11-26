@@ -17,7 +17,7 @@ import sys
 from setuptools import setup, find_packages
 
 name = 'minitage.core'
-version = '0.4.10'
+version = '0.4.21'
 
 def read(rnames):
     setupdir =  os.path.dirname( os.path.abspath(__file__))
@@ -30,11 +30,11 @@ setup(
     version = version,
     description="A meta package-manager to install projects on UNIX Systemes.",
     long_description = (
-        read('share/minitage/README.txt')
+        read('README.txt')
         + '\n' +
-        read('share/minitage/INSTALL.txt')
+        read('INSTALL.txt')
         + '\n' +
-        read('share/minitage/CHANGES.txt')
+        read('CHANGES.txt')
         + '\n'
     ),
     classifiers=[
@@ -57,10 +57,9 @@ setup(
     package_dir = {'': 'src'},
     extras_require={'test': ['IPython', 'zope.testing', 'mocker']},
     data_files = [
-        ('etc', ['etc/minimerge.cfg']),
-        ('share/minitage', ['share/minitage/README.txt']),
-        ('share/minitage', ['share/minitage/CHANGES.txt']),
+        ('etc', ['src/etc/minimerge.cfg']),
         ('minilays', []),
+        ('share/minitage', ['README.txt', 'INSTALL.txt', 'CHANGES.txt']),
     ],
     entry_points = {
         'console_scripts': [
