@@ -101,20 +101,22 @@ def system(c, log=None):
     return ret
 
 def Popen(command, verbose=False):
-    stdout = None
-    if not verbose:
-        stdout = subprocess.PIPE
-    p = subprocess.Popen(command,
-                         shell=True,
-                         stdin=subprocess.PIPE,
-                         stdout = stdout,
-                         stderr=subprocess.PIPE,
-                        )
-    ret = p.wait()
+    # FIXME: Popen strange behaviour
+    ret = os.system(command)
+    #stdout = None
+    #if not verbose:
+    #    stdout = subprocess.PIPE
+    # p = subprocess.Popen(command,
+    #                      shell=True,
+    #                      stdin=subprocess.PIPE,
+    #                      stdout = stdout,
+    #                      stderr=subprocess.PIPE,
+    #                     )
+    # ret = p.wait()
     if ret != 0:
-        error = ''
-        if not verbose:
-            error = p.stdout.read()   
+        #error = ''
+        #if not verbose:
+        #    error = p.stdout.read()   
         message = '%s\n%s' % (error,
                             '----------------------------------------------------------\n'
                             '\'%s\' failed!\n'
