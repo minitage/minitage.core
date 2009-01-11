@@ -114,7 +114,7 @@ def Popen(command, verbose=False):
     #                     )
     # ret = p.wait()
     if ret != 0:
-        #error = ''
+        error = ''
         #if not verbose:
         #    error = p.stdout.read()   
         message = '%s\n%s' % (error,
