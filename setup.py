@@ -17,7 +17,7 @@ import sys
 from setuptools import setup, find_packages
 
 name = 'minitage.core'
-version = '0.4.26'
+version = '0.4.27'
 
 def read(rnames):
     setupdir =  os.path.dirname( os.path.abspath(__file__))
@@ -50,7 +50,7 @@ setup(
     url = 'http://cheeseshop.python.org/pypi/%s' % name,
     license = 'GPL',
     namespace_packages = ['minitage', name],
-    install_requires = ['virtualenv', 'zc.buildout', 'setuptools',],
+    install_requires = ['virtualenv', 'zc.buildout', 'setuptools>=0.6c9',],
     zip_safe = False,
     include_package_data = True,
     packages = find_packages('src'),
