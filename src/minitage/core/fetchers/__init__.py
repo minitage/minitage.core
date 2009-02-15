@@ -15,7 +15,7 @@
 __docformat__ = 'restructuredtext en'
 
 from interfaces import IFetcherFactory, IFetcher
-from scm import HgFetcher, SvnFetcher, BzrFetcher
+from scm import HgFetcher, SvnFetcher, BzrFetcher, GitFetcher
 from static import StaticFetcher
 
 # vim:set et sts=4 ts=4 tw=80:

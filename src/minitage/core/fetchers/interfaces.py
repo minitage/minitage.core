@@ -70,6 +70,7 @@ class IFetcherFactory(interfaces.IFactory):
             {
                 'hg': 'minitage.core.fetchers:HgFetcher',
                 'bzr': 'minitage.core.fetchers:BzrFetcher',
+                'git': 'minitage.core.fetchers:GitFetcher',
                 'svn': 'minitage.core.fetchers:SvnFetcher',
                 'static': 'minitage.core.fetchers:StaticFetcher',
             }

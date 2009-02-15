@@ -30,6 +30,9 @@ class InvalidMercurialRepositoryError(interfaces.InvalidRepositoryError):
 class InvalidBazaarRepositoryError(interfaces.InvalidRepositoryError):
     """Bazaar repository is invalid."""
 
+class InvalidGitRepositoryError(interfaces.InvalidRepositoryError):
+    """Git repository is invalid.""" 
+
 class OfflineModeRestrictionError(interfaces.IFetcherError):
     """Restriction error in offline mode."""
 
@@ -506,7 +509,7 @@ class GitFetcher(interfaces.IFetcher):
                     message = 'Unexpected fetch error on \'%s\'\n' % uri
                     message += 'The directory \'%s\' is not ' % (dest)
                     message += 'a valid git repository'
-                    raise InvalidBazaarRepositoryError(message)
+                    raise InvalidGitRepositoryError(message)
                 self._scm_cmd('pull -f %s' % (uri), verbose)
                 self._scm_cmd('reset --hard %s ' % (revision), verbose)
                 os.chdir(cwd)
@@ -524,7 +527,7 @@ class GitFetcher(interfaces.IFetcher):
                 message = 'Unexpected fetch error on \'%s\'\n' % uri
                 message += 'The directory \'%s\' is not '
                 message += 'a valid bazaar repository' % (dest, uri)
-                raise InvalidBazaarRepositoryError(message)
+                raise InvalidGitRepositoryError(message)
         else:
             raise interfaces.InvalidUrlError('this uri \'%s\' is invalid' % uri)
 
@@ -563,7 +566,7 @@ class GitFetcher(interfaces.IFetcher):
                 message = 'Unexpected fetch error on \'%s\'\n' % uri
                 message += 'The directory \'%s\' is not '
                 message += 'a valid bazaar repository' % (dest, uri)
-                raise InvalidBazaarRepositoryError(message)
+                raise InvalidGitRepositoryError(message)
         else:
             raise interfaces.InvalidUrlError('this uri \'%s\' is invalid' % uri)
 
