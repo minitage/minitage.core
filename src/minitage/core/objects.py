@@ -160,7 +160,8 @@ class Minibuild(object):
      - True:  loaded
     It will read those options in the minibuild section
       - src_uri : url to fetch from
-      - src_type : how to fetch (valid methods are 'svn' and 'hg')
+      - src_type : how to fetch (valid methods are 'svn' and 'hg', and 'git',
+      and 'bzr')
       - src_opts : arguments for the fetch method (import, -rxxx) be aware you
         also must include the check out argument if you using SCM fetch method there.
         like co or export. This argument is also not filtered out, take care !

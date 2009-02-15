@@ -1,5 +1,10 @@
 Changes
 ***********************************************
+0.4.28
+=======
+
+    - Make minitage git aware both in recipes and in core.
+
 0.4.27
 =======
 
@@ -18,7 +23,7 @@ Changes
 0.4.8
 ===========
     - Maintenance release
-            
+
         - testruner
         - buildoutified
         - some refactor and code cleanings

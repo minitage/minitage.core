@@ -30,6 +30,110 @@ opts = dict(
 
 prefix = os.getcwd()
 
+class testGit(unittest.TestCase):
+    """testGit"""
+
+    def setUp(self):
+        """."""
+        os.chdir(prefix)
+        md = tempfile.mkdtemp()
+        opts.update({'path2': md})
+        os.system("""
+                 mkdir -p %(path2)s
+                 rm -rf %(path)s
+                 cd %(path2)s
+                 echo '666'>file
+                 git init
+                 git add .
+                 git commit -a -m 'initial import'
+                 echo '666'>file2
+                 git add .
+                 git commit -m 'second revision'
+                 git clone %(path2)s %(path)s
+                  """ % opts)
+
+    def tearDown(self):
+        """."""
+        for dir in [ opts['path'], opts['dest']]:
+            if os.path.isdir(dir):
+                shutil.rmtree(dir)
+
+    def testUrlChanged(self):
+        """testUrlChanged"""
+        git = scm.GitFetcher()
+        git.fetch(opts['dest'], 'file://%s' % opts['path'])
+        self.assertTrue(os.path.isdir('%s/%s' % (opts['dest'], '.git')))
+        self.assertFalse(
+            git._has_uri_changed(
+                opts['dest'],
+                'file://%s' % opts['path'],
+            )
+        )
+        self.assertTrue(git._has_uri_changed('hehe_changed', opts['dest']))
+
+    def testRemoveVersionnedDirs(self):
+        """testRemoveVersionnedDirs"""
+        git = scm.GitFetcher()
+        git.fetch(opts['dest'], 'file://%s' % opts['path'])
+        self.assertTrue(os.path.isdir('%s/%s' % (opts['dest'], '.git')))
+        os.mkdir(os.path.join(opts['dest'],'part'))
+        git._remove_versionned_directories(opts['dest'])
+        self.assertTrue(os.path.isdir(  os.path.join(opts['dest'],'part')))
+        self.assertFalse(os.path.isdir( os.path.join(opts['dest'],'.git')))
+        self.assertFalse(os.path.isfile(os.path.join(opts['dest'],'file2')))
+        git.update(opts['dest'], 'file://%s' % opts['path'])
+        self.assertTrue(os.path.isdir('%s/%s' % (opts['dest'], '.git')))
+
+    def testScmInvalidUri(self):
+        """testScmInvalidUri"""
+        git = scm.GitFetcher()
+        self.assertRaises(interfaces.InvalidUrlError,
+                          git.fetch, 'somewhere', 'invalidsrcuri')
+
+
+    def testFetch(self):
+        """testFetch"""
+        git = scm.GitFetcher()
+        git.fetch(opts['dest'], 'file://%s' % opts['path'])
+        self.assertTrue(os.path.isdir('%s/%s' % (opts['dest'], '.git')))
+
+    def testFetchToParticularRevision(self):
+        """testFetchToParticularRevision"""
+        git = scm.GitFetcher()
+        git.fetch(opts['dest'], 'file://%s' % opts['path'], dict(revision='HEAD~'))
+        self.assertTrue(os.path.isdir('%s/%s' % (opts['dest'], '.git')))
+        self.assertFalse(os.path.isfile('%s/%s' % (opts['dest'], 'file2')))
+
+    def testUpdate(self):
+        """testUpdate"""
+        git = scm.GitFetcher()
+        git.fetch(opts['dest'], 'file://%s' % opts['path'], dict(revision='HEAD~'))
+        self.assertTrue(os.path.isdir('%s/%s' % (opts['dest'], '.git')))
+        git.update(opts['dest'], 'file://%s master' % opts['path'])
+        self.assertTrue(os.path.isfile(os.path.join(opts['dest'], 'file2')))
+        git.update(opts['dest'], 'file://%s master' % opts['path'], dict(revision='HEAD~'))
+        self.assertFalse(os.path.isfile(os.path.join(opts['dest'], 'file2')))
+        shutil.rmtree(opts['dest'])
+        git.fetch(opts['dest'], 'file://%s' % opts['path'], dict(revision='HEAD~'))
+        git.update(opts['dest'])
+        self.assertTrue(os.path.isfile(os.path.join(opts['dest'], 'file2')))
+
+    def testFetchOrUpdate_fetch(self):
+        """testFetchOrUpdate_fetch"""
+        git = scm.GitFetcher()
+        git.fetch_or_update(opts['dest'], 'file://%s' % opts['path'])
+        self.assertTrue(os.path.isfile('%s/%s' % (opts['dest'], 'file2')))
+        self.assertTrue(os.path.isdir('%s/%s' % (opts['dest'], '.git')))
+
+    def testFetchOrUpdate_update(self):
+        """testFetchOrUpdate_update"""
+        git = scm.GitFetcher()
+        git.fetch(opts['dest'], 'file://%s' % opts['path'], dict(revision='HEAD~'))
+        self.assertTrue(os.path.isdir('%s/%s' % (opts['dest'], '.git')))
+        self.assertFalse(os.path.isfile('%s/%s' % (opts['dest'], 'file2')))
+        git.fetch_or_update(opts['dest'], 'file://%s' % opts['path'])
+        self.assertTrue(os.path.isfile('%s/%s' % (opts['dest'], 'file2')))
+
 class testBzr(unittest.TestCase):
     """testBzr"""
 
@@ -37,15 +141,15 @@ class testBzr(unittest.TestCase):
         """."""
         os.chdir(prefix)
         os.system("""
-                 mkdir -p  %(path)s          
-                 cd %(path)s                 
-                 echo '666'>file             
-                 bzr init                    
-                 bzr add .                   
-                 bzr ci -m 'initial import'  
-                 echo '666'>file2            
-                 bzr add                     
-                 bzr ci -m 'second revision' 
+                 mkdir -p  %(path)s
+                 cd %(path)s
+                 echo '666'>file
+                 bzr init
+                 bzr add .
+                 bzr ci -m 'initial import'
+                 echo '666'>file2
+                 bzr add
+                 bzr ci -m 'second revision'
                  """ % opts)
 
     def tearDown(self):
@@ -79,7 +183,7 @@ class testBzr(unittest.TestCase):
         self.assertFalse(os.path.isfile(os.path.join(opts['dest'],'file2')))
         bzr.update(opts['dest'], 'file://%s' % opts['path'])
         self.assertTrue(os.path.isdir('%s/%s' % (opts['dest'], '.bzr')))
-         
+
     def testScmInvalidUri(self):
         """testScmInvalidUri"""
         bzr = scm.BzrFetcher()
@@ -126,7 +230,7 @@ class testBzr(unittest.TestCase):
         bzr.fetch_or_update(opts['dest'], 'file://%s' % opts['path'])
         self.assertTrue(os.path.isfile('%s/%s' % (opts['dest'], 'file2')))
 
-         
+
 
 class testHg(unittest.TestCase):
     """testHg"""
@@ -343,18 +447,15 @@ class testSvn(unittest.TestCase):
         svn.fetch_or_update(opts['wc'], 'file://%s' % opts['path'])
         self.assertTrue(os.path.isfile('%s/%s' % (opts['wc'], 'file2')))
 
-def test_suite():            
-    suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(testBzr))
-    suite.addTest(unittest.makeSuite(testHg))
-    suite.addTest(unittest.makeSuite(testSvn)) 
-    return suite  
-
-if __name__ == '__main__':
+def test_suite():
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(testBzr))
     suite.addTest(unittest.makeSuite(testHg))
     suite.addTest(unittest.makeSuite(testSvn))
-    unittest.TextTestRunner(verbosity=2).run(suite)
+    suite.addTest(unittest.makeSuite(testGit))
+    return suite
+
+if __name__ == '__main__':
+    unittest.TextTestRunner(verbosity=2).run(test_suite())
 
 # vim:set et sts=4 ts=4 tw=80:

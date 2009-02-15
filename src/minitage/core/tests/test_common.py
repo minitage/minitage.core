@@ -34,8 +34,9 @@ def createMinitageEnv(directory):
     os.system("""
               mkdir %(path)s
               cd /
-              virtualenv %(path)s
+              virtualenv %(path)s --no-site-packages
               source %(path)s/bin/activate
+              easy_install virtualenv
               # can be python-ver or python
               $(ls %(path)s/bin/easy_install) -f "%(eggs)s" zc.buildout
               export PYTHONPATH=%(module)s:$PYTHONPATH
