@@ -547,6 +547,8 @@ class GitFetcher(interfaces.IFetcher):
             - interfaces.FetchErrorin case of fetch problems
             - interfaces.InvalidUrlError in case of uri is invalid
         """
+        cwd = os.getcwd()
+        os.chdir('/')
         if opts is None:
             opts = {}
         revision = opts.get('revision','HEAD')
@@ -558,7 +560,6 @@ class GitFetcher(interfaces.IFetcher):
                      )
         if self.is_valid_src_uri(uri):
             self._scm_cmd('clone  %s %s %s' % (args, uri, dest), verbose)
-            cwd = os.getcwd()
             os.chdir(dest)
             self._scm_cmd('reset --hard %s ' % (revision), verbose)
             os.chdir(cwd)

@@ -19,6 +19,8 @@ import ConfigParser
 import logging
 import logging.config
 import copy
+import shutil
+from distutils.dir_util import copy_tree
 
 from minitage.core import objects
 from minitage.core.fetchers import interfaces as fetchers
@@ -296,10 +298,21 @@ class Minimerge(object):
             self.logger.info('Updating package %s from %s.' % (
                 package.name,package.src_uri)
             )
-            fetcher.update(
-                destination,
-                package.src_uri,
-            )
+
+            if fetcher._has_uri_changed(destination, package.src_uri):
+                temp = os.path.join(os.path.dirname(destination), 
+                                    'minitage-checkout-tmp', 
+                                    package.name)
+                if os.path.isdir(temp):
+                    shutil.rmtree(temp)
+                fetcher.fetch(temp, package.src_uri) 
+                copy_tree(temp, destination)
+                shutil.rmtree(temp)
+            else:
+                fetcher.update(
+                    destination,
+                    package.src_uri,
+            )  
 
     def _do_action(self, action, packages, pyvers = None):
         """Do action.
