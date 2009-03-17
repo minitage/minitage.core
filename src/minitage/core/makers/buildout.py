@@ -86,12 +86,22 @@ class BuildoutMaker(interfaces.IMaker):
             opts = {}
         try:
             argv = self.config.get('options',
-                                           ' -vvvvv').split()
+                                           '').split()
+            if opts.get('verbose', False):
+                self.logger.debug('Buildout is running in verbose mode!')
+                argv.append('-vvvvvvv')  
+            installed_cfg = os.path.join(directory, '.installed.cfg')
+            if not opts.get('upgrade', True)\
+               and not os.path.exists(installed_cfg): 
+                argv.append('-N') 
+            if opts.get('upgrade', False):
+                self.logger.debug('Buildout is running in newest mode!')
+                argv.append('-n') 
             if opts.get('offline', False):
-                self.logger.info('Buildout is running in offline mode!')
+                self.logger.debug('Buildout is running in offline mode!')
                 argv.append('-o')
             if opts.get('debug', False):
-                self.logger.info('Buildout is running in debug mode!')
+                self.logger.debug('Buildout is running in debug mode!')
                 argv.append('-D')
             parts = opts.get('parts', False)
             if isinstance(parts, str):
@@ -100,16 +110,15 @@ class BuildoutMaker(interfaces.IMaker):
 
             # Try to upgrade only if we need to
             # (we chech only when we have a .installed.cfg file
-            installed_cfg = os.path.join(directory, '.installed.cfg')
             if not opts.get('upgrade', True)\
                and os.path.exists(installed_cfg):
                 self.logger.debug('Buildout will not run in %s'
-                            ' as there is a .installed.cfg file'
-                            ' indicating us that the software is already'
-                            ' installed but minimerge is running in'
-                            ' no-update mode. If you want to try'
-                            ' to update/rebuild it unconditionnaly,'
-                            ' please relaunch with -uUR.' % directory)
+                                  ' as there is a .installed.cfg file'
+                                  ' indicating us that the software is already'
+                                  ' installed but minimerge is running in'
+                                  ' no-update mode. If you want to try'
+                                  ' to update/rebuild it unconditionnaly,'
+                                  ' please relaunch with -uUR.' % directory)
                 return
 
 

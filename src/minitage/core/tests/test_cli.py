@@ -42,7 +42,7 @@ class TestCli(unittest.TestCase):
                    '--rm': 'delete',
                    '--install': 'install',
                    '--sync': 'sync'}
-        sys.argv = [sys.argv[0], 'foo']
+        sys.argv = [sys.argv[0], '-c', 'non existing', 'foo']
         self.assertRaises(core.InvalidConfigFileError, cli.do_read_options)
         for action in actions:
             sys.argv = [sys.argv[0], action, '--config', os.path.join(path, 'etc', 'minimerge.cfg'), 'foo']

@@ -26,6 +26,9 @@ usage = """
 %(arg)s [Options] -rm minibuild ... minibuildn  \t: Uninstall package(s)
 %(arg)s [Options] -uU minibuild ... minibuildn  \t: Update/Upgrade package(s)
 %(arg)s [Options] -RuU minibuild ... minibuildn  \t: Update/Upgrade/rebuild package(s)
+
+
+IMPORTANT NODE: buildout is running by default in non newest mode, see -u option!
 """ % {'arg': sys.argv[0]}
 
 
@@ -63,7 +66,7 @@ def do_read_options():
             'prior to compilation step automaticly'
     ask_help = 'Do nothing, show what will be done and ask to continue'
     upgrade_help = 'Will try to rebuild already installed sofware. if '\
-            'you need to be sure that all will be rebuilt, activate '\
+            'you need to be sure that all will be rebuilt (for buildout, it runs it in new mode whereas by default, buildout is running in non newest mode, activate '\
             'also the -R flag. If you want minimerge to update '\
             'the packages from where they come, please activate '\
             'also the -U flag.'
@@ -114,12 +117,9 @@ def do_read_options():
         optparse.make_option('-a', '--ask',
                              action='store_true', dest='ask',
                              help = ask_help),
-        #optparse.make_option('-v', '--verbose',
-        #                     action='store_true', dest='verbose',
-        #                     help = 'Be verbose.'),
-        optparse.make_option('-q', '--quiet',
-                             action='store_true', dest='quiet',
-                             help = 'Be quiet (Experimental, be warned!).'), 
+        optparse.make_option('-v', '--verbose',
+                             action='store_true', dest='verbose',
+                             help = 'Be verbose.'),
     ]
     parser = optparse.OptionParser(version=core.__version__,
                                    usage=usage,
@@ -160,7 +160,7 @@ def do_read_options():
         options.action = default_action
 
     if not options.config:
-        for file in ['~/.minimerge.cfg', '%s/etc/minimerge.cfg' % path]:
+        for file in ['%s/etc/minimerge.cfg' % path, '~/.minimerge.cfg']:
             file = os.path.expanduser(file)
             if os.path.isfile(file):
                 options.config = file
@@ -190,7 +190,7 @@ def do_read_options():
         'pretend': options.pretend,
         'update': options.update,
         'upgrade': options.upgrade,
-        'verbose': not options.quiet,
+        'verbose': options.verbose,
     }
     return minimerge_options
 

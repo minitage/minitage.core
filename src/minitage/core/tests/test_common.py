@@ -38,7 +38,7 @@ def createMinitageEnv(directory):
               source %(path)s/bin/activate
               easy_install virtualenv
               # can be python-ver or python
-              $(ls %(path)s/bin/easy_install) -f "%(eggs)s" zc.buildout
+              $(ls %(path)s/bin/easy_install) -Uf "%(eggs)s" zc.buildout setuptools
               export PYTHONPATH=%(module)s:$PYTHONPATH
               $(ls %(path)s/bin/python*) -c 'from minitage.core.common import first_run;first_run()'
               """ % {

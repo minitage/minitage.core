@@ -1,6 +1,11 @@
 Changes
 ***********************************************
 0.4.30
+========
+    - Bind buildout newest mode with -u option
+
+
+0.4.30
 =======
 
     - do not delete directories but overwrite when the package src uri change.
