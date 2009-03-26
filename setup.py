@@ -64,6 +64,9 @@ setup(
     entry_points = {
         'console_scripts': [
             'minimerge = minitage.core.launchers.minimerge:launch',
+            'apty = minitage.core.launchers.minimerge:launch',
+            'pacmerge = minitage.core.launchers.minimerge:launch',
+            'yasty = minitage.core.launchers.minimerge:launch',
         ],
     }
 

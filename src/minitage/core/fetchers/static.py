@@ -17,10 +17,14 @@ __docformat__ = 'restructuredtext en'
 import os
 import urllib
 import shutil
+import logging
 
 from minitage.core.fetchers import interfaces
 from minitage.core.unpackers.interfaces import IUnpackerFactory
 import minitage.core.common
+
+
+__log__ = logging.getLogger('minitage.static.fetcher')
 
 
 class StaticFetchError(interfaces.IFetcherError):
@@ -56,14 +60,12 @@ class StaticFetcher(interfaces.IFetcher):
             - opts : arguments for the fetcher
 
         """
-        if opts is None:
-            opts = {}
-
-        if os.path.isdir(dest):
-            for item in os.listdir(dest):
-                if item not in ['.download']:
-                    path = os.path.join(dest, item)
-                    minitage.core.common.remove_path(path)
+        # be conservative !!!
+        # if os.path.isdir(dest):
+        #     for item in os.listdir(dest):
+        #         if item not in ['.download']:
+        #             path = os.path.join(dest, item)
+        #             minitage.core.common.remove_path(path)
 
         self.fetch(dest, uri, opts)
 
@@ -85,6 +87,7 @@ class StaticFetcher(interfaces.IFetcher):
         download_dir = '%s/.download' % dest
         filename = os.path.split(uri)[1]
         filepath = '%s/%s' % (download_dir, filename)
+        md5path = '%s/%s.md5' % (download_dir, filename)
 
         if not os.path.isdir(download_dir):
             os.makedirs(download_dir)
@@ -93,14 +96,46 @@ class StaticFetcher(interfaces.IFetcher):
         if (md5 and not minitage.core.common.test_md5(filepath, md5))\
            or not md5:
             try:
-                data = urllib\
-                        .urlopen(uri, proxies = self._proxies)\
-                        .read()
-                filep = open(filepath,'w')
-                filep.write(data)
-                filep.flush()
-                filep.close()
+                newer = True
+                # if we have not specified the md5, try to download one
+                try:
+                    if not md5:
+                        md5 = urllib.urlopen(
+                            "%s.md5" % uri, 
+                            proxies = self._proxies).read() 
+                        # maybe mark the file as already there
+                        if os.path.exists(filepath):
+                            __log__.debug('File %s is already downloaded' % filepath)
+                            oo =  minitage.core.common.md5sum(filepath)
+                            if minitage.core.common.test_md5(filepath, md5):
+                                newer = False
+                            else:
+                                __log__.debug(
+                                    'Its md5 has changed: %s != %s, redownloading' % (
+                                        minitage.core.common.md5sum(filepath), md5
+                                    )
+                                )
+                except:
+                    pass
+                if newer:
+                    __log__.debug('Downloading %s from %s.' % (filepath, uri))
+                    data = urllib\
+                            .urlopen(uri, proxies = self._proxies)\
+                            .read()
+                    # save the downloaded file
+                    filep = open(filepath, 'wb')
+                    filep.write(data)
+                    filep.flush()
+                    filep.close()
+                    new_md5 = minitage.core.common.md5sum(filepath)
+                    # regenerate the md5 file
+                    md5p = open(md5path, 'wb')
+                    md5p.write(new_md5)
+                    md5p.flush()
+                    md5p.close()
+
             except Exception, e:
+                raise
                 message = 'Can\'t download file \'%s\'' % filename
                 message += 'from \'%s\' .\n\t%s' % (uri, e)
                 raise StaticFetchError(message)

@@ -23,6 +23,5 @@ def test_suite():
               test_buildout,
              ):
         suite.addTest(m.test_suite())
-    suite = unittest.TestSuite()
     return suite
 # vim:set et sts=4 ts=4 tw=80:

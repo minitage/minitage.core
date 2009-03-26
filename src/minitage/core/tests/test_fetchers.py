@@ -19,11 +19,10 @@ from fetchers import (test_interfaces,
                       test_static,)
 def test_suite():
     suite = unittest.TestSuite()
-    for m in (test_interfaces,
-              test_scm,
+    for m in (#test_interfaces,
+              #test_scm,
               test_static,
              ):
-        continue
-    #suite = unittest.TestSuite()
+        suite.addTest(m.test_suite())
     return suite
 # vim:set et sts=4 ts=4 tw=80:
