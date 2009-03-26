@@ -625,18 +625,20 @@ class Minimerge(object):
                                            self._prefix,
                                            'minilays',
                                            minilay),
-                                           '/'.join((urlbase, minilay))
+                                           '/'.join((urlbase, minilay, '%s.tbz2' % minilay))
                                        )\
             for minilay in default_minilays]
         for d, url in default_minilays_pathes_urls:
+            self.logger.info('Syncing %s from %s [via %s]' % (d, url, hg.name))
             if not os.path.exists(d):
                 hg.fetch(d, url)
             else:
-                if not d in [m.path for m in self._minilays]:
-                    self._minilays.append(objects.Minilay(d))
+                hg.update(d, url)
 
         # for others minilays, we just try to update them
-        for minilay in self._minilays:
+        for minilay in [m 
+                        for m in self._minilays 
+                        if not os.path.basename(m.path) in default_minilays]:
             path = minilay.path
             type = None
             # querying scm factory for registered scms
@@ -645,9 +647,9 @@ class Minimerge(object):
             for strscm in scms:
                 if os.path.isdir('%s/.%s' % (path, strscm)):
                     scm = f(strscm)
-                    self.logger.info('Syncing %s from %s [via %s]' % (
-                        path, scm.get_uri(path), strscm))
+                    self.logger.info('Syncing %s from %s [via %s]' % ( path, scm.get_uri(path), strscm))
                     scm.update(dest=path, uri=scm.get_uri(path), verbose=self.verbose)
+
         self.logger.info('Syncing done.')
 
     def _init_logging(self, verbose=False):

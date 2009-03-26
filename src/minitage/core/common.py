@@ -255,7 +255,10 @@ You seem to be running minitage for the first time.
             'minitage.core == %s' % mm_version),
             'share/minitage/README.txt')
         prefixed = re.sub('%PREFIX%',prefix, open(tconfig,'r').read())
-        open(config, 'w').write(prefixed)
+        fic = open(config, 'w')
+        fic.write(prefixed)
+        fic.flush()
+        fic.close()
         print '\n\n'
 
 # vim:set et sts=4 ts=4 tw=80:

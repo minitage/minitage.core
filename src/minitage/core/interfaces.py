@@ -63,12 +63,16 @@ class IFactory(object):
         self.products = {}
         if config:
             try:
-                self.config.read(config)
-                self.sections = self.config._sections
+                if isinstance(config, str):
+                    self.config.read(config)
+                    self.sections = self.config._sections
+                else:
+                    self.sections = config
                 for section in self.sections:
-                    del self.sections[section]['__name__']
-                self.section = self.config._sections[self.name]
-            except KeyError:
+                    if '__name__' in self.sections[section]:
+                        del self.sections[section]['__name__']
+                self.section = self.sections[self.name]
+            except KeyError, e:
                 message = 'You must provide a [%s] section with '\
                         ' appropriate content for this factory.\n'
                 raise InvalidConfigForFactoryError(message % (self.name))

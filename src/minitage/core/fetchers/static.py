@@ -93,16 +93,16 @@ class StaticFetcher(interfaces.IFetcher):
             os.makedirs(download_dir)
 
         # only download if we do not have already the file
+        newer = True
         if (md5 and not minitage.core.common.test_md5(filepath, md5))\
            or not md5:
             try:
-                newer = True
                 # if we have not specified the md5, try to download one
                 try:
                     if not md5:
                         md5 = urllib.urlopen(
                             "%s.md5" % uri, 
-                            proxies = self._proxies).read() 
+                            proxies = self._proxies).read().strip()
                         # maybe mark the file as already there
                         if os.path.exists(filepath):
                             __log__.debug('File %s is already downloaded' % filepath)
@@ -118,7 +118,7 @@ class StaticFetcher(interfaces.IFetcher):
                 except:
                     pass
                 if newer:
-                    __log__.debug('Downloading %s from %s.' % (filepath, uri))
+                    __log__.info('Downloading %s from %s.' % (filepath, uri))
                     data = urllib\
                             .urlopen(uri, proxies = self._proxies)\
                             .read()
@@ -140,21 +140,22 @@ class StaticFetcher(interfaces.IFetcher):
                 message += 'from \'%s\' .\n\t%s' % (uri, e)
                 raise StaticFetchError(message)
 
-            try:
-                # try to unpack
-                f = IUnpackerFactory(self.config)
-                u = f(filepath)
-                if u:
-                    u.unpack(filepath, dest)
-                # or move it to dest.
-                else:
-                    if os.path.isfile(filepath):
-                        shutil.copy(filepath, '%s/%s' % (dest, filename))
-                    if os.path.isdir(filepath):
-                        shutil.copytree(filepath, '%s/%s' % (dest, filename))
-            except Exception, e:
-                message = 'Can\'t install file %s in its destination %s.'
-                raise StaticFetchError(message % (filepath, dest))
+            if newer:
+                try:
+                    # try to unpack
+                    f = IUnpackerFactory(self.config)
+                    u = f(filepath)
+                    if u:
+                        u.unpack(filepath, dest)
+                    # or move it to dest.
+                    else:
+                        if os.path.isfile(filepath):
+                            shutil.copy(filepath, '%s/%s' % (dest, filename))
+                        if os.path.isdir(filepath):
+                            shutil.copytree(filepath, '%s/%s' % (dest, filename))
+                except Exception, e:
+                    message = 'Can\'t install file %s in its destination %s.'
+                    raise StaticFetchError(message % (filepath, dest))
 
     def match(self, switch):
         """See interface."""
