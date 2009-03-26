@@ -1,5 +1,13 @@
 Changes
 ***********************************************
+
+
+
+0.32
+=====
+
+    - Fetch by default over http
+
 0.4.30
 ========
     - Bind buildout newest mode with -u option
