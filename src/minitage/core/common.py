@@ -116,7 +116,7 @@ def Popen(command, verbose=False):
     if ret != 0:
         error = ''
         #if not verbose:
-        #    error = p.stdout.read()   
+        #    error = p.stdout.read()
         message = '%s\n%s' % (error,
                             '----------------------------------------------------------\n'
                             '\'%s\' failed!\n'
@@ -172,9 +172,12 @@ def get_from_cache(url,
                 filename,
                 download_cache)
         )
+    if os.path.exists(url):
+        url = 'file://%s' % os.path.abspath(url)
 
     if not file_present:
-        if offline:
+        # static local files
+        if offline and not (('file://' in url) or (os.path.exists(url))):
             # no file in the cache, but we are staying offline
             raise MinimergeError(
                 "Offline mode: file from %s not found in the cache at %s" %
@@ -260,5 +263,37 @@ You seem to be running minitage for the first time.
         fic.flush()
         fic.close()
         print '\n\n'
+
+def which(program, environ=None, key = 'PATH', split = ':'):
+    if not environ:
+        environ = os.environ
+    PATH=environ.get(key, '').split(split)
+    fp = None
+    if '/' in program:
+        fp = os.path.abspath(program)
+    if not fp:
+        for entry in PATH:
+            fp = os.path.abspath(os.path.join(entry, program))
+            if os.path.exists(fp):
+                break
+    if os.path.exists(fp):
+        return fp
+    raise IOError('Program not fond: %s in %s ' % (program, PATH))
+
+
+def search_latest(regex, minilays):
+    for mpath, directories, files in os.walk(minilays):
+        subpath = mpath.replace(
+            os.path.commonprefix([minilays, mpath]),
+            '')
+        if subpath and (not subpath.count(os.path.sep) > 1):
+            files.sort()
+            files.reverse()
+            for minibuild in files:
+                if not minibuild.startswith('.'):
+                    if re.match(regex, minibuild, re.M|re.S|re.U):
+                        return minibuild
+    raise Exception('Regex %s didnt match or '
+                    'minibuild not found in %s.' % (regex, minilays))
 
 # vim:set et sts=4 ts=4 tw=80:
