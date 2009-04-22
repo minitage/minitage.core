@@ -42,6 +42,7 @@ class BuildoutMaker(interfaces.IMaker):
             config = {}
         self.logger = logging.getLogger(__logger__)
         self.config = config
+        self.buildout_config = 'buildout.cfg'
         interfaces.IMaker.__init__(self)
 
     def match(self, switch):
@@ -79,7 +80,8 @@ class BuildoutMaker(interfaces.IMaker):
             - dir : directory where the packge is
             - opts : arguments for the maker
         """
-        self.logger.info('Running buildout in %s' % directory)
+        self.logger.info('Running buildout in %s (%s)' % (directory,
+                                                          self.buildout_config))
         cwd = os.getcwd()
         os.chdir(directory)
         if not opts:
@@ -89,14 +91,14 @@ class BuildoutMaker(interfaces.IMaker):
                                            '').split()
             if opts.get('verbose', False):
                 self.logger.debug('Buildout is running in verbose mode!')
-                argv.append('-vvvvvvv')  
+                argv.append('-vvvvvvv')
             installed_cfg = os.path.join(directory, '.installed.cfg')
             if not opts.get('upgrade', True)\
-               and not os.path.exists(installed_cfg): 
-                argv.append('-N') 
+               and not os.path.exists(installed_cfg):
+                argv.append('-N')
             if opts.get('upgrade', False):
                 self.logger.debug('Buildout is running in newest mode!')
-                argv.append('-n') 
+                argv.append('-n')
             if opts.get('offline', False):
                 self.logger.debug('Buildout is running in offline mode!')
                 argv.append('-o')
@@ -132,7 +134,7 @@ class BuildoutMaker(interfaces.IMaker):
                     minitage.core.common.Popen(
                         '%s bootstrap.py' % sys.executable,
                         opts.get('verbose', False)
-                    ) 
+                    )
                 else:
                     minitage.core.common.Popen(
                         'buildout bootstrap',
@@ -142,7 +144,8 @@ class BuildoutMaker(interfaces.IMaker):
                 for part in parts:
                     self.logger.info('Installing single part: %s' % part)
                     minitage.core.common.Popen(
-                        './bin/buildout %s install %s ' % (
+                        './bin/buildout -c %s %s install %s ' % (
+                            self.buildout_config,
                             ' '.join(argv),
                             part
                         ),
@@ -151,7 +154,8 @@ class BuildoutMaker(interfaces.IMaker):
             else:
                 self.logger.debug('Installing parts')
                 minitage.core.common.Popen(
-                    './bin/buildout %s ' % (
+                    './bin/buildout -c %s  %s ' % (
+                        self.buildout_config,
                         ' '.join(argv),
                     ),
                     opts.get('verbose', False)
@@ -188,6 +192,9 @@ class BuildoutMaker(interfaces.IMaker):
             parts = ['site-packages-%s' % ver for ver in vers]
 
         options['parts'] = parts
+        self.buildout_config = minibuild.minibuild_config._sections[
+            'minibuild'].get('buildout_config',
+                             'buildout.cfg')
 
         # prevent buildout from running if we have already installed stuff
         # and do not want to upgrade.

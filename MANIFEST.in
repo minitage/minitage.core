@@ -1,6 +1,0 @@
-include *.txt 
-include *.py  
-include *.cfg
-include src/etc/minimerge.cfg
-
-

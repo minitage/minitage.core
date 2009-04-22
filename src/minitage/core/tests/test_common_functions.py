@@ -95,7 +95,7 @@ class TestCommon(unittest.TestCase):
         self.assertRaises(
             common.MinimergeError,
             common.get_from_cache,
-            'file://%s' % file,
+            'http://%s' % file,
             download_cache,
             offline = True
         )
@@ -114,10 +114,10 @@ class TestCommon(unittest.TestCase):
             open(ret).read(),
             'foo'
         )
-def test_suite():            
+def test_suite():
     suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(TestCommon)) 
-    return suite   
+    suite.addTest(unittest.makeSuite(TestCommon))
+    return suite
 
 if __name__ == '__main__':
     suite = unittest.TestSuite()

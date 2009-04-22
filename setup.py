@@ -17,7 +17,7 @@ import sys
 from setuptools import setup, find_packages
 
 name = 'minitage.core'
-version = '0.4.32'
+version = '0.99'
 
 def read(rnames):
     setupdir =  os.path.dirname( os.path.abspath(__file__))
@@ -28,7 +28,7 @@ def read(rnames):
 setup(
     name = name,
     version = version,
-    description="A meta package-manager to install projects on UNIX Systemes.",
+    description="A meta package-manager to deploy projects on UNIX Systemes.",
     long_description = (
         read('README.txt')
         + '\n' +

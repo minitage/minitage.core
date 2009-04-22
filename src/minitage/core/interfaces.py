@@ -15,6 +15,7 @@
 __docformat__ = 'restructuredtext en'
 
 import ConfigParser
+import os
 
 class InterfaceError(Exception):
     """eneral Interface Error."""
@@ -64,8 +65,11 @@ class IFactory(object):
         if config:
             try:
                 if isinstance(config, str):
-                    self.config.read(config)
-                    self.sections = self.config._sections
+                    if os.path.exists(config):
+                        self.config.read(config)
+                        self.sections = self.config._sections
+                    else:
+                        raise
                 else:
                     self.sections = config
                 for section in self.sections:

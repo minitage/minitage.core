@@ -193,6 +193,7 @@ class Minibuild(object):
         self.url = None
         self.category = None
         self.minitage_config = minitage_config
+        self.minibuild_config = None
         self.loaded = None
 
     def __getattribute__(self, attr):
@@ -309,6 +310,7 @@ class Minibuild(object):
             raise EmptyMinibuildError( message % self.path)
 
         self.parse_vars()
+        self.minibuild_config = config
 
         return self
 

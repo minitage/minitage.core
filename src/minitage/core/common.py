@@ -25,6 +25,9 @@ import urllib2
 import urlparse
 import subprocess
 
+
+from distutils.dir_util import copy_tree
+
 from pkg_resources import Requirement, resource_filename
 from minitage.core.version import __version__
 
@@ -145,7 +148,11 @@ def get_from_cache(url,
         if not os.path.isdir(download_cache):
             os.makedirs(download_cache)
 
-    _, _, urlpath, _, _ = urlparse.urlsplit(url)
+    _, _, urlpath, _, fragment = urlparse.urlsplit(url)
+    md5_re = re.compile('md5[^=]*=(.*)', re.S|re.U)
+    md5_re_match = md5_re.match(fragment)
+    if not file_md5 and md5_re_match:
+        file_md5 = md5_re_match.groups()[0]
     filename = urlpath.split('/')[-1]
     if not logger:
         logger = logging.getLogger(filename)
@@ -163,21 +170,37 @@ def get_from_cache(url,
     # do not download if we have the file
     file_present = os.path.exists(fname)
     if file_present:
-        logger.debug(
-            'Using cache file in %s' % fname
-        )
+        if file_md5:
+            if not test_md5(fname, file_md5):
+                file_present = False
+                bad_md5, backup = md5sum(fname), make_backup(fname)
+                logger.warning(
+                    'MD5SUM mismatch for %s: Good:%s != Bad:%s\n'
+                    'Backuping the old file but re download it!\n'
+                    'A bakcup will be made in %s.'% (
+                        fname,
+                        file_md5,
+                        bad_md5,
+                        backup
+                    )
+                )
+        if file_present:
+            logger.debug(
+                'Using cache file in %s' % fname
+            )
     else:
         logger.debug(
             'Did not find %s under cache: %s' % (
                 filename,
                 download_cache)
         )
+
     if os.path.exists(url):
         url = 'file://%s' % os.path.abspath(url)
 
     if not file_present:
         # static local files
-        if offline and not (('file://' in url) or (os.path.exists(url))):
+        if offline and not ('file://' in url):
             # no file in the cache, but we are staying offline
             raise MinimergeError(
                 "Offline mode: file from %s not found in the cache at %s" %
@@ -202,7 +225,14 @@ def get_from_cache(url,
             logger.info(
                 'Downloading %s in %s' % (url,fname)
             )
-            open(fname,'w').write(urllib2.urlopen(url).read())
+
+            local_file = '/not/existing/file/or/directory'
+            if 'file://' in url:
+                local_file = url.replace('file://', '')
+            if os.path.isdir(local_file):
+                copy_tree(local_file, fname)
+            if not os.path.exists(fname):
+                open(fname,'w').write(urllib2.urlopen(url).read())
             if file_md5:
                 if not test_md5(fname, file_md5):
                     raise MinimergeError(
@@ -216,13 +246,26 @@ def get_from_cache(url,
         except Exception, e:
             if tmp2 is not None:
                 shutil.rmtree(tmp2)
+            msg = 'Failed download for %s:\t%s' % (url, e)
             if download_cache:
-                os.remove(fname)
-            raise MinimergeError(
-                'Failed download for %s:\t%s' % (url, e)
-            )
+                msg += '\nBackup of the downloaded file has been made in %s' % make_backup(fname)
+            raise MinimergeError(msg)
 
     return fname
+
+def make_backup(fname):
+    index = 0
+    bacup = ''
+    while os.path.exists(fname):
+        backup = '%s.md5sum_mismatch.%s' % (fname, index)
+        try:
+            if not os.path.exists(backup):
+                os.rename(fname, backup)
+            else:
+                index += 1
+        except:
+            index += 1
+    return backup
 
 def first_run():
     ## first time create default config !

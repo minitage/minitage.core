@@ -519,9 +519,9 @@ class GitFetcher(interfaces.IFetcher):
                 suri = ''
                 if uri:
                     suri = '%s' % suri
-                self._scm_cmd('reset', verbose)
-                self._scm_cmd('pull --rebase -f %s' % suri, verbose)
-                self._scm_cmd('reset %s' % (revision), verbose)
+                self._scm_cmd('reset --hard', verbose)
+                self._scm_cmd('pull --f %s' % suri, verbose)
+                self._scm_cmd('reset --hard %s' % (revision), verbose)
                 os.chdir(cwd)
             if not os.path.isdir('%s/%s' % (dest, self.metadata_directory)):
                 message = 'Unexpected fetch error on \'%s\'\n' % uri
