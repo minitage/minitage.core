@@ -2,6 +2,15 @@ Changes
 ***********************************************
 
 
+1.0
+=====
+
+    - some API adds like 'search_latest' and 'which'
+    - bugfix in interfaces for configuration handling
+    - buildout maker can be given an optionnal config to build
+    - code stabilization and sync with other minitage components
+    - official documentation on http://www.minitage.org
+
 
 0.32
 =====

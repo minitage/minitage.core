@@ -69,7 +69,7 @@ class IFactory(object):
                         self.config.read(config)
                         self.sections = self.config._sections
                     else:
-                        raise
+                        self.sections = {self.name: {}}
                 else:
                     self.sections = config
                 for section in self.sections:

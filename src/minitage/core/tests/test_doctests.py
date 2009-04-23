@@ -74,6 +74,9 @@ def touch(*args, **kwargs):
 #execdir = os.path.abspath(os.path.dirname(sys.executable))
 tempdir = os.getenv('TEMP','/tmp')
 
+class DoctestLayer(object):
+    """"""
+
 def doc_suite(test_dir, setUp=None, tearDown=None, globs=None):
     """Returns a test suite, based on doctests found in /doctest."""
     suite = []
@@ -96,6 +99,7 @@ def doc_suite(test_dir, setUp=None, tearDown=None, globs=None):
                                     globs=globs, setUp=setUp,
                                     tearDown=tearDown,
                                     module_relative=False)
+        test.layer = DoctestLayer
         suite.append(test)
 
     return unittest.TestSuite(suite)
