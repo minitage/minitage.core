@@ -103,6 +103,17 @@ def system(c, log=None):
         raise SystemError('Failed', c)
     return ret
 
+def is_local_url(url):
+    if ('file://' in url
+        or url.startswith('./')
+        or url.startswith('/')
+        or ('localhost' in url
+                or '127.0.0.1' in url
+                or '::1' in url)
+       ):
+        return True
+    return False
+
 def Popen(command, verbose=False):
     # FIXME: Popen strange behaviour
     ret = os.system(command)
@@ -133,7 +144,8 @@ def get_from_cache(url,
                    download_cache = None,
                    logger = None,
                    file_md5 = None,
-                   offline = False):
+                   offline = False,
+                   use_cache = True):
     """Get a file from the buildout download cache.
     Arguments:
         - url : where to fetch from
@@ -195,18 +207,20 @@ def get_from_cache(url,
                 download_cache)
         )
 
+    if not use_cache:
+        file_present = False
+
     if os.path.exists(url):
         url = 'file://%s' % os.path.abspath(url)
 
     if not file_present:
         # static local files
-        if offline and not ('file://' in url):
+        if offline and not is_local_url(url):
             # no file in the cache, but we are staying offline
             raise MinimergeError(
                 "Offline mode: file from %s not found in the cache at %s" %
                 (url, download_cache)
             )
-
         try:
             # okay, we've got to download now
             tmp2 = None
@@ -231,7 +245,7 @@ def get_from_cache(url,
                 local_file = url.replace('file://', '')
             if os.path.isdir(local_file):
                 copy_tree(local_file, fname)
-            if not os.path.exists(fname):
+            if (not os.path.exists(fname)) or use_cache == False:
                 open(fname,'w').write(urllib2.urlopen(url).read())
             if file_md5:
                 if not test_md5(fname, file_md5):

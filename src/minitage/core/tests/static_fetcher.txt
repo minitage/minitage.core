@@ -124,8 +124,7 @@ Test that the unpack mecanism just ovverides what's already there but not delete
         >>> sh('cd %s;tar cjpvf ../test.tbz2 .;cd ..'%td)
         cd /tmp/...;tar cjpvf ../test.tbz2 .;cd ..
         ./
-        ./file1
-        ./file2
+        ...
         <BLANKLINE>
         >>> md5 = md5sum(package)
         >>> touch(md5p, **{'data': md5})
@@ -159,8 +158,7 @@ Test that the unpack mecanism just ovverides what's already there but not delete
         >>> sh('cd %s;tar cjpvf ../test.tbz2 .;cd ..'%td)
         cd /tmp/...;tar cjpvf ../test.tbz2 .;cd ..
         ./
-        ./file1
-        ./file2
+        ...
         <BLANKLINE>
         >>> md5 = md5sum(package)
         >>> touch(md5p, **{'data': md5})
