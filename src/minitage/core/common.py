@@ -207,7 +207,9 @@ def get_from_cache(url,
                 download_cache)
         )
 
-    if not use_cache:
+    # force re download if we do not want to use cache unless we are offline
+    # or patch is a local file
+    if not use_cache and not offline:
         file_present = False
 
     if os.path.exists(url):

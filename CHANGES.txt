@@ -1,6 +1,11 @@
 Changes
 ***********************************************
 
+1.0.4
+=========
+
+    - make conditionnal weither we are offline or not the download in the get_from_cache function.
+
 1.0.0 -> 1.0.3
 ==================
 
