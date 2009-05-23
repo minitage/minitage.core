@@ -161,6 +161,8 @@ def get_from_cache(url,
             os.makedirs(download_cache)
 
     _, _, urlpath, _, fragment = urlparse.urlsplit(url)
+    if not fragment: 
+        fragment = ''
     md5_re = re.compile('md5[^=]*=(.*)', re.S|re.U)
     md5_re_match = md5_re.match(fragment)
     if not file_md5 and md5_re_match:
@@ -248,7 +250,16 @@ def get_from_cache(url,
             if os.path.isdir(local_file):
                 copy_tree(local_file, fname)
             if (not os.path.exists(fname)) or use_cache == False:
-                open(fname,'w').write(urllib2.urlopen(url).read())
+                # we try to download the url with fragments, if it fails,
+                # without.
+                try:
+                    open(fname,'w').write(urllib2.urlopen(url).read())
+                except:
+                    url, info = url.split('#', 1)
+                    if 'md5' in fragment:
+                        open(fname,'w').write(urllib2.urlopen(url).read())
+                    else:
+                        raise
             if file_md5:
                 if not test_md5(fname, file_md5):
                     raise MinimergeError(
