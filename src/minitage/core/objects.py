@@ -252,11 +252,10 @@ class Minibuild(object):
         # specific os dependencies
         os_dependencies = section.get('dependencies-%s' % UNAME, None)
         if os_dependencies:
-            self.dependencies.extend(
-                [d \
-                 for d in os_dependencies.strip().split()\
-                 if d not in self.dependencies]
-            )
+            self.dependencies = [d
+                                 for d in os_dependencies.strip().split()
+                                 if d not in self.dependencies
+                                ] + self.dependencies
 
         # our install method, can be empty
         self.install_method = section.get('install_method','').strip()
@@ -336,7 +335,7 @@ class Minibuild(object):
             'minitage.variables', {}
         )
         # allow 2 pass variables
-        # to construct variables with variables inside. 
+        # to construct variables with variables inside.
         for i in (1,2):
             for key in self.__dict__:
                 var = re.compile('\$\{([^}]*)\}', re.M)
@@ -349,7 +348,7 @@ class Minibuild(object):
                                     self,
                                     key,
                                     getattr(self, key).replace(
-                                        '${%s}' % pattern, 
+                                        '${%s}' % pattern,
                                         variables[pattern]
                                     )
                                 )
