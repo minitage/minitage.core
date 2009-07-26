@@ -316,19 +316,19 @@ class Minimerge(object):
             )
 
             if fetcher._has_uri_changed(destination, package.src_uri):
-                temp = os.path.join(os.path.dirname(destination), 
-                                    'minitage-checkout-tmp', 
+                temp = os.path.join(os.path.dirname(destination),
+                                    'minitage-checkout-tmp',
                                     package.name)
                 if os.path.isdir(temp):
                     shutil.rmtree(temp)
-                fetcher.fetch(temp, package.src_uri) 
+                fetcher.fetch(temp, package.src_uri)
                 copy_tree(temp, destination)
                 shutil.rmtree(temp)
             else:
                 fetcher.update(
                     destination,
                     package.src_uri,
-            )  
+            )
 
     def _do_action(self, action, packages, pyvers = None):
         """Do action.
@@ -652,8 +652,8 @@ class Minimerge(object):
                 hg.update(d, url)
 
         # for others minilays, we just try to update them
-        for minilay in [m 
-                        for m in self._minilays 
+        for minilay in [m
+                        for m in self._minilays
                         if not os.path.basename(m.path) in default_minilays]:
             path = minilay.path
             type = None
@@ -663,8 +663,11 @@ class Minimerge(object):
             for strscm in scms:
                 if os.path.isdir('%s/.%s' % (path, strscm)):
                     scm = f(strscm)
-                    self.logger.info('Syncing %s from %s [via %s]' % ( path, scm.get_uri(path), strscm))
-                    scm.update(dest=path, uri=scm.get_uri(path), verbose=self.verbose)
+                    try:
+                        self.logger.info('Syncing %s from %s [via %s]' % (path, scm.get_uri(path), strscm))
+                        scm.update(dest=path, uri=scm.get_uri(path), verbose=self.verbose)
+                    except Exception, e:
+                        self.logger.info('Syncing %s FAILED : %s' % (path, e))
 
         self.logger.info('Syncing done.')
 
