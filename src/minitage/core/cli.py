@@ -134,6 +134,12 @@ def do_read_options():
         optparse.make_option('-a', '--ask',
                              action='store_true', dest='ask',
                              help = ask_help),
+        optparse.make_option('--skip-self-upgrade',
+                             action='store_true', dest='skip_self_upgrade',
+                             help = 'Do not do minitage self upgrades.'),
+        optparse.make_option('--reinstall-minilays',
+                             action='store_true', dest='reinstall_minilays',
+                             help = 'Re download minilays.'),
         optparse.make_option('-v', '--verbose',
                              action='store_true', dest='verbose',
                              help = 'Be verbose.'),
@@ -148,7 +154,7 @@ def do_read_options():
        (options.jump and options.nodeps):
         raise core.ConflictModesError('You are using conflicting modes')
 
-    if (not args and len(sys.argv) > 1) and not options.sync:
+    if (not args and len(sys.argv) > 1) and not (options.sync or options.reinstall_minilays):
         message = 'You must precise which packages you want to deal with'
         raise core.NoPackagesError(message)
 
@@ -208,6 +214,8 @@ def do_read_options():
         'update': options.update,
         'upgrade': options.upgrade,
         'verbose': options.verbose,
+        'reinstall_minilays': options.reinstall_minilays,
+        'skip_self_upgrade': options.skip_self_upgrade,
     }
     return minimerge_options
 

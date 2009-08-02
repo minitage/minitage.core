@@ -14,10 +14,12 @@ def launch():
     try:
         prefix = os.path.abspath(sys.exec_prefix)
         config = os.path.join(prefix, 'etc', 'minimerge.cfg')
+        firstrun = False
         if not os.path.isfile(config):
+            firstrun = True
             first_run()
-
         options = do_read_options()
+        options['first_run'] = firstrun
         minimerge = core.Minimerge(options)
         minimerge.main()
     except Exception, e:

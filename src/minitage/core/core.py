@@ -32,16 +32,22 @@ __docformat__ = 'restructuredtext en'
 import os
 import sys
 import ConfigParser
+import datetime
 import logging
 import logging.config
 import copy
 import shutil
 from distutils.dir_util import copy_tree
+import pkg_resources
+
+from iniparse import ConfigParser as WritableConfigParser
 
 from minitage.core import objects
 from minitage.core.fetchers import interfaces as fetchers
 from minitage.core.makers import interfaces as makers
 from minitage.core.version import __version__
+from minitage.core import update as up
+
 
 class MinimergeError(Exception):
     """General Minimerge Error"""
@@ -79,9 +85,17 @@ class CircurlarDependencyError(MinimergeError):
 
 
 PYTHON_VERSIONS = ('2.4', '2.5', '2.6')
+def newline(fic):
+    open(fic, 'a').write('\n')
 
 class Minimerge(object):
     """Minimerge object."""
+
+    def store_config(self, configp=None):
+        if not configp:
+            configp = self._config_path
+        self._wconfig.write(open(configp, 'w'))
+        newline(configp)
 
     def __init__(self, options=None):
         """Options are taken from the section 'minimerge'
@@ -127,8 +141,10 @@ class Minimerge(object):
 
         # read our config
         self._config = ConfigParser.ConfigParser()
+        self._wconfig = WritableConfigParser()
         try:
             self._config.read(self._config_path)
+            self._wconfig.read(self._config_path)
         except:
             message = 'The config file is invalid: %s' % self._config_path
             raise InvalidConfigFileError(message)
@@ -138,6 +154,7 @@ class Minimerge(object):
         self._prefix = self._config._sections.get('minimerge', {}) \
                                 .get('prefix', sys.exec_prefix)
 
+        self.backup_path = os.path.join(self._prefix, 'backups')
         # modes
         # for offline and debug mode, we see too if the flag is not set in the
         # configuration file
@@ -165,8 +182,10 @@ class Minimerge(object):
         minilays_search_paths.extend(
             os.environ.get('MINILAYS', '').strip().split()
         )
+        self.first_run = options.get('first_run', False)
         # minilays are in minilays/
-        minilays_parent = '%s/%s' % (self._prefix, 'minilays')
+        minilays_parent = os.path.join(self._prefix, 'minilays')
+        self.minilays_parent = minilays_parent
         if os.path.isdir(minilays_parent):
             minilays_search_paths.extend(['%s/%s' % (minilays_parent, dir)
                                         for dir in os.listdir(minilays_parent)])
@@ -181,6 +200,58 @@ class Minimerge(object):
             path = os.path.expanduser(dir),
             minitage_config = copy.deepcopy(self._config)) \
             for dir in minilays_search_paths if os.path.isdir(dir)]
+        if options.get('reinstall_minilays', False):
+            self.reinstall_minilays()
+        if not options.get('skip_self_upgrade', False):
+            self.update()
+
+    def update(self):
+        updates = up.UPDATES.keys()
+        updates.sort()
+        callables_versions = {}
+        if not self._wconfig.has_section('updates'):
+            self._wconfig.add_section('updates')
+        self.store_config()
+        todo = []
+
+        # mark everything done on new minitiage
+        if self.first_run:
+            for update in updates:
+                pass
+                #self._wconfig.set('updates', update, 'done')
+            self.store_config()
+        else:
+            for update in updates:
+                done = False
+                try:
+                    done = self._wconfig.get('updates', update, 'foo') == 'done'
+                except:
+                    pass
+                if not done:
+                    if pkg_resources.parse_version(update) <= pkg_resources.parse_version(__version__):
+                        for u in up.UPDATES[update]:
+                            if not u in callables_versions:
+                                callables_versions[u] = []
+                            callables_versions[u].append(update)
+                            if not u in todo:
+                                todo.append(u)
+
+            if todo:
+                self.logger.info('Minitage needs updates, running them now!')
+                for t in todo:
+                    try:
+                        t(self)
+                        for version in callables_versions[t]:
+                            self._wconfig.set('updates', version, 'done')
+                    except Exception, e:
+                        self.store_config()
+                        self.logger.error('Updates failed, please either bugreport or '
+                                          'contact the developers on IRC: '
+                                          '#minitage@irc.freenode.org')
+                        self.logger.error('Give them this snippet: %s' % todo)
+                        self.logger.error('Give them this error also: %s' % e)
+                        sys.exit(1)
+        self.store_config()
 
     def find_minibuild(self, package):
         """
@@ -614,11 +685,7 @@ class Minimerge(object):
         version = '.'.join( __version__.split('.')[:2])
 
 
-        default_minilays = [s.strip() \
-                            for s in self._config._sections\
-                            .get('minimerge', {})\
-                            .get('default_minilays','')\
-                            .split('\n')]
+        default_minilays = self.get_default_minilays()
         minimerge_section = self._config._sections.get('minimerge', {})
         urlbase = '%s/%s' % (
             minimerge_section\
@@ -660,14 +727,29 @@ class Minimerge(object):
             # querying scm factory for registered scms
             # and removing static
             scms = [key for key in f.products.keys() if key != 'static']
+            scmfound = False
             for strscm in scms:
-                if os.path.isdir('%s/.%s' % (path, strscm)):
+                if os.path.isdir(
+                    os.path.join(
+                        path,
+                        '.%s' % strscm
+                    )
+                ):
+                    scmfound = True
                     scm = f(strscm)
                     try:
                         self.logger.info('Syncing %s from %s [via %s]' % (path, scm.get_uri(path), strscm))
                         scm.update(dest=path, uri=scm.get_uri(path), verbose=self.verbose)
                     except Exception, e:
                         self.logger.info('Syncing %s FAILED : %s' % (path, e))
+            if not scmfound:
+                self.logger.info(
+                    'The minilay found in %s appears '
+                    'not to be versionned, is that normal? '
+                    'Think to do it when your project is ready to distribute'% (
+                        minilay.path
+                    )
+                )
 
         self.logger.info('Syncing done.')
 
@@ -705,6 +787,44 @@ class Minimerge(object):
             package.category,
             package.name
         )
+
+    def reinstall_packages(self, packages):
+        update  = self._update
+        upgrade = self._upgrade
+        self._update  = True
+        self._upgrade = True
+        for package in packages:
+            package = self.find_minibuild(package)
+            self._fetch(package)
+            self._do_action('install', [package])
+
+    def get_default_minilays(self):
+        return [s.strip() \
+                for s in self._config._sections\
+                .get('minimerge', {})\
+                .get('default_minilays','')\
+                .split('\n')]
+
+    def reinstall_minilays(self):
+        ms = self.get_default_minilays()
+        msbp = os.path.join(
+            self.backup_path, 'minilays',
+            datetime.datetime.now().strftime('%Y-%m-%d')
+        )
+        if not os.path.exists(msbp):
+            os.makedirs(msbp)
+        for path in os.listdir(self.minilays_parent):
+            mpath = os.path.join(
+                self.minilays_parent,
+                path
+            )
+            if path in ms:
+                mbp = os.path.join(msbp, path)
+                if not os.path.exists(mbp):
+                    os.rename(mpath, mbp)
+                if os.path.exists(mpath):
+                    shutil.rmtree(mpath)
+        self._sync()
 
     # api: do not break code
     _find_minibuilds = find_minibuilds

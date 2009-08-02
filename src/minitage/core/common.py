@@ -331,6 +331,7 @@ You seem to be running minitage for the first time.
                     os.path.join(sys.exec_prefix, 'minilays'),
                     os.path.join(sys.exec_prefix, 'logs'),
                     os.path.join(sys.exec_prefix, 'eggs', 'cache'),
+                    os.path.join(sys.exec_prefix, 'cpan', '5.8'),
                     os.path.join(sys.exec_prefix, 'eggs', 'develop-cache'),
                    ):
             if not os.path.isdir(dir):
