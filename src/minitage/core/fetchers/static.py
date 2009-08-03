@@ -30,7 +30,7 @@
 __docformat__ = 'restructuredtext en'
 
 import os
-import urllib
+import urllib2
 import shutil
 import logging
 
@@ -39,7 +39,6 @@ from minitage.core.unpackers.interfaces import IUnpackerFactory
 import minitage.core.common
 
 
-__log__ = logging.getLogger('minitage.static.fetcher')
 
 
 class StaticFetchError(interfaces.IFetcherError):
@@ -48,6 +47,11 @@ class StaticFetchError(interfaces.IFetcherError):
 
 class StaticFetcher(interfaces.IFetcher):
     """ FILE/HTTP/HTTPS/FTP Fetcher.
+    You can set a proxy with settings in the config :
+    [minimerge]
+    http_proxy = http://yourproxy:3128
+    https_proxy = http://yourproxy:3128
+    ftp_proxy = http://yourproxy:3128
     Example::
         >>> import minitage.core.fetchers.scm
         >>> http = scm.StaticFetcher()
@@ -59,12 +63,8 @@ class StaticFetcher(interfaces.IFetcher):
         if not config:
             config = {}
 
+        self.logger = logging.getLogger('minitage.static.fetcher')
         self.config = config
-        self._proxies = config\
-                .get('minimerge', {})\
-                .get('http-proxies', '').split()
-        if not self._proxies:
-            self._proxies = None
         interfaces.IFetcher.__init__(self, 'static', config = config)
 
     def update(self, dest, uri, opts=None, verbose=False):
@@ -75,13 +75,6 @@ class StaticFetcher(interfaces.IFetcher):
             - opts : arguments for the fetcher
 
         """
-        # be conservative !!!
-        # if os.path.isdir(dest):
-        #     for item in os.listdir(dest):
-        #         if item not in ['.download']:
-        #             path = os.path.join(dest, item)
-        #             minitage.core.common.remove_path(path)
-
         self.fetch(dest, uri, opts)
 
     def fetch(self, dest, uri, opts=None, verbose=False):
@@ -115,28 +108,27 @@ class StaticFetcher(interfaces.IFetcher):
                 # if we have not specified the md5, try to download one
                 try:
                     if not md5:
-                        md5 = urllib.urlopen(
-                            "%s.md5" % uri, 
-                            proxies = self._proxies).read().strip()
+                        md5 = urllib2.urlopen("%s.md5" % uri)
                         # maybe mark the file as already there
                         if os.path.exists(filepath):
-                            __log__.debug('File %s is already downloaded' % filepath)
+                            self.logger.debug('File %s is already downloaded' % filepath)
                             oo =  minitage.core.common.md5sum(filepath)
                             if minitage.core.common.test_md5(filepath, md5):
+                                self.logger.debug('MD5 has not changed, download is aborted.')
                                 newer = False
                             else:
-                                __log__.debug(
+                                self.logger.debug(
                                     'Its md5 has changed: %s != %s, redownloading' % (
                                         minitage.core.common.md5sum(filepath), md5
                                     )
                                 )
-                except:
-                    pass
+                except urllib2.HTTPError, e:
+                    if e.code == 404:
+                        self.logger.info('MD5 not found at %s, integrity will not be checked.' % "%s.md5" % uri)
+
                 if newer:
-                    __log__.info('Downloading %s from %s.' % (filepath, uri))
-                    data = urllib\
-                            .urlopen(uri, proxies = self._proxies)\
-                            .read()
+                    self.logger.info('Downloading %s from %s.' % (filepath, uri))
+                    data = urllib2 .urlopen(uri).read()
                     # save the downloaded file
                     filep = open(filepath, 'wb')
                     filep.write(data)
@@ -150,9 +142,8 @@ class StaticFetcher(interfaces.IFetcher):
                     md5p.close()
 
             except Exception, e:
-                raise
-                message = 'Can\'t download file \'%s\'' % filename
-                message += 'from \'%s\' .\n\t%s' % (uri, e)
+                message = 'Can\'t download file \'%s\' ' % filename
+                message += 'from  \'%s\' .\n\t%s' % (uri, e)
                 raise StaticFetchError(message)
 
             if newer:
@@ -183,7 +174,6 @@ class StaticFetcher(interfaces.IFetcher):
         be sure the source does not change.
         """
         return False
-
 
     def is_valid_src_uri(self, uri):
         """Nothing to do there."""

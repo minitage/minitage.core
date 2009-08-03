@@ -88,25 +88,10 @@ def do_read_options():
             'the packages from where they come, please activate '\
             'also the -U flag.'
 
-    option_list = [
-        optparse.make_option('-c', '--config',
-                             action='store', dest='config',
-                             help = config_help),
-        optparse.make_option('-d', '--debug',
-                             action='store_true', dest='debug',
-                             help = debug_help),
-        optparse.make_option('-o', '--offline',
-                             action='store_true', dest='offline',
-                             help = offline_help),
+    actions = [
         optparse.make_option('-s', '--sync',
                              action='store_true', dest='sync',
                              help = nodeps_help),
-        optparse.make_option('-F', '--fetchonly',
-                             action='store_true', dest='fetchonly',
-                             help = fetchonly_help),
-         optparse.make_option('-f', '--fetchfirst',
-                             action='store_true', dest='fetchfirst',
-                             help = fetchfirst_help),
         optparse.make_option('-i', '--install',
                              action='store_true', dest='install',
                              help = install_help),
@@ -122,12 +107,28 @@ def do_read_options():
         optparse.make_option('--rm',
                              action='store_true', dest='delete',
                              help = delete_help),
+    ]
+    modifiers = [
         optparse.make_option('-N', '--nodeps',
                              action='store_true', dest='nodeps',
                              help = nodeps_help),
         optparse.make_option('-j', '--jump',
                              action='store', dest='jump',
                              help = jump_help),
+        optparse.make_option('-F', '--fetchonly',
+                             action='store_true', dest='fetchonly',
+                             help = fetchonly_help),
+        optparse.make_option('-f', '--fetchfirst',
+                             action='store_true', dest='fetchfirst',
+                             help = fetchfirst_help),
+        optparse.make_option('-k', '--use-binaries',
+                             action='store_true', dest='binary',
+                             help = 'Search and install binaries instead of classicly compile.'),
+        optparse.make_option('-o', '--offline',
+                             action='store_true', dest='offline',
+                             help = offline_help),
+    ]
+    flags = [
         optparse.make_option('-p', '--pretend',
                              action='store_true', dest='pretend',
                              help = pretend_help),
@@ -143,10 +144,23 @@ def do_read_options():
         optparse.make_option('-v', '--verbose',
                              action='store_true', dest='verbose',
                              help = 'Be verbose.'),
+        optparse.make_option('-c', '--config',
+                             action='store', dest='config',
+                             help = config_help),
+        optparse.make_option('-d', '--debug',
+                             action='store_true', dest='debug',
+                             help = debug_help),
     ]
-    parser = optparse.OptionParser(version=core.__version__,
-                                   usage=usage,
-                                   option_list=option_list)
+    parser = optparse.OptionParser(version=core.__version__, usage=usage)
+    flags_group = optparse.OptionGroup(parser, 'Flags')
+    modifiers_group = optparse.OptionGroup(parser, 'Modifiers')
+    actions_group = optparse.OptionGroup(parser, 'Actions')
+    [[group.add_option(o) for o in opts]
+     for group, opts in [(actions_group, actions),
+                         (modifiers_group, modifiers),
+                         (flags_group, flags)]
+    ]
+    [parser.add_option_group(group) for group in [actions_group, modifiers_group, flags_group]]
     (options, args) = parser.parse_args()
 
     if (options.reinstall and options.delete) or\
@@ -215,6 +229,7 @@ def do_read_options():
         'upgrade': options.upgrade,
         'verbose': options.verbose,
         'reinstall_minilays': options.reinstall_minilays,
+        'binary': options.binary,
         'skip_self_upgrade': options.skip_self_upgrade,
     }
     return minimerge_options

@@ -36,6 +36,7 @@ import datetime
 import logging
 import logging.config
 import copy
+import re
 import shutil
 from distutils.dir_util import copy_tree
 import pkg_resources
@@ -48,6 +49,9 @@ from minitage.core.makers import interfaces as makers
 from minitage.core.version import __version__
 from minitage.core import update as up
 
+
+
+DEFAULT_BINARIES_URL = 'http://distfiles.minitage.org/public/externals/minitage/packages'
 
 class MinimergeError(Exception):
     """General Minimerge Error"""
@@ -85,8 +89,21 @@ class CircurlarDependencyError(MinimergeError):
 
 
 PYTHON_VERSIONS = ('2.4', '2.5', '2.6')
+
 def newline(fic):
     open(fic, 'a').write('\n')
+
+def get_default_arch():
+    arch = os.uname()[4]
+    arch32_re = re.compile('i[345678]86')
+    binary_arch = '32'
+    if arch32_re.match(arch):
+        binary_arch = '32'
+    if '32' in arch:
+        binary_arch = '32'
+    if '64' in arch:
+        binary_arch = '64'
+    return binary_arch
 
 class Minimerge(object):
     """Minimerge object."""
@@ -96,6 +113,18 @@ class Minimerge(object):
             configp = self._config_path
         self._wconfig.write(open(configp, 'w'))
         newline(configp)
+
+    def get_binary_urls(self, package):
+        urls = []
+        src = package.name
+        src += '-binary.tar.gz'
+        for url in self.binaries_urls:
+            urls.append('%s/%s/%s/%s' % (url,
+                                         self.binaries_platform,
+                                         self.binaries_arch,
+                                         src)
+                       )
+        return urls
 
     def __init__(self, options=None):
         """Options are taken from the section 'minimerge'
@@ -114,7 +143,9 @@ class Minimerge(object):
                 - action: what to do *mandatory*
                 - sync: sync mode
                 - config: configuration file path *mandatory*
-                -flags :
+                - binary: allow use of binaries in the form:
+                        http://binaryurl/platform/arch/package_name(-packageversion)*.tar.gz
+                - flags :
 
                     - ask: prompt to continue
                     - pretend: do nothing that print what would be done.
@@ -193,6 +224,27 @@ class Minimerge(object):
         minimerge_section = self._config._sections.get('minimerge', {})
         minilays_section = minimerge_section.get('minilays', '')
         minilays_search_paths.extend(minilays_section.strip().split())
+
+        # minitage binaries
+        self.use_binaries = options.get('binary', False)
+
+        self.binaries_urls = minimerge_section.get('binaries_url', '').strip().split()
+        self.binaries_platform = minimerge_section.get('binaries_platform', '').strip()
+        self.binaries_arch = minimerge_section.get('binaries_arch', '').strip()
+        if not self.binaries_platform in ('linux2'):
+            if not self.binaries_platform == sys.platform:
+                self.binaries_platform = None
+        if not self.binaries_arch in ('32', '64'):
+            self.binaries_arch = None
+        if not self.binaries_urls:
+            self.binaries_urls.append(DEFAULT_BINARIES_URL)
+        if not self.binaries_arch:
+            self.binaries_arch = get_default_arch()
+        if not self.binaries_platform:
+            self.binaries_platform = sys.platform
+
+        # installed binaries packages
+        self._binaries = []
 
         # filtering valid ones
         # and mutating into real Minilays objects
@@ -340,12 +392,13 @@ class Minimerge(object):
         fetcherFactory = fetchers.IFetcherFactory(self._config_path)
         destination = '%s/%s' % (dest_container, package.name)
         # add maybe the scm to the path if it is avalaible
-        fetcher = fetcherFactory(package.src_type)
+        mfetcher = fetcherFactory(package.src_type)
+        sfetcher = fetcherFactory('static')
         # in dependencies dir.
         #try to add scms merged via minitage to the path.
         deps = os.path.join(
             self.getPrefix(), 'dependencies')
-        scm = getattr(fetcher, 'executable', None)
+        scm = getattr(mfetcher, 'executable', None)
         if scm:
             # do we minimerged yet
             # and added a dependency directory?
@@ -370,36 +423,56 @@ class Minimerge(object):
             ':',
             os.environ['PATH']
         )
+
+        urls_descriptions = []
+        if self.use_binaries:
+            urls_descriptions.extend([(True, sfetcher, url)
+                                      for url in  self.get_binary_urls(package)])
+        urls_descriptions.append((False, mfetcher, package.src_uri,))
         # create categ dir
         if not os.path.isdir(dest_container):
             os.makedirs(dest_container)
-        if not os.path.exists(destination):
-            self.logger.info('Fetching package %s from %s.' % (
-                package.name,package.src_uri)
-            )
-            fetcher.fetch(
-                destination,
-                package.src_uri,
-            )
-        if self._update:
-            self.logger.info('Updating package %s from %s.' % (
-                package.name,package.src_uri)
-            )
-
-            if fetcher._has_uri_changed(destination, package.src_uri):
-                temp = os.path.join(os.path.dirname(destination),
-                                    'minitage-checkout-tmp',
-                                    package.name)
-                if os.path.isdir(temp):
-                    shutil.rmtree(temp)
-                fetcher.fetch(temp, package.src_uri)
-                copy_tree(temp, destination)
-                shutil.rmtree(temp)
-            else:
-                fetcher.update(
-                    destination,
-                    package.src_uri,
-            )
+        for is_binary, fetcher, src_uri in urls_descriptions:
+            try:
+                downloaded = False
+                if not os.path.exists(destination):
+                    self.logger.info('Fetching package %s from %s.' % (
+                        package.name, src_uri)
+                    )
+                    fetcher.fetch(
+                        destination,
+                        src_uri,
+                    )
+                    downloaded = True
+                if self._update:
+                    self.logger.info('Updating package %s from %s.' % (
+                        package.name, src_uri)
+                    )
+                    if fetcher._has_uri_changed(destination, package.src_uri):
+                        temp = os.path.join(os.path.dirname(destination),
+                                            'minitage-checkout-tmp',
+                                            package.name)
+                        fetcher.fetch(temp, package.src_uri)
+                        if os.path.isdir(temp):
+                            shutil.rmtree(temp)
+                        copy_tree(temp, destination)
+                        shutil.rmtree(temp)
+                    else:
+                        fetcher.update(
+                            destination,
+                            src_uri,
+                        )
+                    downloaded = True
+                if is_binary and downloaded:
+                    self.logger.info('Using binary package: %s' % package.name)
+                    self._binaries.append(package)
+                break
+            except Exception, e:
+                # ignore fetching errors from binary, we just make error
+                # if we cant get the source archive.
+                if is_binary:
+                    continue
+                raise
 
     def _do_action(self, action, packages, pyvers = None):
         """Do action.
@@ -535,7 +608,8 @@ class Minimerge(object):
                     # if we do not want just to fetch, let's go ,
                     # (install|delete|reinstall) baby.
                     if not self._fetchonly:
-                        self._do_action(self._action, packages, pyvers)
+                        if not package in self._binaries:
+                            self._do_action(self._action, packages, pyvers)
                 else:
                     # just in time fetch
                     for package in packages:
@@ -546,7 +620,8 @@ class Minimerge(object):
                             # if we do not want just to fetch, let's go ,
                             if not self._fetchonly:
                                 # (install|delete|reinstall) baby.
-                                self._do_action(self._action, [package], pyvers)
+                                if not package in self._binaries:
+                                    self._do_action(self._action, [package], pyvers)
 
     def _select_pythons(self, packages):
         """Get pythons to build into dependencies.
