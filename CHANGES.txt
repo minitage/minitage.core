@@ -1,6 +1,14 @@
 Changes
 ***********************************************
 
+-> 1.0.13
+==========
+
+    - Minitage now allows binaries to be used instead of compiling programs,
+      in the gentoo -k way.
+    - Minitage has now also an update manager to run udpate functions on
+      upgrade.
+
 1.0.5
 =======
 
