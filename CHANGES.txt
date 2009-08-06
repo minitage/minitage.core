@@ -1,5 +1,9 @@
 Changes
 ***********************************************
+1.0.14
+=======
+
+    - desactivating updates manager for more tests.
 
 -> 1.0.13
 ==========

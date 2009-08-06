@@ -254,8 +254,9 @@ class Minimerge(object):
             for dir in minilays_search_paths if os.path.isdir(dir)]
         if options.get('reinstall_minilays', False):
             self.reinstall_minilays()
-        if not options.get('skip_self_upgrade', False):
-            self.update()
+        # TODO: desactivating :: need MORE TESTS !!!
+        # if not options.get('skip_self_upgrade', False):
+        #     self.update()
 
     def update(self):
         updates = up.UPDATES.keys()
