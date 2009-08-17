@@ -218,7 +218,7 @@ class Minimerge(object):
         minilays_parent = os.path.join(self._prefix, 'minilays')
         self.minilays_parent = minilays_parent
         if os.path.isdir(minilays_parent):
-            minilays_search_paths.extend(['%s/%s' % (minilays_parent, dir)
+            minilays_search_paths.extend([os.path.join(minilays_parent, dir)
                                         for dir in os.listdir(minilays_parent)])
         # they are too in etc/minmerge.cfg[minilays]
         minimerge_section = self._config._sections.get('minimerge', {})
@@ -245,6 +245,24 @@ class Minimerge(object):
 
         # installed binaries packages
         self._binaries = []
+
+
+        # sortings pathes to let the default minilays be at worse priority
+        def minilays_sort(path, path2):
+            if os.path.dirname(path2) == self.minilays_parent:
+                if os.path.basename(
+                    path2
+                ) in self.get_default_minilays():
+                    print path2
+                    return -1
+            if os.path.dirname(path) == self.minilays_parent:
+                if os.path.basename(
+                    path
+                ) in self.get_default_minilays():
+                    print path
+                    return 1
+            return 0
+        minilays_search_paths.sort(minilays_sort)
 
         # filtering valid ones
         # and mutating into real Minilays objects
