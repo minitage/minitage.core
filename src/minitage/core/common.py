@@ -35,7 +35,7 @@ import logging
 try:
     from hashlib import md5
 except:
-    import md5
+    from md5 import new as md5
 import os
 import re
 import sys
@@ -62,7 +62,7 @@ def splitstrip(l, token=None):
 def md5sum(filep):
     """Return the md5 sium of a file"""
     fobj = open(filep,'rb')
-    m = md5.new()
+    m = md5()
     while True:
         d = fobj.read(8096)
         if not d:
