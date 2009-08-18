@@ -253,13 +253,11 @@ class Minimerge(object):
                 if os.path.basename(
                     path2
                 ) in self.get_default_minilays():
-                    print path2
                     return -1
             if os.path.dirname(path) == self.minilays_parent:
                 if os.path.basename(
                     path
                 ) in self.get_default_minilays():
-                    print path
                     return 1
             return 0
         minilays_search_paths.sort(minilays_sort)

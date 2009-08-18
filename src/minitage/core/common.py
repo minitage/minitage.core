@@ -32,7 +32,10 @@
 __docformat__ = 'restructuredtext en'
 
 import logging
-import md5
+try:
+    from hashlib import md5
+except:
+    import md5
 import os
 import re
 import sys
