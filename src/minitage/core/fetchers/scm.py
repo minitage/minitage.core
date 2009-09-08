@@ -42,6 +42,9 @@ __logger__ = 'minitage.fetchers.scm'
 class InvalidMercurialRepositoryError(interfaces.InvalidRepositoryError):
     """Mercurial repository is invalid."""
 
+class InvalidSubversionRepositoryError(interfaces.InvalidRepositoryError):
+    """Subversion repository is invalid."""
+
 class InvalidBazaarRepositoryError(interfaces.InvalidRepositoryError):
     """Bazaar repository is invalid."""
 
@@ -231,7 +234,7 @@ class SvnFetcher(interfaces.IFetcher):
                 - revision: particular revision to deal with.
 
         Exceptions:
-            - InvalidMercurialRepositoryError in case of repo problems
+            - InvalidSubversionRepositoryError in case of repo problems
             - interfaces.FetchErrorin case of fetch problems
             - interfaces.InvalidUrlError in case of uri is invalid
         """
@@ -248,7 +251,7 @@ class SvnFetcher(interfaces.IFetcher):
                 message = 'Unexpected fetch error on \'%s\'\n' % uri
                 message += 'The directory \'%s\' is not ' % dest
                 message += 'a valid subversion repository'
-                raise InvalidMercurialRepositoryError(message)
+                raise InvalidSubversionRepositoryError(message)
         else:
             raise interfaces.InvalidUrlError('this uri \'%s\' is invalid' % uri)
 
@@ -262,7 +265,7 @@ class SvnFetcher(interfaces.IFetcher):
                 - revision: particular revision to deal with.
 
         Exceptions:
-            - InvalidMercurialRepositoryError in case of repo problems
+            - InvalidSubversionRepositoryError in case of repo problems
             - interfaces.FetchErrorin case of fetch problems
             - interfaces.InvalidUrlError in case of uri is invalid
         """
@@ -277,7 +280,7 @@ class SvnFetcher(interfaces.IFetcher):
                 message = 'Unexpected fetch error on \'%s\'\n' % uri
                 message += 'The directory \'%s\' is not ' % dest
                 message += 'a valid subversion repository'
-                raise InvalidMercurialRepositoryError(message)
+                raise InvalidSubversionRepositoryError(message)
         else:
             raise interfaces.InvalidUrlError('this uri \'%s\' is invalid' % uri)
 
