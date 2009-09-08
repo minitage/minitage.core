@@ -46,7 +46,7 @@ class InvalidBazaarRepositoryError(interfaces.InvalidRepositoryError):
     """Bazaar repository is invalid."""
 
 class InvalidGitRepositoryError(interfaces.InvalidRepositoryError):
-    """Git repository is invalid.""" 
+    """Git repository is invalid."""
 
 class OfflineModeRestrictionError(interfaces.IFetcherError):
     """Restriction error in offline mode."""
@@ -246,8 +246,8 @@ class SvnFetcher(interfaces.IFetcher):
             self._scm_cmd('up %s -r %s %s' % (args, revision, dest), verbose)
             if not os.path.isdir('%s/%s' % (dest, self.metadata_directory)):
                 message = 'Unexpected fetch error on \'%s\'\n' % uri
-                message += 'The directory \'%s\' is not '
-                message += 'a valid subversion repository' % (dest, uri)
+                message += 'The directory \'%s\' is not ' % dest
+                message += 'a valid subversion repository'
                 raise InvalidMercurialRepositoryError(message)
         else:
             raise interfaces.InvalidUrlError('this uri \'%s\' is invalid' % uri)
