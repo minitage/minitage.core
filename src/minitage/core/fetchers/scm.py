@@ -90,8 +90,8 @@ class HgFetcher(interfaces.IFetcher):
                 self._scm_cmd('init %s' % (dest), verbose)
                 if not os.path.isdir('%s/%s' % (dest, self.metadata_directory)):
                     message = 'Unexpected fetch error on \'%s\'\n' % uri
-                    message += 'The directory \'%s\' is not '
-                    message += 'a valid mercurial repository' % (dest)
+                    message += 'The directory \'%s\' is not ' % (dest)
+                    message += 'a valid mercurial repository'
                     raise InvalidMercurialRepositoryError(message)
             if uri:
                 self._scm_cmd('pull -f %s -R %s' % (uri, dest), verbose)
@@ -100,8 +100,8 @@ class HgFetcher(interfaces.IFetcher):
             self._scm_cmd('  up -r %s -R %s ' % (revision, dest), verbose)
             if not os.path.isdir('%s/%s' % (dest, self.metadata_directory)):
                 message = 'Unexpected fetch error on \'%s\'\n' % uri
-                message += 'The directory \'%s\' is not '
-                message += 'a valid mercurial repository' % (dest, uri)
+                message += 'The directory \'%s\' is not ' % dest
+                message += 'a valid mercurial repository'
                 raise InvalidMercurialRepositoryError(message)
         else:
             raise interfaces.InvalidUrlError('this uri \'%s\' is invalid' % uri)
@@ -135,8 +135,8 @@ class HgFetcher(interfaces.IFetcher):
             self._scm_cmd('up  -r %s %s -R %s' % (revision, args, dest), verbose)
             if not os.path.isdir('%s/%s' % (dest, self.metadata_directory)):
                 message = 'Unexpected fetch error on \'%s\'\n' % uri
-                message += 'The directory \'%s\' is not '
-                message += 'a valid mercurial repository' % (dest, uri)
+                message += 'The directory \'%s\' is not ' % dest
+                message += 'a valid mercurial repository'
                 raise InvalidMercurialRepositoryError(message)
         else:
             raise interfaces.InvalidUrlError('this uri \'%s\' is invalid' % uri)
@@ -275,8 +275,8 @@ class SvnFetcher(interfaces.IFetcher):
             self.log.info('SVN checkout completed')
             if not os.path.isdir('%s/%s' % (dest, self.metadata_directory)):
                 message = 'Unexpected fetch error on \'%s\'\n' % uri
-                message += 'The directory \'%s\' is not '
-                message += 'a valid subversion repository' % (dest, uri)
+                message += 'The directory \'%s\' is not ' % dest
+                message += 'a valid subversion repository'
                 raise InvalidMercurialRepositoryError(message)
         else:
             raise interfaces.InvalidUrlError('this uri \'%s\' is invalid' % uri)
@@ -360,8 +360,8 @@ class BzrFetcher(interfaces.IFetcher):
                 self._scm_cmd('init %s' % (dest), verbose)
                 if not os.path.isdir('%s/%s' % (dest, self.metadata_directory)):
                     message = 'Unexpected fetch error on \'%s\'\n' % uri
-                    message += 'The directory \'%s\' is not '
-                    message += 'a valid bazaar repository' % (dest)
+                    message += 'The directory \'%s\' is not ' % dest
+                    message += 'a valid bazaar repository'
                     raise InvalidBazaarRepositoryError(message)
             if uri:
                 self._scm_cmd('pull --overwrite -r%s %s -d %s' % (revision, uri, dest), verbose)
@@ -369,8 +369,8 @@ class BzrFetcher(interfaces.IFetcher):
                 self._scm_cmd('pull --overwrite -r%s    -d %s' % (revision, dest), verbose)
             if not os.path.isdir('%s/%s' % (dest, self.metadata_directory)):
                 message = 'Unexpected fetch error on \'%s\'\n' % uri
-                message += 'The directory \'%s\' is not '
-                message += 'a valid bazaar repository' % (dest, uri)
+                message += 'The directory \'%s\' is not ' % dest
+                message += 'a valid bazaar repository'
                 raise InvalidBazaarRepositoryError(message)
         else:
             raise interfaces.InvalidUrlError('this uri \'%s\' is invalid' % uri)
@@ -540,8 +540,8 @@ class GitFetcher(interfaces.IFetcher):
                 os.chdir(cwd)
             if not os.path.isdir('%s/%s' % (dest, self.metadata_directory)):
                 message = 'Unexpected fetch error on \'%s\'\n' % uri
-                message += 'The directory \'%s\' is not '
-                message += 'a valid bazaar repository' % (dest, uri)
+                message += 'The directory \'%s\' is not ' % dest
+                message += 'a valid git repository'
                 raise InvalidGitRepositoryError(message)
         else:
             raise interfaces.InvalidUrlError('this uri \'%s\' is invalid' % uri)
@@ -580,8 +580,8 @@ class GitFetcher(interfaces.IFetcher):
             os.chdir(cwd)
             if not os.path.isdir('%s/%s' % (dest, self.metadata_directory)):
                 message = 'Unexpected fetch error on \'%s\'\n' % uri
-                message += 'The directory \'%s\' is not '
-                message += 'a valid bazaar repository' % (dest, uri)
+                message += 'The directory \'%s\' is not ' % dest
+                message += 'a valid git repository'
                 raise InvalidGitRepositoryError(message)
         else:
             raise interfaces.InvalidUrlError('this uri \'%s\' is invalid' % uri)
