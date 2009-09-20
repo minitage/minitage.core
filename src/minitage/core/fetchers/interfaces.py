@@ -33,6 +33,8 @@ import re
 import os
 import shutil
 import logging
+import datetime
+from distutils.dir_util import copy_tree
 
 from minitage.core import interfaces
 import minitage.core.common
@@ -69,6 +71,17 @@ p = 'ssh|http|https|ftp|sftp|file'
 scms = 'svn|svn\+ssh|cvs'
 URI_REGEX = re.compile('^(\/|((%s|%s|%s)(:\/\/)))' % (dscms, p , scms))
 __logger__ = 'minitage.interfaces'
+
+def copy_move_tree(src, dest):
+    if not os.path.exists(dest):
+        os.makedirs(dest)
+    for f in os.listdir(src):
+        fp = os.path.join(src,  f)
+        dp = os.path.join(dest, f)
+        if os.path.exists(dp):
+            minitage.core.common.remove_path(dp)
+        os.rename(fp, dp)
+    minitage.core.common.remove_path(src)
 
 class IFetcherFactory(interfaces.IFactory):
     """Interface Factory."""
@@ -123,16 +136,19 @@ class IFetcher(interfaces.IProduct):
     What a fetcher needs to be a fetcher
         Locally, the methods in the interfaces ;)
         Basically, it must implement
-            - fetch, update, fetch_or_update to get the source
+            - match: select the fetcher
+            - checkout, update_wc, goto_revision get/update the source
             - is_valid_src_uri to know if the src url is good
-            - _remove_versionned_directories to remove the metadatas from the
-              previous co
             - _has_uri_changed to know if we get the source from the last repo
               we got from or a new one.
     """
 
-    def __init__(self, name, executable = None ,
-                 config = None, metadata_directory = None):
+    def __init__(self,
+                 name,
+                 executable = None ,
+                 config = None,
+                 metadata_directory = None,
+                 default_revision = 'HEAD',):
         """
         Attributes:
             - name : name of the fetcher
@@ -148,58 +164,132 @@ class IFetcher(interfaces.IProduct):
         self.config = config
         self.executable = executable
         self._scm_found = None
-
+        self.default_revision = default_revision
+        mconfig = config.get('minimerge', {})
+        self._proxies = {
+            'http_proxy': mconfig.get('http_proxy', None),
+            'https_proxy': mconfig.get('https_proxy', None),
+            'ftp_proxy': mconfig.get('ftp_proxy', None),
+        }
+        for proxy_type in self._proxies:
+            if self._proxies[proxy_type]:
+                os.environ[proxy_type] = self._proxies[proxy_type]
 
     def update(self, dest, uri, opts=None, verbose=False):
-        """Update a package.
-        Exceptions:
-            - InvalidUrlError
+        """
+        Update a package.
         Arguments:
             - uri : check out/update uri
             - opts : arguments for the fetcher
-            - offline: weither we are offline or online
-        """
-        raise NotImplementedError('The method is not implemented')
 
-    def fetch(self, dest, uri, ops=None, verbose=False):
+                - revision: particular revision to deal with.
+                - args: misc arguments to give to the underlying program
+                - goto-revision-args: misc arguments to give to udpate to a specified version
+        """
+        self.log.debug('Updating %s / %s' % (dest, uri))
+        if not opts:
+            opts = {}
+        try:
+            self.check_valid_co(dest, uri)
+        except:
+            self.log.warning(
+                'The working copy seems not to be a %s '
+                'repository. Getting a new working copy.' % self.name
+            )
+            self.fetch(dest, uri, opts, verbose)
+        if uri and self._has_uri_changed(dest, uri):
+            self.log.warning('Url has changed, '
+                             'archiving and getting '
+                             'a new working copy.'
+            )
+            self.fetch(dest, uri, opts, verbose)
+        else:
+            self.update_wc(dest, uri, opts, verbose)
+            self.goto_revision(dest, uri, opts, verbose)
+            self.log.info(
+                'Updated %s / %s (%s) [%s].' % (
+                    dest,
+                    uri,
+                    opts.get('revision',
+                             self.default_revision),
+                    self.name
+                )
+            )
+        self.check_valid_co(dest, uri)
+
+    def fetch(self, dest, uri, opts=None, verbose=False):
         """Fetch a package.
-        Exceptions:
-            - InvalidUrlError
         Arguments:
             - uri : check out/update uri
+            - dest: destination to fetch to
             - opts : arguments for the fetcher
-            - offline: weither we are offline or online
+
+                - revision: particular revision to deal with.
+                - args: misc arguments to give to the underlying program
+                - goto-revision-args: misc arguments to give to udpate to a specified version
         """
-        raise NotImplementedError('The method is not implemented')
+        if opts is None:
+            opts = {}
+        # checkout somewhere else if we have conflicts
+        checkout_dest = dest
+        destination_empty = False
+        if os.path.exists(dest):
+            if self.archive_previous_co(dest):
+                checkout_dest = os.path.join(checkout_dest, '%s-tmp' % self.name)
+            if len(os.listdir(dest)) == 0:
+                destination_empty = True
+                checkout_dest = os.path.join(checkout_dest, '%s-tmp' % self.name)
+        if self.is_valid_src_uri(uri):
+            self.checkout(checkout_dest, uri, opts, verbose)
+            if checkout_dest != dest:
+                if not destination_empty:
+                    self.log.warning(
+                        'Checkout directory is not the same as the '
+                        'destination, copying content to it. This may '
+                        'happen when you say to download to somwhere '
+                        'where it exists files before doing the '
+                        'checkout'
+                    )
+                copy_move_tree(checkout_dest, dest)
+            self.goto_revision(dest, uri, opts, verbose)
+            self.log.info(
+                'Checkouted %s / %s (%s) [%s].' % (
+                    dest,
+                    uri,
+                    opts.get('revision',
+                             self.default_revision),
+                    self.name
+                )
+            )
+        else:
+            raise interfaces.InvalidUrlError('this uri \'%s\' is invalid' % uri)
+        self.check_valid_co(dest, uri)
 
     def fetch_or_update(self, dest, uri, opts = None, verbose=False):
         """Fetch or update a package (call the one of those 2 methods).
         Arguments:
             - uri : check out/update uri
             - opts : arguments for the fetcher
-            - offline: weither we are offline or online
             - verbose: set to True to be verbose
         """
-        if os.path.isdir(dest):
-            if not self.metadata_directory or os.path.isdir(
-                os.path.join(dest, self.metadata_directory)):
-                self.update(dest, uri, opts, verbose)
-            else:
-                self.fetch(dest, uri, opts, verbose)
+        if os.path.isdir(os.path.join(dest, self.metadata_directory)):
+            self.update(dest, uri, opts)
         else:
-            self.fetch(dest, uri, opts, verbose)
+            self.fetch(dest, uri, opts)
 
-    def is_valid_src_uri(self, uri):
-        """Valid an uri.
-        Return:
-            boolean if the uri is valid or not
+    def check_valid_co(self, dest, uri):
         """
-        raise NotImplementedError('The method is not implemented')
-
-    def match(self, switch):
-        """Test if the switch match the module."""
-        raise NotImplementedError('The method is not implemented')
-
+        Check if the final directory is a checkouted copy of url.
+        """
+        if not os.path.isdir(
+            os.path.join(dest, self.metadata_directory)
+        ):
+            message = '%s' % (
+                'Unexpected fetch error on \'%s\'\n'
+                'The directory \'%s\' is not '
+                'a valid %s repository' % (uri, dest, self.name)
+            )
+            raise InvalidRepositoryError(message)
 
     def _check_scm_presence(self):
         """check if the scm is in he path"""
@@ -222,18 +312,7 @@ class IFetcher(interfaces.IProduct):
         try:
             minitage.core.common.Popen('%s %s' % (self.executable, command), verbose)
         except Exception, e:
-            raise FetcherRuntimeError(e.message)
-
-    def _has_uri_changed(self, dest, uri):
-        """Does the uri we fetch from in the working changed or not.
-        Arguments
-            - dest the working copy
-            - uri the uri to fetch from
-        Return
-            - True if the uri in the working copy changed
-        """
-
-        raise NotImplementedError('The method is not implemented')
+            raise FetcherRuntimeError('%s' % e)
 
     def _remove_versionned_directories(self, dest):
         """Remove all directories which contains history.
@@ -249,5 +328,91 @@ class IFetcher(interfaces.IProduct):
                     shutil.rmtree(path)
                 else:
                     os.remove(path)
+
+    def warn_trailing_slash(self, dest, uri):
+        """Check if the url jhave a trailing slash."""
+        if uri == '%s/' % self.get_uri(dest):
+            self.log.warning(
+                'It seems that the url given do not need the trailing slash (%s). '
+                'You would have better not to keep trailing slash in your urls '
+                'if you don\'t have to.' % uri)
+            return True
+        return False
+
+    def archive_previous_co(self, dest):
+        """
+        Return True if archived
+        False otherwise
+        """
+        if os.path.isdir(dest):
+            if len(os.listdir(dest)) != 0:
+                oldpath = os.path.join(
+                    dest,
+                    '%s.old.%s' % (
+                        os.path.basename(dest),
+                        datetime.datetime.now().strftime( '%d%m%y%H%M%S')
+                    )
+                )
+                boldpath = os.path.basename(oldpath)
+                self.log.warning(
+                    'Destination %s already exists and is not empty, '
+                    'moving it away in %s for further user '
+                    'examination' % (dest, oldpath)
+                )
+                if not os.path.isdir(oldpath):
+                    os.makedirs(oldpath)
+                    for p, porig, pdest in [(p,
+                                             os.path.join(dest, p),
+                                             os.path.join(oldpath, p))
+                                             for p in os.listdir(dest)
+                                             if not p == boldpath]:
+                        if os.path.exists(pdest):
+                            minitage.core.common.remove_path(pdest)
+                        os.rename(porig, pdest)
+                return True
+        return False
+
+#
+# TO IMPLEMENT IN FETCHERS
+#
+
+    def checkout(self, dest, uri, ops=None, verbose=False):
+        """
+        Checkout an url to a working copy.
+        """
+        raise NotImplementedError('The method is not implemented')
+
+    def update_wc(self, dest, uri, ops=None, verbose=False):
+        """
+        Really update the working copy.
+        """
+        raise NotImplementedError('The method is not implemented')
+
+    def goto_revision(self, dest, uri, ops=None, verbose=False):
+        """
+        Go to a particular revision.
+        """
+        raise NotImplementedError('The method is not implemented')
+
+    def is_valid_src_uri(self, uri):
+        """Valid an uri.
+        Return:
+            boolean if the uri is valid or not
+        """
+        raise NotImplementedError('The method is not implemented')
+
+    def _has_uri_changed(self, dest, uri):
+        """Does the uri we fetch from in the working changed or not.
+        Arguments
+            - dest the working copy
+            - uri the uri to fetch from
+        Return
+            - True if the uri in the working copy changed
+        """
+        raise NotImplementedError('The method is not implemented')
+
+    def match(self, switch):
+        """Test if the switch match the module."""
+        raise NotImplementedError('The method is not implemented')
 
 # vim:set et sts=4 ts=4 tw=80:

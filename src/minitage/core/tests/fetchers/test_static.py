@@ -60,6 +60,8 @@ class testStatic(unittest.TestCase):
 
     def tearDown(self):
         """."""
+        if 'http_proxy' in os.environ:
+            del os.environ['http_proxy']
         for dir in [ opts['path'], opts['dest']]:
             if os.path.isdir(dir):
                 shutil.rmtree(dir)
@@ -76,13 +78,15 @@ class testStatic(unittest.TestCase):
 
     def testProxysConfig(self):
         """testProxysConfig."""
-        static = staticm.StaticFetcher({'minimerge': {'http-proxies': 'a a a'}})
-        self.assertEquals(static._proxies, ['a', 'a', 'a'])
+        static = staticm.StaticFetcher({'minimerge': {'http_proxy': 'a a a'}})
+        self.assertEquals(os.environ['http_proxy'], 'a a a')
+        if 'http_proxy' in os.environ:
+            del os.environ['http_proxy']
 
-def test_suite():            
+def test_suite():
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(testStatic))
-    return suite 
+    return suite
 
 if __name__ == '__main__':
     suite = unittest.TestSuite()

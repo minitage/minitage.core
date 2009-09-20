@@ -405,9 +405,9 @@ class Minimerge(object):
            - The fetcher exception.
         """
         self.logger.debug('Will fetch package %s.' % (package.name))
-        dest_container = '%s/%s' % (self._prefix, package.category)
+        dest_container = os.path.join(self._prefix, package.category)
         fetcherFactory = fetchers.IFetcherFactory(self._config_path)
-        destination = '%s/%s' % (dest_container, package.name)
+        destination = os.path.join(dest_container, package.name)
         # add maybe the scm to the path if it is avalaible
         mfetcher = fetcherFactory(package.src_type)
         sfetcher = fetcherFactory('static')

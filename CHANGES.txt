@@ -1,6 +1,13 @@
 Changes
 ***********************************************
 
+UP
+=====
+
+    - rewrite fetchers
+    - improve proxy handling
+    - fix some tests
+
 1.0.18
 ========
 

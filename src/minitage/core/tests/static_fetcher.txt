@@ -14,7 +14,7 @@ Initial imports::
     >>> from minitage.core.fetchers import interfaces
     >>> from minitage.core.common import md5sum
     >>> from minitage.core.fetchers import static as staticm
-    >>> n = staticm.__log__.name
+    >>> n = 'minitage.static.fetcher'
 
 Install some magic to get the fetcher logs
 
@@ -56,8 +56,10 @@ Try to reownload it::
 
     >>> static.fetch(d, 'file://%s' % testfile)
     >>> print log_handler; log_handler.clear()
-    minitage.static.fetcher ...
-      File .../testfile is already downloaded
+    minitage.static.fetcher WARNING
+      File /.../result/.download/testfile is already downloaded
+    minitage.static.fetcher DEBUG
+      MD5 has not changed, download is aborted.
 
 The file is present in the destination directory, in the download cache and
 a md5 has been generated::
@@ -107,9 +109,10 @@ Test mecanism with a file without associated md5::
         Downloading ...testfile2 from file:///.../testfile2.
     >>> static.fetch(d, 'file://%s' % testfile2)
     >>> print log_handler; log_handler.clear()
-    minitage.static.fetcher ...
-        Downloading ...testfile2 from file:///.../testfile2.
-
+    minitage.static.fetcher INFO
+      MD5 not found at file://.../testfile2.md5, integrity will not be checked.
+    minitage.static.fetcher INFO
+      Downloading .../result/.download/testfile2 from file://.../testfile2.
 
 Test that the unpack mecanism just ovverides what's already there but not delete anything::
 
@@ -137,8 +140,10 @@ Test that the unpack mecanism just ovverides what's already there but not delete
           Downloading .../result/.download/test.tbz2 from file:///.../test.tbz2.
         >>> static.fetch(d, 'file://%s' % package)
         >>> print log_handler; log_handler.clear()
-        minitage.static.fetcher ...
-          File ....download/test.tbz2 is already downloaded
+        minitage.static.fetcher WARNING
+          File .../.download/test.tbz2 is already downloaded
+        minitage.static.fetcher DEBUG
+          MD5 has not changed, download is aborted.
 
     - Observe what's there::
 

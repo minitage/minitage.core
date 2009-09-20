@@ -9,11 +9,11 @@ import sys
 import os
 import tempfile
 import shutil
-import popen2
 import subprocess
 from os import makedirs as mkdir
 from shutil import copy
 import logging
+from distutils.dir_util import copy_tree
 
 
 logging.basicConfig()
@@ -77,6 +77,23 @@ tempdir = os.getenv('TEMP','/tmp')
 class DoctestLayer(object):
     """"""
 
+def default_setUp(test):
+    globs = test.globs
+    for p in [globs['p'],
+              globs['p2'],
+              globs['p3'],
+              globs['wc'],]:
+        if os.path.exists(p):
+            shutil.rmtree(p)
+        os.makedirs(p)
+
+def default_tearDown(test):
+    globs = test.globs
+    if os.path.exists(globs['p']):
+        shutil.rmtree(globs['p3'])
+        shutil.rmtree(globs['p2'])
+        shutil.rmtree(globs['wc'])
+
 def doc_suite(test_dir, setUp=None, tearDown=None, globs=None):
     """Returns a test suite, based on doctests found in /doctest."""
     suite = []
@@ -84,6 +101,9 @@ def doc_suite(test_dir, setUp=None, tearDown=None, globs=None):
     if globs is None:
         globs = globals()
         globs['p'] = tmpdir
+        globs['path2'] = globs['p2'] = os.path.join(tmpdir, 'p2')
+        globs['path3'] = globs['p3'] = os.path.join(tmpdir, 'p3')
+        globs['wc'] = os.path.join(tmpdir, 'wc')
 
     flags = (doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE |
              doctest.REPORT_ONLY_FIRST_FAILURE)
@@ -92,13 +112,25 @@ def doc_suite(test_dir, setUp=None, tearDown=None, globs=None):
 
     # filtering files on extension
     docs = [os.path.join(doctest_dir, doc) for doc in
-            os.listdir(doctest_dir) if doc.endswith('.txt')]
+            os.listdir(doctest_dir) if doc.endswith('.txt')
+           # if [selectable
+           #     for selectable in ['bzr','hg', 'git']
+           #     if selectable in doc]
+           ]
+
+    if not setUp:
+        setUp = default_setUp
+
+    if not tearDown:
+        tearDown = default_tearDown
 
     for ftest in docs:
-        test = doctest.DocFileSuite(ftest, optionflags=flags,
-                                    globs=globs, setUp=setUp,
-                                    tearDown=tearDown,
-                                    module_relative=False)
+        test = doctest.DocFileSuite(
+            ftest, optionflags=flags,
+            globs=globs, setUp=setUp,
+            tearDown=tearDown,
+            module_relative=False
+        )
         test.layer = DoctestLayer
         suite.append(test)
 

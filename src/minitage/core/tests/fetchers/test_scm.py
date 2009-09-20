@@ -384,7 +384,7 @@ class testSvn(unittest.TestCase):
             )
         )
         self.assertTrue(svn._has_uri_changed(opts['wc'], 'hehe_changed'))
-#
+
     def testRemoveVersionnedDirs(self):
         """testRemoveVersionnedDirs"""
         svn = scm.SvnFetcher()
@@ -463,10 +463,10 @@ class testSvn(unittest.TestCase):
 
 def test_suite():
     suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(testBzr))
-    suite.addTest(unittest.makeSuite(testHg))
-    suite.addTest(unittest.makeSuite(testSvn))
-    suite.addTest(unittest.makeSuite(testGit))
+    #suite.addTest(unittest.makeSuite(testBzr))
+    #suite.addTest(unittest.makeSuite(testHg))
+    #suite.addTest(unittest.makeSuite(testSvn))
+    #suite.addTest(unittest.makeSuite(testGit))
     return suite
 
 if __name__ == '__main__':

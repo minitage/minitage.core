@@ -58,7 +58,7 @@ class testMinimerge(unittest.TestCase):
         minibuilds = [
 """
 [minibuild]
-src_uri=https://hg.minitage.org/minitage
+src_uri=http://hg.minitage.org/minitage
 src_type=hg
 install_method=buildout
 category=eggs
@@ -66,7 +66,7 @@ category=eggs
 """
 [minibuild]
 dependencies=minibuild-0
-src_uri=https://hg.minitage.org/minitage
+src_uri=http://hg.minitage.org/minitage
 src_type=hg
 install_method=buildout
 category=eggs
@@ -74,7 +74,7 @@ category=eggs
 """
 [minibuild]
 dependencies=minibuild-4 minibuild-1
-src_uri=https://hg.minitage.org/minitage
+src_uri=http://hg.minitage.org/minitage
 src_type=hg
 install_method=buildout
 category=eggs
@@ -82,7 +82,7 @@ category=eggs
 """
 [minibuild]
 dependencies=minibuild-2
-src_uri=https://hg.minitage.org/minitage
+src_uri=http://hg.minitage.org/minitage
 src_type=hg
 install_method=buildout
 category=eggs
@@ -90,7 +90,7 @@ category=eggs
 """
 [minibuild]
 dependencies=minibuild-0
-src_uri=https://hg.minitage.org/minitage
+src_uri=http://hg.minitage.org/minitage
 src_type=hg
 install_method=buildout
 category=eggs
@@ -98,7 +98,7 @@ category=eggs
 """
 [minibuild]
 dependencies=minibuild-7
-src_uri=https://hg.minitage.org/minitage
+src_uri=http://hg.minitage.org/minitage
 src_type=hg
 install_method=buildout
 category=eggs
@@ -106,7 +106,7 @@ category=eggs
 """
 [minibuild]
 dependencies=minibuild-5
-src_uri=https://hg.minitage.org/minitage
+src_uri=http://hg.minitage.org/minitage
 src_type=hg
 install_method=buildout
 category=eggs
@@ -114,7 +114,7 @@ category=eggs
 """
 [minibuild]
 dependencies=minibuild-6
-src_uri=https://hg.minitage.org/minitage
+src_uri=http://hg.minitage.org/minitage
 src_type=hg
 install_method=buildout
 category=eggs
@@ -122,7 +122,7 @@ category=eggs
 """
 [minibuild]
 dependencies=minibuild-8
-src_uri=https://hg.minitage.org/minitage
+src_uri=http://hg.minitage.org/minitage
 src_type=hg
 install_method=buildout
 category=eggs
@@ -130,7 +130,7 @@ category=eggs
 """
 [minibuild]
 dependencies=minibuild-0 minibuild-3
-src_uri=https://hg.minitage.org/minitage
+src_uri=http://hg.minitage.org/minitage
 src_type=hg
 install_method=buildout
 category=eggs
@@ -138,7 +138,7 @@ category=eggs
 """
 [minibuild]
 dependencies=minibuild-11
-src_uri=https://hg.minitage.org/minitage
+src_uri=http://hg.minitage.org/minitage
 src_type=hg
 install_method=buildout
 category=eggs
@@ -146,7 +146,7 @@ category=eggs
 """
 [minibuild]
 dependencies=minibuild-12
-src_uri=https://hg.minitage.org/minitage
+src_uri=http://hg.minitage.org/minitage
 src_type=hg
 install_method=buildout
 category=eggs
@@ -154,7 +154,7 @@ category=eggs
 """
 [minibuild]
 dependencies=minibuild-13
-src_uri=https://hg.minitage.org/minitage
+src_uri=http://hg.minitage.org/minitage
 src_type=hg
 install_method=buildout
 category=eggs
@@ -162,7 +162,7 @@ category=eggs
 """
 [minibuild]
 dependencies=minibuild-10
-src_uri=https://hg.minitage.org/minitage
+src_uri=http://hg.minitage.org/minitage
 src_type=hg
 install_method=buildout
 category=eggs
@@ -173,7 +173,7 @@ category=eggs
 #1000
 """
 [minibuild]
-src_uri=https://hg.minitage.org/minitage
+src_uri=http://hg.minitage.org/minitage
 src_type=hg
 install_method=buildout
 category=dependencies
@@ -181,7 +181,7 @@ category=dependencies
 """
 [minibuild]
 dependencies=meta-python minibuild-1005
-src_uri=https://hg.minitage.org/minitage
+src_uri=http://hg.minitage.org/minitage
 src_type=hg
 install_method=buildout
 category=dependencies
@@ -189,7 +189,7 @@ category=dependencies
 """
 [minibuild]
 dependencies=python-2.4 minibuild-1005
-src_uri=https://hg.minitage.org/minitage
+src_uri=http://hg.minitage.org/minitage
 src_type=hg
 install_method=buildout
 category=dependencies
@@ -197,7 +197,7 @@ category=dependencies
 """
 [minibuild]
 dependencies=python-2.5 minibuild-1005
-src_uri=https://hg.minitage.org/minitage
+src_uri=http://hg.minitage.org/minitage
 src_type=hg
 install_method=buildout
 category=dependencies
@@ -205,14 +205,14 @@ category=dependencies
 """
 [minibuild]
 dependencies=minibuild-1005
-src_uri=https://hg.minitage.org/minitage
+src_uri=http://hg.minitage.org/minitage
 src_type=hg
 install_method=buildout
 category=dependencies
 """, #1005
 """
 [minibuild]
-src_uri=https://hg.minitage.org/minitage
+src_uri=http://hg.minitage.org/minitage
 src_type=hg
 install_method=buildout
 category=eggs
@@ -231,18 +231,18 @@ category=eggs
             open('%s/minibuild-100%s' % (minilay, index), 'w').write(minibuild)
 
         # fake 3 pythons.
-        for minibuild in ['python-2.4', 'python-2.5']:
+        for minibuild in ['python-2.4', 'python-2.5', 'python-2.6']:
             open('%s/%s' % (minilay, minibuild), 'w').write("""
 [minibuild]
-src_uri=https://hg.minitage.org/minitage
+src_uri=http://hg.minitage.org/minitage
 src_type=hg
 install_method=buildout
 category=dependencies""")
 
         open('%s/%s' % (minilay, 'meta-python'), 'w').write("""
 [minibuild]
-dependencies=python-2.4 python-2.5
-src_uri=https://hg.minitage.org/minitage
+dependencies=python-2.4 python-2.5 python-2.6
+src_uri=http://hg.minitage.org/minitage
 src_type=hg
 category=meta
 install_method=buildout""")
@@ -394,16 +394,6 @@ install_method=buildout""")
         minimerge = api.Minimerge(opts)
         self.assertTrue(minimerge._offline)
 
-    def testFetchOnline(self):
-        """testFetchOnline"""
-        sys.argv = [sys.argv[0], '--config',
-                    '%s/etc/minimerge.cfg' % path, 'minibuild-0']
-        opts = cli.do_read_options()
-        minimerge = api.Minimerge(opts)
-        self.assertFalse(minimerge._offline)
-        minimerge._fetch(minimerge._find_minibuild('minibuild-0'))
-        self.assertTrue(os.path.isdir('%s/eggs/minibuild-0/.hg' % path))
-
 
     def testSelectPython(self):
         """testSelectPython.
@@ -423,12 +413,12 @@ install_method=buildout""")
         self.assertFalse(p0)
 
         # we install a dep that require meta-python
-        # the dict must contains eggs 2.5
-        # available python = 2.4/2.5
+        # the dict must contains eggs 2.6
+        # available python = 2.4/2.5/2.6
         self._packages = ['minibuild-1001']
         computed_packages1, p1 = minimerge._select_pythons(
             minimerge._compute_dependencies(['minibuild-1001']))
-        for i in ['2.5']:
+        for i in ['2.6']:
             self.assertTrue(i in p1['minibuild-1005'])
             self.assertTrue('python-%s' % i
                             in [c.name for c in computed_packages1]
@@ -502,7 +492,7 @@ install_method=buildout""")
         minimerge._packages = ['minibuild-1005']
         computed_packagest, pt = minimerge._select_pythons(
             minimerge._compute_dependencies(['minibuild-1005']))
-        for i in ['2.4', '2.5']:
+        for i in ['2.4', '2.5', '2.6']:
             self.assertTrue(i in pt['minibuild-1005'])
             self.assertTrue('python-%s'%i
                             in [c.name for c in computed_packagest]
@@ -592,6 +582,19 @@ install_method=buildout""")
             )
         )
         self.assertTrue(os.path.isfile('%s/%s' % (minilay, 'minibuild-1000')))
+
+
+    def testFetchOnline(self):
+        """testFetchOnline"""
+        sys.argv = [sys.argv[0], '--config',
+                    '%s/etc/minimerge.cfg' % path, 'minibuild-0']
+        opts = cli.do_read_options()
+        minimerge = api.Minimerge(opts)
+        self.assertFalse(minimerge._offline)
+        minimerge._fetch(minimerge._find_minibuild('minibuild-0'))
+        self.assertTrue(os.path.isdir('%s/eggs/minibuild-0/.hg' % path))
+
+
 
 def test_suite():            
     suite = unittest.TestSuite()

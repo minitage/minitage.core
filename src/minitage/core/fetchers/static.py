@@ -39,8 +39,6 @@ from minitage.core.unpackers.interfaces import IUnpackerFactory
 import minitage.core.common
 
 
-
-
 class StaticFetchError(interfaces.IFetcherError):
     """StaticFetchError."""
 
@@ -64,7 +62,6 @@ class StaticFetcher(interfaces.IFetcher):
             config = {}
 
         self.logger = logging.getLogger('minitage.static.fetcher')
-        self.config = config
         interfaces.IFetcher.__init__(self, 'static', config = config)
 
     def update(self, dest, uri, opts=None, verbose=False):
@@ -94,8 +91,8 @@ class StaticFetcher(interfaces.IFetcher):
 
         download_dir = '%s/.download' % dest
         filename = os.path.split(uri)[1]
-        filepath = '%s/%s' % (download_dir, filename)
-        md5path = '%s/%s.md5' % (download_dir, filename)
+        filepath = os.path.join(download_dir, filename)
+        md5path = os.path.join(download_dir, '%s.md5' % filename)
 
         if not os.path.isdir(download_dir):
             os.makedirs(download_dir)
@@ -108,11 +105,10 @@ class StaticFetcher(interfaces.IFetcher):
                 # if we have not specified the md5, try to download one
                 try:
                     if not md5:
-                        md5 = urllib2.urlopen("%s.md5" % uri)
+                        md5 = urllib2.urlopen("%s.md5" % uri).read()
                         # maybe mark the file as already there
                         if os.path.exists(filepath):
-                            self.logger.debug('File %s is already downloaded' % filepath)
-                            oo =  minitage.core.common.md5sum(filepath)
+                            self.logger.warning('File %s is already downloaded' % filepath)
                             if minitage.core.common.test_md5(filepath, md5):
                                 self.logger.debug('MD5 has not changed, download is aborted.')
                                 newer = False
@@ -125,10 +121,14 @@ class StaticFetcher(interfaces.IFetcher):
                 except urllib2.HTTPError, e:
                     if e.code == 404:
                         self.logger.info('MD5 not found at %s, integrity will not be checked.' % "%s.md5" % uri)
+                # handle file exc. as well
+                except urllib2.URLError, e:
+                    if e.reason.errno == 2:
+                        self.logger.info('MD5 not found at %s, integrity will not be checked.' % "%s.md5" % uri)
 
                 if newer:
                     self.logger.info('Downloading %s from %s.' % (filepath, uri))
-                    data = urllib2 .urlopen(uri).read()
+                    data = urllib2.urlopen(uri).read()
                     # save the downloaded file
                     filep = open(filepath, 'wb')
                     filep.write(data)
@@ -156,9 +156,9 @@ class StaticFetcher(interfaces.IFetcher):
                     # or move it to dest.
                     else:
                         if os.path.isfile(filepath):
-                            shutil.copy(filepath, '%s/%s' % (dest, filename))
+                            shutil.copy(filepath, os.path.join(dest, filename))
                         if os.path.isdir(filepath):
-                            shutil.copytree(filepath, '%s/%s' % (dest, filename))
+                            shutil.copytree(filepath, os.path.join(dest, filename))
                 except Exception, e:
                     message = 'Can\'t install file %s in its destination %s.'
                     raise StaticFetchError(message % (filepath, dest))

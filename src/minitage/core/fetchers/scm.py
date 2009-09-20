@@ -25,8 +25,6 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-
-
 __docformat__ = 'restructuredtext en'
 
 import os
@@ -34,26 +32,14 @@ import subprocess
 import re
 import datetime
 import logging
+from distutils.dir_util import copy_tree
 
 from minitage.core.fetchers import interfaces
 
 __logger__ = 'minitage.fetchers.scm'
 
-class InvalidMercurialRepositoryError(interfaces.InvalidRepositoryError):
-    """Mercurial repository is invalid."""
-
-class InvalidSubversionRepositoryError(interfaces.InvalidRepositoryError):
-    """Subversion repository is invalid."""
-
-class InvalidBazaarRepositoryError(interfaces.InvalidRepositoryError):
-    """Bazaar repository is invalid."""
-
-class InvalidGitRepositoryError(interfaces.InvalidRepositoryError):
-    """Git repository is invalid."""
-
 class OfflineModeRestrictionError(interfaces.IFetcherError):
     """Restriction error in offline mode."""
-
 
 class HgFetcher(interfaces.IFetcher):
     """ Mercurial Fetcher.
@@ -65,91 +51,24 @@ class HgFetcher(interfaces.IFetcher):
 
     def __init__(self, config = None):
         self.config =  config
-        interfaces.IFetcher.__init__(self, 'mercurial', 'hg', config, '.hg')
+        interfaces.IFetcher.__init__(self, 'Mercurial', 'hg', config, '.hg', 'tip')
         self.log = logging.getLogger(__logger__)
 
-    def update(self, dest, uri = None, opts=None, verbose=False):
-        """Update a package.
-        Arguments:
-            - uri : check out/update uri
-            - dest: destination to fetch to
-            - opts : arguments for the fetcher
+    def checkout(self, dest, uri, opts, verbose):
+        args = opts.get('args', '')
+        self._scm_cmd('clone %s %s %s' % (args, uri, dest), verbose)
 
-                - revision: particular revision to deal with.
+    def update_wc(self, dest, uri, opts, verbose):
+        if not uri:
+            uri = ''
+        args = opts.get('args', '')
+        self._scm_cmd('pull -f %s %s -R %s' % (uri, args, dest), verbose)
 
-        Exceptions:
-            - InvalidMercurialRepositoryError in case of repo problems
-            - interfaces.FetchErrorin case of fetch problems
-            - interfaces.InvalidUrlError in case of uri is invalid
-        """
-        self.log.debug('Updating %s / %s' % (dest, uri))
-        if opts is None:
-            opts = {}
-        revision = opts.get('revision','tip')
-        args = opts.get('args','')
-        if not uri or self.is_valid_src_uri(uri):
-            if uri and self._has_uri_changed(dest, uri):
-                self._remove_versionned_directories(dest)
-                self._scm_cmd('init %s' % (dest), verbose)
-                if not os.path.isdir('%s/%s' % (dest, self.metadata_directory)):
-                    message = 'Unexpected fetch error on \'%s\'\n' % uri
-                    message += 'The directory \'%s\' is not ' % (dest)
-                    message += 'a valid mercurial repository'
-                    raise InvalidMercurialRepositoryError(message)
-            if uri:
-                self._scm_cmd('pull -f %s -R %s' % (uri, dest), verbose)
-            else:
-                self._scm_cmd('pull -f -R %s' % (dest), verbose)
-            self._scm_cmd('  up -r %s -R %s ' % (revision, dest), verbose)
-            if not os.path.isdir('%s/%s' % (dest, self.metadata_directory)):
-                message = 'Unexpected fetch error on \'%s\'\n' % uri
-                message += 'The directory \'%s\' is not ' % dest
-                message += 'a valid mercurial repository'
-                raise InvalidMercurialRepositoryError(message)
-        else:
-            raise interfaces.InvalidUrlError('this uri \'%s\' is invalid' % uri)
-
-    def fetch(self, dest, uri, opts=None, verbose=False):
-        """Fetch a package.
-        Arguments:
-            - uri : check out/update uri
-            - dest: destination to fetch to
-            - opts : arguments for the fetcher
-
-                - revision: particular revision to deal with.
-                - args: misc arguments to give
-
-        Exceptions:
-            - InvalidMercurialRepositoryError in case of repo problems
-            - interfaces.FetchErrorin case of fetch problems
-            - interfaces.InvalidUrlError in case of uri is invalid
-        """
-        if opts is None:
-            opts = {}
-        revision = opts.get('revision','tip')
-        args = opts.get('args','')
-        # move directory that musnt be there !
-        if os.path.isdir(dest):
-            os.rename(dest, '%s.old.%s' \
-                      % (dest, datetime.datetime.now().strftime('%d%m%y%H%M%S'))
-                     )
-        if self.is_valid_src_uri(uri):
-            self._scm_cmd('clone %s %s %s' % (args, uri, dest), verbose)
-            self._scm_cmd('up  -r %s %s -R %s' % (revision, args, dest), verbose)
-            if not os.path.isdir('%s/%s' % (dest, self.metadata_directory)):
-                message = 'Unexpected fetch error on \'%s\'\n' % uri
-                message += 'The directory \'%s\' is not ' % dest
-                message += 'a valid mercurial repository'
-                raise InvalidMercurialRepositoryError(message)
-        else:
-            raise interfaces.InvalidUrlError('this uri \'%s\' is invalid' % uri)
-
-    def fetch_or_update(self, dest, uri, opts = None):
-        """See interface."""
-        if os.path.isdir('%s/%s' % (dest, self.metadata_directory)):
-            self.update(dest, uri, opts)
-        else:
-            self.fetch(dest, uri, opts)
+    def goto_revision(self, dest, uri, opts, verbose):
+        args = opts.get('goto-revision-args', '')
+        if 'revision' in opts:
+            args += '-C -r%s' % opts['revision']
+        self._scm_cmd('up %s -R %s' % (args, dest), verbose)
 
     def is_valid_src_uri(self, uri):
         """See interface."""
@@ -166,9 +85,8 @@ class HgFetcher(interfaces.IFetcher):
             return True
         return False
 
-
     def get_uri(self, dest):
-        """get mercurial url"""
+        """get Mercurial url"""
         self._check_scm_presence()
         try:
             cwd = os.getcwd()
@@ -204,9 +122,11 @@ class HgFetcher(interfaces.IFetcher):
         # file is removed on the local uris
         uri = uri.replace('file://', '')
         # in case we were not hg before
-        if not os.path.isdir('%s/%s' % (dest, self.metadata_directory)):
+        if not os.path.isdir(os.path.join(dest, self.metadata_directory)):
             return True
-        elif uri != self.get_uri(dest):
+        if self.warn_trailing_slash(dest, uri):
+            return False
+        if uri != self.get_uri(dest):
             return True
         return False
 
@@ -221,68 +141,27 @@ class SvnFetcher(interfaces.IFetcher):
 
     def __init__(self, config = None):
         self.config =  config
-        interfaces.IFetcher.__init__(self, 'subversion', 'svn', config, '.svn')
+        interfaces.IFetcher.__init__(self, 'subversion', 'svn', config, '.svn',
+                                    'HEAD')
         self.log = logging.getLogger(__logger__)
 
-    def update(self, dest, uri = None, opts=None, verbose=False):
-        """Update a package.
-        Arguments:
-            - uri : check out/update uri
-            - dest: destination to fetch to
-            - opts : arguments for the fetcher
+    def checkout(self, dest, uri, opts, verbose):
+        args = opts.get('args', '')
+        args = '%s %s' % (args, opts.get('goto-revision-args', ''))
+        if 'revision' in opts:
+            args += '-r %s' % opts['revision']
+        self._scm_cmd('co %s %s %s' % (args, uri, dest), verbose)
 
-                - revision: particular revision to deal with.
+    def update_wc(self, dest, uri, opts, verbose):
+        args = opts.get('args', '')
+        args = '%s %s' % (args, opts.get('goto-revision-args', ''))
+        if 'revision' in opts:
+            args += '-r %s' % opts['revision']
+        self._scm_cmd('up %s %s' % (args, dest), verbose)
 
-        Exceptions:
-            - InvalidSubversionRepositoryError in case of repo problems
-            - interfaces.FetchErrorin case of fetch problems
-            - interfaces.InvalidUrlError in case of uri is invalid
-        """
-        self.log.debug('Updating %s / %s' % (dest, uri))
-        if opts is None:
-            opts = {}
-        revision = opts.get('revision','HEAD')
-        args = opts.get('args','')
-        if not uri or self.is_valid_src_uri(uri):
-            if uri and self._has_uri_changed(dest, uri):
-                self._remove_versionned_directories(dest)
-            self._scm_cmd('up %s -r %s %s' % (args, revision, dest), verbose)
-            if not os.path.isdir('%s/%s' % (dest, self.metadata_directory)):
-                message = 'Unexpected fetch error on \'%s\'\n' % uri
-                message += 'The directory \'%s\' is not ' % dest
-                message += 'a valid subversion repository'
-                raise InvalidSubversionRepositoryError(message)
-        else:
-            raise interfaces.InvalidUrlError('this uri \'%s\' is invalid' % uri)
-
-    def fetch(self, dest, uri, opts=None, verbose=False):
-        """Fetch a package.
-        Arguments:
-            - uri : check out/update uri
-            - dest: destination to fetch to
-            - opts : arguments for the fetcher
-
-                - revision: particular revision to deal with.
-
-        Exceptions:
-            - InvalidSubversionRepositoryError in case of repo problems
-            - interfaces.FetchErrorin case of fetch problems
-            - interfaces.InvalidUrlError in case of uri is invalid
-        """
-        if opts is None:
-            opts = {}
-        revision = opts.get('revision','HEAD')
-        args = opts.get('args','')
-        if self.is_valid_src_uri(uri):
-            self._scm_cmd('co %s -r %s %s %s' % (args, revision, uri, dest), verbose)
-            self.log.info('SVN checkout completed')
-            if not os.path.isdir('%s/%s' % (dest, self.metadata_directory)):
-                message = 'Unexpected fetch error on \'%s\'\n' % uri
-                message += 'The directory \'%s\' is not ' % dest
-                message += 'a valid subversion repository'
-                raise InvalidSubversionRepositoryError(message)
-        else:
-            raise interfaces.InvalidUrlError('this uri \'%s\' is invalid' % uri)
+    def goto_revision(self, dest, uri, opts, verbose,  passive = True):
+        if not passive:
+            self.update_wc(dest, uri, opts, verbose)
 
     def is_valid_src_uri(self, uri):
         """See interface."""
@@ -299,7 +178,6 @@ class SvnFetcher(interfaces.IFetcher):
             return True
         return False
 
-
     def get_uri(self, dest):
         """Get url."""
         self._check_scm_presence()
@@ -314,16 +192,18 @@ class SvnFetcher(interfaces.IFetcher):
         # we werent svn
         if ret != 0:
             return None
-        return re.sub('([^:]*:)\s*(.*)', '\\2',
-                          process.stdout.read().strip()
-                         )
+        return re.sub(
+            '([^:]*:)\s*(.*)', '\\2',
+            process.stdout.read().strip()
+        )
 
     def _has_uri_changed(self, dest, uri):
         """See interface."""
+        if self.warn_trailing_slash(dest, uri):
+            return False
         if uri != self.get_uri(dest):
             return True
         return False
-
 
 class BzrFetcher(interfaces.IFetcher):
     """ Bazaar Fetcher.
@@ -335,90 +215,27 @@ class BzrFetcher(interfaces.IFetcher):
 
     def __init__(self, config = None):
         self.config =  config
-        interfaces.IFetcher.__init__(self, 'bazaar', 'bzr', config, '.bzr')
+        interfaces.IFetcher.__init__(self, 'bazaar', 'bzr', config, '.bzr',
+                                     'last:1')
         self.log = logging.getLogger(__logger__)
 
-    def update(self, dest, uri = None, opts=None, verbose=False):
-        """Update a package.
-        Arguments:
-            - uri : check out/update uri
-            - dest: destination to fetch to
-            - opts : arguments for the fetcher
+    def checkout(self, dest, uri, opts, verbose):
+        args = opts.get('args', '')
+        self._scm_cmd('checkout %s %s %s' % (args, uri, dest), verbose)
 
-                - revision: particular revision to deal with.
+    def update_wc(self, dest, uri, opts, verbose):
+        args = opts.get('args', '')
+        if not uri:
+            uri = ''
+        self._scm_cmd('pull %s %s -d %s' % (args, uri, dest), verbose)
 
-        Exceptions:
-            - InvalidBazaarRepositoryError in case of repo problems
-            - interfaces.FetchErrorin case of fetch problems
-            - interfaces.InvalidUrlError in case of uri is invalid
-        """
-        self.log.debug('Updating %s / %s' % (dest, uri))
-        if opts is None:
-            opts = {}
-        revision = opts.get('revision','last:1')
-        args = opts.get('args','')
-        if not uri or self.is_valid_src_uri(uri):
-            if uri and self._has_uri_changed(dest, uri):
-                self._remove_versionned_directories(dest)
-                self._scm_cmd('init %s' % (dest), verbose)
-                if not os.path.isdir('%s/%s' % (dest, self.metadata_directory)):
-                    message = 'Unexpected fetch error on \'%s\'\n' % uri
-                    message += 'The directory \'%s\' is not ' % dest
-                    message += 'a valid bazaar repository'
-                    raise InvalidBazaarRepositoryError(message)
-            if uri:
-                self._scm_cmd('pull --overwrite -r%s %s -d %s' % (revision, uri, dest), verbose)
-            else:
-                self._scm_cmd('pull --overwrite -r%s    -d %s' % (revision, dest), verbose)
-            if not os.path.isdir('%s/%s' % (dest, self.metadata_directory)):
-                message = 'Unexpected fetch error on \'%s\'\n' % uri
-                message += 'The directory \'%s\' is not ' % dest
-                message += 'a valid bazaar repository'
-                raise InvalidBazaarRepositoryError(message)
-        else:
-            raise interfaces.InvalidUrlError('this uri \'%s\' is invalid' % uri)
-
-
-    def fetch(self, dest, uri, opts=None, verbose=False):
-        """Fetch a package.
-        Arguments:
-            - uri : check out/update uri
-            - dest: destination to fetch to
-            - opts : arguments for the fetcher
-
-                - revision: particular revision to deal with.
-                - args: misc arguments to give
-
-        Exceptions:
-            - InvalidBazaarRepositoryError in case of repo problems
-            - interfaces.FetchErrorin case of fetch problems
-            - interfaces.InvalidUrlError in case of uri is invalid
-        """
-        if opts is None:
-            opts = {}
-        revision = opts.get('revision','last:1')
-        args = opts.get('args','')
-        # move directory that musnt be there !
-        if os.path.isdir(dest):
-            os.rename(dest, '%s.old.%s' \
-                      % (dest, datetime.datetime.now().strftime('%d%m%y%H%M%S'))
-                     )
-        if self.is_valid_src_uri(uri):
-            self._scm_cmd('checkout  -r %s %s %s %s' % (revision, args, uri, dest), verbose)
-            if not os.path.isdir('%s/%s' % (dest, self.metadata_directory)):
-                message = 'Unexpected fetch error on \'%s\'\n' % uri
-                message += 'The directory \'%s\' is not '
-                message += 'a valid bazaar repository' % (dest, uri)
-                raise InvalidBazaarRepositoryError(message)
-        else:
-            raise interfaces.InvalidUrlError('this uri \'%s\' is invalid' % uri)
-
-    def fetch_or_update(self, dest, uri, opts = None):
-        """See interface."""
-        if os.path.isdir('%s/%s' % (dest, self.metadata_directory)):
-            self.update(dest, uri, opts)
-        else:
-            self.fetch(dest, uri, opts)
+    def goto_revision(self, dest, uri, opts, verbose):
+        args = opts.get('goto-revision-args', '')
+        if 'revision' in opts:
+            args += '--overwrite -r%s' % opts['revision']
+            self._scm_cmd('pull %s %s -d %s' % (
+                args, uri, dest), verbose
+            )
 
     def is_valid_src_uri(self, uri):
         """See interface."""
@@ -438,7 +255,6 @@ class BzrFetcher(interfaces.IFetcher):
         if switch == 'bzr':
             return True
         return False
-
 
     def get_uri(self, dest):
         """get bazaar url"""
@@ -467,6 +283,9 @@ class BzrFetcher(interfaces.IFetcher):
                 '\\2',
                 process.stdout.read().strip()
             )
+            if '\n' in dest_uri:
+                # return 'checkout branch'
+                dest_uri = dest_uri.split('\n')[0]
             os.chdir(cwd)
             return dest_uri
         except Exception, instance:
@@ -477,124 +296,58 @@ class BzrFetcher(interfaces.IFetcher):
         """See interface."""
         # file is removed on the local uris
         uri = uri.replace('file://', '')
+        repouri = self.get_uri(dest).replace('file://', '')
         # in case we were not bzr before
-        if not os.path.isdir('%s/%s' % (dest, self.metadata_directory)):
+        if not os.path.isdir(os.path.join(dest, self.metadata_directory)):
             return True
-        elif uri != self.get_uri(dest):
+        if self.warn_trailing_slash(dest, uri):
+            return False
+        if uri != repouri:
             return True
         return False
-
 
 class GitFetcher(interfaces.IFetcher):
     """ Bazaar Fetcher.
     Example::
         >>> import minitage.core.fetchers.scm
         >>> git = scm.GitFetcher()
-        >>> git.fetch_or_update('http://uri','/dir',{revision='head'})
+        >>> git.fetch_or_update('http://uri','/dir',{revision='HEAD'})
     """
 
     def __init__(self, config = None):
         self.config =  config
-        interfaces.IFetcher.__init__(self, 'git', 'git', config, '.git')
+        interfaces.IFetcher.__init__(self, 'git', 'git', config, '.git', 'HEAD')
         self.log = logging.getLogger(__logger__)
 
-    def update(self, dest, uri = None, opts=None, verbose=False):
-        """Update a package.
-        Arguments:
-            - uri : check out/update uri
-            - dest: destination to fetch to
-            - opts : arguments for the fetcher
+    def checkout(self, dest, uri, opts, verbose):
+        args = opts.get('args', '')
+        self._scm_cmd('clone  %s %s %s' % (args, uri, dest), verbose)
 
-                - revision: particular revision to deal with.
-
-        Exceptions:
-            - InvalidBazaarRepositoryError in case of repo problems
-            - interfaces.FetchErrorin case of fetch problems
-            - interfaces.InvalidUrlError in case of uri is invalid
-        """
-        self.log.debug('Updating %s / %s' % (dest, uri))
-        if opts is None:
-            opts = {}
-        revision = opts.get('revision', 'HEAD')
-        args = opts.get('args','')
-        if not uri or self.is_valid_src_uri(uri):
-            if uri and self._has_uri_changed(dest, uri):
-                self._remove_versionned_directories(dest)
-                cwd = os.getcwd()
-                os.chdir(dest)
-                self._scm_cmd('init', verbose)
-                if not os.path.isdir('%s/%s' % (dest, self.metadata_directory)):
-                    message = 'Unexpected fetch error on \'%s\'\n' % uri
-                    message += 'The directory \'%s\' is not ' % (dest)
-                    message += 'a valid git repository'
-                    raise InvalidGitRepositoryError(message)
-                self._scm_cmd('pull -f %s' % (uri), verbose)
-                self._scm_cmd('reset --hard %s ' % (revision), verbose)
-                os.chdir(cwd)
-            else:
-                cwd = os.getcwd()
-                os.chdir(dest)
-                suri = ''
-                if uri:
-                    suri = '%s' % suri
-                self._scm_cmd('reset --hard', verbose)
-                self._scm_cmd('pull --f %s' % suri, verbose)
-                self._scm_cmd('reset --hard %s' % (revision), verbose)
-                os.chdir(cwd)
-            if not os.path.isdir('%s/%s' % (dest, self.metadata_directory)):
-                message = 'Unexpected fetch error on \'%s\'\n' % uri
-                message += 'The directory \'%s\' is not ' % dest
-                message += 'a valid git repository'
-                raise InvalidGitRepositoryError(message)
-        else:
-            raise interfaces.InvalidUrlError('this uri \'%s\' is invalid' % uri)
-
-
-    def fetch(self, dest, uri, opts=None, verbose=False):
-        """Fetch a package.
-        Arguments:
-            - uri : check out/update uri
-            - dest: destination to fetch to
-            - opts : arguments for the fetcher
-
-                - revision: particular revision to deal with.
-                - args: misc arguments to give
-
-        Exceptions:
-            - InvalidBazaarRepositoryError in case of repo problems
-            - interfaces.FetchErrorin case of fetch problems
-            - interfaces.InvalidUrlError in case of uri is invalid
-        """
+    def update_wc(self, dest, uri, opts, verbose):
+        args = opts.get('args', '')
         cwd = os.getcwd()
-        os.chdir('/')
-        if opts is None:
-            opts = {}
-        revision = opts.get('revision','HEAD')
-        args = opts.get('args','')
-        # move directory that musnt be there !
-        if os.path.isdir(dest):
-            os.rename(dest, '%s.old.%s' \
-                      % (dest, datetime.datetime.now().strftime('%d%m%y%H%M%S'))
-                     )
-        if self.is_valid_src_uri(uri):
-            self._scm_cmd('clone  %s %s %s' % (args, uri, dest), verbose)
-            os.chdir(dest)
-            self._scm_cmd('reset --hard %s ' % (revision), verbose)
+        os.chdir(dest)
+        if not uri or (not self._has_uri_changed(dest, uri)):
+            uri = ''
+        try:
+            self._scm_cmd('pull %s %s' % (args, uri), verbose)
+        except Exception, e:
             os.chdir(cwd)
-            if not os.path.isdir('%s/%s' % (dest, self.metadata_directory)):
-                message = 'Unexpected fetch error on \'%s\'\n' % uri
-                message += 'The directory \'%s\' is not ' % dest
-                message += 'a valid git repository'
-                raise InvalidGitRepositoryError(message)
-        else:
-            raise interfaces.InvalidUrlError('this uri \'%s\' is invalid' % uri)
+        os.chdir(cwd)
 
-    def fetch_or_update(self, dest, uri, opts = None):
-        """See interface."""
-        if os.path.isdir('%s/%s' % (dest, self.metadata_directory)):
-            self.update(dest, uri, opts)
-        else:
-            self.fetch(dest, uri, opts)
+    def goto_revision(self, dest, uri, opts, verbose):
+        args = opts.get('goto-revision-args', '')
+        if 'revision' in opts:
+            cwd = os.getcwd()
+            os.chdir(dest)
+            self._scm_cmd(
+                'reset %s --hard %s' % (
+                    args,
+                    opts['revision'],
+                ),
+                verbose
+            )
+            os.chdir(cwd)
 
     def is_valid_src_uri(self, uri):
         """See interface."""
@@ -641,11 +394,12 @@ class GitFetcher(interfaces.IFetcher):
     def _has_uri_changed(self, dest, uri):
         """See interface."""
         # in case we were not git before
-        if not os.path.isdir('%s/%s' % (dest, self.metadata_directory)):
+        if not os.path.isdir(os.path.join(dest, self.metadata_directory)):
             return True
-        elif uri != self.get_uri(dest):
+        if self.warn_trailing_slash(dest, uri):
+            return False
+        if uri != self.get_uri(dest):
             return True
         return False
-
 
 # vim:set et sts=4 ts=4 tw=80:
