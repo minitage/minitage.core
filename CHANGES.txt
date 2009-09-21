@@ -4,6 +4,7 @@ Changes
 UP
 =====
 
+    - fix a bug in bootstrapping buildout
     - rewrite fetchers
     - improve proxy handling
     - fix some tests

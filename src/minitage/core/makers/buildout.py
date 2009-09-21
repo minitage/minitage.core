@@ -145,12 +145,13 @@ class BuildoutMaker(interfaces.IMaker):
                     'buildout')):
                 if os.path.exists('bootstrap.py'):
                     minitage.core.common.Popen(
-                        '%s bootstrap.py' % sys.executable,
+                        '%s bootstrap.py -c %s' % (sys.executable,
+                                                   self.buildout_config),
                         opts.get('verbose', False)
                     )
                 else:
                     minitage.core.common.Popen(
-                        'buildout bootstrap',
+                        'buildout bootstrap -c %s' % self.buildout_config,
                         opts.get('verbose', False)
                     )
             if parts:
