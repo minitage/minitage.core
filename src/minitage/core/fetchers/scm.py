@@ -54,18 +54,25 @@ class HgFetcher(interfaces.IFetcher):
         interfaces.IFetcher.__init__(self, 'Mercurial', 'hg', config, '.hg', 'tip')
         self.log = logging.getLogger(__logger__)
 
-    def checkout(self, dest, uri, opts, verbose):
+    def checkout(self, dest, uri, opts, verbose=True):
         args = opts.get('args', '')
+        if not verbose:
+            args += ' -q '
         self._scm_cmd('clone %s %s %s' % (args, uri, dest), verbose)
 
-    def update_wc(self, dest, uri, opts, verbose):
+    def update_wc(self, dest, uri, opts, verbose=True):
         if not uri:
             uri = ''
         args = opts.get('args', '')
-        self._scm_cmd('pull -f %s %s -R %s' % (uri, args, dest), verbose)
+        vargs = ''
+        if not verbose:
+            vargs += ' -q '
+        self._scm_cmd('pull %s -f %s %s -R %s' % (vargs, uri, args, dest), verbose)
 
-    def goto_revision(self, dest, uri, opts, verbose):
+    def goto_revision(self, dest, uri, opts, verbose=True):
         args = opts.get('goto-revision-args', '')
+        if not verbose:
+            args += ' -q '
         if 'revision' in opts:
             args += '-C -r%s' % opts['revision']
         self._scm_cmd('up %s -R %s' % (args, dest), verbose)
@@ -145,15 +152,19 @@ class SvnFetcher(interfaces.IFetcher):
                                     'HEAD')
         self.log = logging.getLogger(__logger__)
 
-    def checkout(self, dest, uri, opts, verbose):
+    def checkout(self, dest, uri, opts, verbose=True):
         args = opts.get('args', '')
+        if not verbose:
+            args += ' -q '
         args = '%s %s' % (args, opts.get('goto-revision-args', ''))
         if 'revision' in opts:
             args += '-r %s' % opts['revision']
-        self._scm_cmd('co %s %s %s' % (args, uri, dest), verbose)
+        self._scm_cmd('co %s %s %s' % (args, uri, dest), verbose=True)
 
-    def update_wc(self, dest, uri, opts, verbose):
+    def update_wc(self, dest, uri, opts, verbose=True):
         args = opts.get('args', '')
+        if not verbose:
+            args += ' -q '
         args = '%s %s' % (args, opts.get('goto-revision-args', ''))
         if 'revision' in opts:
             args += '-r %s' % opts['revision']
@@ -219,18 +230,24 @@ class BzrFetcher(interfaces.IFetcher):
                                      'last:1')
         self.log = logging.getLogger(__logger__)
 
-    def checkout(self, dest, uri, opts, verbose):
+    def checkout(self, dest, uri, opts, verbose=True):
         args = opts.get('args', '')
+        if not verbose:
+            args += ' -q '
         self._scm_cmd('checkout %s %s %s' % (args, uri, dest), verbose)
 
-    def update_wc(self, dest, uri, opts, verbose):
+    def update_wc(self, dest, uri, opts, verbose=True):
         args = opts.get('args', '')
         if not uri:
             uri = ''
+        if not verbose:
+            args += ' -q '
         self._scm_cmd('pull %s %s -d %s' % (args, uri, dest), verbose)
 
-    def goto_revision(self, dest, uri, opts, verbose):
+    def goto_revision(self, dest, uri, opts, verbose=True):
         args = opts.get('goto-revision-args', '')
+        if not verbose:
+            args += ' -q '
         if 'revision' in opts:
             args += '--overwrite -r%s' % opts['revision']
             self._scm_cmd('pull %s %s -d %s' % (
@@ -319,12 +336,16 @@ class GitFetcher(interfaces.IFetcher):
         interfaces.IFetcher.__init__(self, 'git', 'git', config, '.git', 'HEAD')
         self.log = logging.getLogger(__logger__)
 
-    def checkout(self, dest, uri, opts, verbose):
+    def checkout(self, dest, uri, opts, verbose=True):
         args = opts.get('args', '')
+        if not verbose:
+            args += ' -q '
         self._scm_cmd('clone  %s %s %s' % (args, uri, dest), verbose)
 
-    def update_wc(self, dest, uri, opts, verbose):
+    def update_wc(self, dest, uri, opts, verbose=True):
         args = opts.get('args', '')
+        if not verbose:
+            args += ' -q '
         cwd = os.getcwd()
         os.chdir(dest)
         if not uri or (not self._has_uri_changed(dest, uri)):
@@ -335,8 +356,10 @@ class GitFetcher(interfaces.IFetcher):
             os.chdir(cwd)
         os.chdir(cwd)
 
-    def goto_revision(self, dest, uri, opts, verbose):
+    def goto_revision(self, dest, uri, opts, verbose=True):
         args = opts.get('goto-revision-args', '')
+        if not verbose:
+            args += ' -q '
         if 'revision' in opts:
             cwd = os.getcwd()
             os.chdir(dest)

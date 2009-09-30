@@ -273,9 +273,9 @@ class IFetcher(interfaces.IProduct):
             - verbose: set to True to be verbose
         """
         if os.path.isdir(os.path.join(dest, self.metadata_directory)):
-            self.update(dest, uri, opts)
+            self.update(dest, uri, opts, verbose)
         else:
-            self.fetch(dest, uri, opts)
+            self.fetch(dest, uri, opts, verbose)
 
     def check_valid_co(self, dest, uri):
         """

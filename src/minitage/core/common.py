@@ -117,7 +117,7 @@ def substitute(filename, search_re, replacement):
 def system(c, log=None):
     """Execute a command."""
     if log:
-        log.info("Running %s" % c)
+        log.debug("Running %s" % c)
     ret = os.system(c)
     if ret:
         raise SystemError('Failed', c)
@@ -188,15 +188,16 @@ def get_from_cache(url,
     if not file_md5 and md5_re_match:
         file_md5 = md5_re_match.groups()[0]
     filename = urlpath.split('/')[-1]
-    if not logger:
-        logger = logging.getLogger(filename)
+#    if not logger:
+#        logger = logging.getLogger(filename)
 
     # get the file from the right place
     fname = tmp2 = file_present = ''
     if download_cache:
         # if we have a cache, try and use it
-        logger.debug(
-            'Searching cache at %s' % download_cache)
+        if logger:
+            logger.debug(
+                'Searching cache at %s' % download_cache)
         if os.path.isdir(download_cache):
             # just cache files for now
             fname = os.path.join(download_cache, filename)
@@ -208,26 +209,29 @@ def get_from_cache(url,
             if not test_md5(fname, file_md5):
                 file_present = False
                 bad_md5, backup = md5sum(fname), make_backup(fname)
-                logger.warning(
-                    'MD5SUM mismatch for %s: Good:%s != Bad:%s\n'
-                    'Backuping the old file but re download it!\n'
-                    'A bakcup will be made in %s.'% (
-                        fname,
-                        file_md5,
-                        bad_md5,
-                        backup
+                if logger:
+                    logger.warning(
+                        'MD5SUM mismatch for %s: Good:%s != Bad:%s\n'
+                        'Backuping the old file but re download it!\n'
+                        'A bakcup will be made in %s.'% (
+                            fname,
+                            file_md5,
+                            bad_md5,
+                            backup
+                        )
                     )
-                )
         if file_present:
-            logger.debug(
-                'Using cache file in %s' % fname
-            )
+            if logger:
+                logger.debug(
+                    'Using cache file in %s' % fname
+                )
     else:
-        logger.debug(
-            'Did not find %s under cache: %s' % (
-                filename,
-                download_cache)
-        )
+        if logger:
+            logger.debug(
+                'Did not find %s under cache: %s' % (
+                    filename,
+                    download_cache)
+            )
 
     # force re download if we do not want to use cache unless we are offline
     # or patch is a local file
@@ -251,18 +255,20 @@ def get_from_cache(url,
             if download_cache:
                 # set up the cache and download into it
                 fname = os.path.join(download_cache, filename)
-                logger.debug(
-                    'Cache download %s as %s' % (
-                        url,
-                        download_cache)
-                )
+                if logger:
+                    logger.debug(
+                        'Cache download %s as %s' % (
+                            url,
+                            download_cache)
+                    )
             else:
                 # use tempfile
                 tmp2 = tempfile.mkdtemp('buildout-' + filename)
                 fname = os.path.join(tmp2, filename)
-            logger.info(
-                'Downloading %s in %s' % (url,fname)
-            )
+            if logger:
+                logger.info(
+                    'Downloading %s in %s' % (url,fname)
+                )
 
             local_file = '/not/existing/file/or/directory'
             if 'file://' in url:

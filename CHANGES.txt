@@ -8,6 +8,7 @@ UP
     - rewrite fetchers
     - improve proxy handling
     - fix some tests
+    - make parts shut up
 
 1.0.18
 ========

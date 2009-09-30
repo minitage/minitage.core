@@ -64,7 +64,7 @@ class StaticFetcher(interfaces.IFetcher):
         self.logger = logging.getLogger('minitage.static.fetcher')
         interfaces.IFetcher.__init__(self, 'static', config = config)
 
-    def update(self, dest, uri, opts=None, verbose=False):
+    def update(self, dest, uri, opts=None, verbose=True):
         """Update a package.
         Arguments:
             - uri : check out/update uri
@@ -72,9 +72,9 @@ class StaticFetcher(interfaces.IFetcher):
             - opts : arguments for the fetcher
 
         """
-        self.fetch(dest, uri, opts)
+        self.fetch(dest, uri, opts, verbose)
 
-    def fetch(self, dest, uri, opts=None, verbose=False):
+    def fetch(self, dest, uri, opts=None, verbose=True):
         """Fetch a package.
         Arguments:
             - uri : check out/update uri
@@ -127,7 +127,8 @@ class StaticFetcher(interfaces.IFetcher):
                         self.logger.info('MD5 not found at %s, integrity will not be checked.' % "%s.md5" % uri)
 
                 if newer:
-                    self.logger.info('Downloading %s from %s.' % (filepath, uri))
+                    if verbose:
+                        self.logger.info('Downloading %s from %s.' % (filepath, uri))
                     data = urllib2.urlopen(uri).read()
                     # save the downloaded file
                     filep = open(filepath, 'wb')
