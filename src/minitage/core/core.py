@@ -451,8 +451,21 @@ class Minimerge(object):
             os.makedirs(dest_container)
         for is_binary, fetcher, src_uri in urls_descriptions:
             try:
-                downloaded = False
-                if not os.path.exists(destination):
+                downloaded, incomplete = False, False
+                if os.path.exists(destination):
+                    files = [f for f in os.listdir(destination) if not f.startswith('.')]
+                    if not files:
+                        incomplete = True
+                    if package.install_method == 'buildout':
+                        cfg = package.minibuild_config._sections.get('buildout_config', 'buildout.cfg')
+                        if not os.path.exists(
+                            os.path.join(
+                                self.get_install_path(package),
+                            cfg
+                            )
+                        ):
+                            incomplete = True
+                if incomplete or not os.path.exists(destination):
                     self.logger.info('Fetching package %s from %s.' % (
                         package.name, src_uri)
                     )

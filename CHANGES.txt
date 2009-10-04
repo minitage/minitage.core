@@ -9,6 +9,7 @@ UP
     - improve proxy handling
     - fix some tests
     - make parts shut up
+    - test incomplete downloads and redownload them (package level)
 
 1.0.18
 ========
