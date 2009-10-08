@@ -10,6 +10,7 @@ UP
     - fix some tests
     - make parts shut up
     - test incomplete downloads and redownload them (package level)
+    - make minibuild name more permissive
 
 1.0.18
 ========

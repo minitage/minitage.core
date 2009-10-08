@@ -108,7 +108,7 @@ mn_sfx = '((-\d+((\.\d+)*([a-z]?)))?)'
 # complete sufix
 sufix = '((%s(_(%s|%s|%s|%s))*)*)' % (mn_sfx, p_sfx, n_sfx, s_sfx, v_sfx)
 # packagename : aZ1-az123
-m_sfx = '(^([a-zA-Z]|\d)+(-([a-zA-Z]|\d)+)*)'
+m_sfx = '(^([a-zA-Z]|\d)+((-|\.)([a-zA-Z]|\d)+)*)'
 # assemble prefixes
 versioned_rxp = '^(%s%s)$' % (m_sfx, sufix)
 packageversion_re = re.compile(versioned_rxp)
