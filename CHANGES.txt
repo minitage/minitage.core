@@ -12,6 +12,11 @@ UP
     - test incomplete downloads and redownload them (package level)
     - make minibuild name more permissive
 
+1.0.19
+===========
+
+    - distribute fix
+
 1.0.18
 ========
 

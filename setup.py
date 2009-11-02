@@ -33,7 +33,7 @@ import sys
 from setuptools import setup, find_packages
 
 name = 'minitage.core'
-version = '1.0.27'
+version = '1.0.28'
 
 def read(rnames):
     setupdir =  os.path.dirname( os.path.abspath(__file__))
@@ -67,7 +67,6 @@ setup(
     license = 'BSD',
     namespace_packages = ['minitage', name],
     install_requires = ['iniparse',
-                        'virtualenv',
                         'zc.buildout',
                         'setuptools>=0.6c9',],
     zip_safe = False,

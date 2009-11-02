@@ -138,22 +138,30 @@ class BuildoutMaker(interfaces.IMaker):
 
 
             # running buildout in our internal way
-            if not os.path.exists(
-                os.path.join(
-                    directory,
-                    'bin',
-                    'buildout')):
-                if os.path.exists('bootstrap.py'):
-                    minitage.core.common.Popen(
-                        '%s bootstrap.py -c %s' % (sys.executable,
-                                                   self.buildout_config),
-                        opts.get('verbose', False)
-                    )
+            # always regenerating that buildout file
+            #if not os.path.exists(
+            #    os.path.join(
+            #        directory,
+            #        'bin',
+            #        'buildout')):
+            bootstrap_args = ''
+            if os.path.exists('bootstrap.py'):
+                # if this bootstrap.py supports distribute, just use it!
+                content = open('bootstrap.py').read()
+                if '--distribute' in content:
+                    self.logger.warning('Using distribute !')
+                    bootstrap_args += ' %s ' % '--distribute'
                 else:
-                    minitage.core.common.Popen(
-                        'buildout bootstrap -c %s' % self.buildout_config,
-                        opts.get('verbose', False)
-                    )
+                    bootstrap_args = ' -c %s ' % self.buildout_config
+                minitage.core.common.Popen(
+                    '%s bootstrap.py %s ' % (sys.executable, bootstrap_args,),
+                    opts.get('verbose', False)
+                )
+            else:
+                minitage.core.common.Popen(
+                    'buildout bootstrap -c %s' % self.buildout_config,
+                    opts.get('verbose', False)
+                )
             if parts:
                 for part in parts:
                     self.logger.info('Installing single part: %s' % part)
