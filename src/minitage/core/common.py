@@ -279,11 +279,11 @@ def get_from_cache(url,
                 # we try to download the url with fragments, if it fails,
                 # without.
                 try:
-                    open(fname,'w').write(urllib2.urlopen(url).read())
+                    open(fname,'wb').write(urllib2.urlopen(url).read())
                 except:
                     url, info = url.split('#', 1)
                     if 'md5' in fragment:
-                        open(fname,'w').write(urllib2.urlopen(url).read())
+                        open(fname,'wb').write(urllib2.urlopen(url).read())
                     else:
                         raise
             if file_md5:
