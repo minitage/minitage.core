@@ -308,7 +308,7 @@ def get_from_cache(url,
 
 def make_backup(fname):
     index = 0
-    bacup = ''
+    backup = ''
     while os.path.exists(fname):
         backup = '%s.md5sum_mismatch.%s' % (fname, index)
         try:
@@ -361,22 +361,18 @@ You seem to be running minitage for the first time.
         fic.close()
         print '\n\n'
 
+
 def which(program, environ=None, key = 'PATH', split = ':'):
     if not environ:
         environ = os.environ
     PATH=environ.get(key, '').split(split)
-    fp = None
-    if '/' in program:
-        fp = os.path.abspath(program)
-    if not fp:
-        for entry in PATH:
-            fp = os.path.abspath(os.path.join(entry, program))
-            if os.path.exists(fp):
-                break
-    if os.path.exists(fp):
-        return fp
+    for entry in PATH:
+        fp = os.path.abspath(os.path.join(entry, program))
+        if os.path.exists(fp):
+            return fp
+        if sys.platform.startswith('win') and os.path.exists(fp+'.exe'):
+            return fp+'.exe'
     raise IOError('Program not fond: %s in %s ' % (program, PATH))
-
 
 def search_latest(regex, minilays):
     for mpath, directories, files in os.walk(minilays):
