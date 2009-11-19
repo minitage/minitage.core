@@ -11,6 +11,7 @@ UP
     - make parts shut up
     - test incomplete downloads and redownload them (package level)
     - make minibuild name more permissive
+    - win32 compatibility
 
 1.0.19
 ===========

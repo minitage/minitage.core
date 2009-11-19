@@ -49,6 +49,11 @@ from minitage.core.makers import interfaces as makers
 from minitage.core.version import __version__
 from minitage.core import update as up
 
+try:
+    from os import uname
+except:
+    from platform import uname
+
 
 
 DEFAULT_BINARIES_URL = 'http://distfiles.minitage.org/public/externals/minitage/packages'
@@ -94,7 +99,7 @@ def newline(fic):
     open(fic, 'a').write('\n')
 
 def get_default_arch():
-    arch = os.uname()[4]
+    arch = uname()[4]
     arch32_re = re.compile('i[345678]86')
     binary_arch = '32'
     if arch32_re.match(arch):

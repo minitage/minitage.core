@@ -38,6 +38,11 @@ import unittest
 import StringIO
 import tempfile
 
+try:
+    from os import uname
+except:
+    from platform import uname
+
 from minitage.core import api, objects
 from minitage.core.tests import test_common
 
@@ -116,8 +121,8 @@ category=eggs
         open(mb_path,'w').write(minibuild1)
         mb = api.Minibuild(path=mb_path).load()
         self.assertTrue('python' in mb.dependencies)
-        uname = os.uname()[0].lower()
-        self.assertTrue(uname in mb.dependencies)
+        tuname = uname()[0].lower()
+        self.assertTrue(tuname in mb.dependencies)
 
     def testValidMinibuilds(self):
         """testValidMinibuilds"""

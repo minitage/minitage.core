@@ -37,6 +37,11 @@ import re
 
 from minitage.core import collections
 
+try:
+    from os import uname
+except:
+    from platform import uname
+
 class MinibuildException(Exception):
     """General Minibuild Error."""
 
@@ -92,7 +97,7 @@ VALID_INSTALL_METHODS = ['buildout']
  - hg: mercurial
  - svn: subversion"""
 VALID_FETCH_METHODS = ['svn', 'hg', 'static', 'cvs', 'bzr', 'darcs', 'git' , 'monotone']
-UNAME = os.uname()[0].lower()
+UNAME = uname()[0].lower()
 
 # minibuilds name checkers
 # python sfx
