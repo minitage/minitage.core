@@ -50,6 +50,7 @@ from distutils.dir_util import copy_tree
 
 from pkg_resources import Requirement, resource_filename
 from minitage.core.version import __version__
+letter_re = re.compile('^([a-zA-Z]:)', re.U|re.S|re.I)
 
 class MinimergeError(Exception): pass
 
@@ -175,7 +176,6 @@ def get_from_cache(url,
         - offline : offline mode
     """
     # borrowed from zc.recipe.cmmi
-
     if download_cache:
         if not os.path.isdir(download_cache):
             os.makedirs(download_cache)
@@ -188,6 +188,8 @@ def get_from_cache(url,
     if not file_md5 and md5_re_match:
         file_md5 = md5_re_match.groups()[0]
     filename = urlpath.split('/')[-1]
+    if '\\' in filename and sys.platform.startswith('win'):
+        filename = os.path.basename(filename)
 #    if not logger:
 #        logger = logging.getLogger(filename)
 
@@ -273,6 +275,10 @@ def get_from_cache(url,
             local_file = '/not/existing/file/or/directory'
             if 'file://' in url:
                 local_file = url.replace('file://', '')
+                if sys.platform.startswith('win'):
+                    tpath = url.replace('file://', '')
+                    if letter_re.match(tpath):
+                        url = url.replace('file://', 'file:///')
             if os.path.isdir(local_file):
                 copy_tree(local_file, fname)
             if (not os.path.exists(fname)) or use_cache == False:
