@@ -284,14 +284,17 @@ def get_from_cache(url,
             if (not os.path.exists(fname)) or use_cache == False:
                 # we try to download the url with fragments, if it fails,
                 # without.
+                dfd = open(fname,'wb')
                 try:
-                    open(fname,'wb').write(urllib2.urlopen(url).read())
+                    dfd.write(urllib2.urlopen(url).read())
                 except:
                     url, info = url.split('#', 1)
                     if 'md5' in fragment:
-                        open(fname,'wb').write(urllib2.urlopen(url).read())
+                        dfd.open(fname,'wb').write(urllib2.urlopen(url).read())
                     else:
                         raise
+                dfd.flush()
+                dfd.close()
             if file_md5:
                 if not test_md5(fname, file_md5):
                     raise MinimergeError(
