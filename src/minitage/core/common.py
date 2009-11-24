@@ -50,7 +50,7 @@ from distutils.dir_util import copy_tree
 
 from pkg_resources import Requirement, resource_filename
 from minitage.core.version import __version__
-letter_re = re.compile('^([a-zA-Z]:)', re.U|re.S|re.I)
+letter_re = re.compile('^((?P<letter>[a-zA-Z]):)(?P<path>.*)', re.U|re.S|re.I)
 
 class MinimergeError(Exception): pass
 
@@ -188,7 +188,8 @@ def get_from_cache(url,
     if not file_md5 and md5_re_match:
         file_md5 = md5_re_match.groups()[0]
     filename = urlpath.split('/')[-1]
-    if '\\' in filename and sys.platform.startswith('win'):
+    if '\\' in filename and (sys.platform.startswith('cyg') or
+                            sys.platform.startswith('win')):
         filename = os.path.basename(filename)
 #    if not logger:
 #        logger = logging.getLogger(filename)
@@ -275,7 +276,7 @@ def get_from_cache(url,
             local_file = '/not/existing/file/or/directory'
             if 'file://' in url:
                 local_file = url.replace('file://', '')
-                if sys.platform.startswith('win'):
+                if sys.platform.startswith('win') or sys.platform.startswith('cyg'):
                     tpath = url.replace('file://', '')
                     if letter_re.match(tpath):
                         url = url.replace('file://', 'file:///')
@@ -379,7 +380,7 @@ def which(program, environ=None, key = 'PATH', split = ':'):
         fp = os.path.abspath(os.path.join(entry, program))
         if os.path.exists(fp):
             return fp
-        if sys.platform.startswith('win') and os.path.exists(fp+'.exe'):
+        if (sys.platform.startswith('win') or sys.platform.startswith('cyg'))  and os.path.exists(fp+'.exe'):
             return fp+'.exe'
     raise IOError('Program not fond: %s in %s ' % (program, PATH))
 

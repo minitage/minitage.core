@@ -99,6 +99,7 @@ class BuildoutMaker(interfaces.IMaker):
                                                           self.buildout_config))
         cwd = os.getcwd()
         os.chdir(directory)
+        bcmd = os.path.normpath('./bin/buildout')
         if not opts:
             opts = {}
         try:
@@ -151,8 +152,7 @@ class BuildoutMaker(interfaces.IMaker):
                 if '--distribute' in content:
                     self.logger.warning('Using distribute !')
                     bootstrap_args += ' %s ' % '--distribute'
-                else:
-                    bootstrap_args = ' -c %s ' % self.buildout_config
+                bootstrap_args += ' -c %s ' % self.buildout_config
                 minitage.core.common.Popen(
                     '%s bootstrap.py %s ' % (sys.executable, bootstrap_args,),
                     opts.get('verbose', False)
@@ -166,7 +166,8 @@ class BuildoutMaker(interfaces.IMaker):
                 for part in parts:
                     self.logger.info('Installing single part: %s' % part)
                     minitage.core.common.Popen(
-                        './bin/buildout -c %s %s install %s ' % (
+                        '%s -c %s %s install %s ' % (
+                            bcmd,
                             self.buildout_config,
                             ' '.join(argv),
                             part
@@ -176,7 +177,8 @@ class BuildoutMaker(interfaces.IMaker):
             else:
                 self.logger.debug('Installing parts')
                 minitage.core.common.Popen(
-                    './bin/buildout -c %s  %s ' % (
+                    '%s -c %s  %s ' % (
+                        bcmd,
                         self.buildout_config,
                         ' '.join(argv),
                     ),

@@ -98,6 +98,10 @@ VALID_INSTALL_METHODS = ['buildout']
  - svn: subversion"""
 VALID_FETCH_METHODS = ['svn', 'hg', 'static', 'cvs', 'bzr', 'darcs', 'git' , 'monotone']
 UNAME = uname()[0].lower()
+if 'cygwin' in UNAME:
+    UNAME = 'cygwin'
+if UNAME.startswith('win'):
+    UNAME = 'win'
 
 # minibuilds name checkers
 # python sfx
@@ -203,7 +207,7 @@ class Minibuild(object):
             Thus we can lazy load minibuilds and save performance.
         """
         self.path = path
-        self.name = self.path.split('/').pop()
+        self.name = self.path.split(os.path.sep).pop()
         self.state = None
         self.dependencies = None
         self.description = None
