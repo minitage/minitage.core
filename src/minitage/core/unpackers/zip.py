@@ -64,12 +64,14 @@ class ZipUnpacker(interfaces.IUnpacker):
             zfobj = zipfile.ZipFile(filep)
             for name in zfobj.namelist():
                 if name.endswith('/'):
-                    os.mkdir(os.path.join(dest, name))
+                    newdir = os.path.join(dest, name)
+                    if not os.path.exists(newdir):
+                        os.mkdir(os.path.join(dest, name))
                 else:
                     # broken zip archives may contains 'dir/file' paths
                     # before 'dir' one
                     if len(name) > 1:
-                        if '/' in name[1:] and not (name.endswith('/')): 
+                        if '/' in name[1:] and not (name.endswith('/')):
                             ldir = os.path.join(
                                 dest,
                                 '/'.join(name.split('/')[:-1])
