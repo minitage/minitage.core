@@ -13,6 +13,8 @@ UP
     - test incomplete downloads and redownload them (package level)
     - make minibuild name more permissive
     - win32 compatibility
+    - fix bug in new checkouts
+    - add replace/per/os/dependencies mecanism
 
 1.0.19
 ===========

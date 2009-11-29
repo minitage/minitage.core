@@ -462,7 +462,13 @@ class Minimerge(object):
                     if not files:
                         incomplete = True
                     if package.install_method == 'buildout':
-                        cfg = package.minibuild_config._sections.get('buildout_config', 'buildout.cfg')
+                        cfg = package.minibuild_config._sections.get(
+                            'minibuild', 
+                            {}
+                        ).get(
+                            'buildout_config', 
+                            'buildout.cfg'
+                        )
                         if not os.path.exists(
                             os.path.join(
                                 self.get_install_path(package),
@@ -487,6 +493,7 @@ class Minimerge(object):
                         temp = os.path.join(os.path.dirname(destination),
                                             'minitage-checkout-tmp',
                                             package.name)
+
                         fetcher.fetch(temp, package.src_uri)
                         if os.path.isdir(temp):
                             shutil.rmtree(temp)

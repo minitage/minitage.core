@@ -212,6 +212,7 @@ class SvnFetcher(interfaces.IFetcher):
         """See interface."""
         if self.warn_trailing_slash(dest, uri):
             return False
+        import pdb;pdb.set_trace()
         if uri != self.get_uri(dest):
             return True
         return False

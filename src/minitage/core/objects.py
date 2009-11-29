@@ -265,6 +265,10 @@ class Minibuild(object):
                                  for d in os_dependencies.strip().split()
                                  if d not in self.dependencies
                                 ] + self.dependencies
+        # os overrides
+        os_over = section.get('dependencies-%s-replace' % UNAME, '').strip().split()
+        if os_over:
+            self.dependencies = os_over
 
         # our install method, can be empty
         self.install_method = section.get('install_method','').strip()
