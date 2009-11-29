@@ -81,10 +81,16 @@ def test_md5(filep, md5sum_ref):
 
 def remove_path(path):
     """Remove a path."""
-    if os.path.isdir(path):
-        shutil.rmtree(path)
-    elif os.path.exists(path):
-        os.remove(path)
+    if os.path.exists(path):
+        if os.path.isdir(path):
+            shutil.rmtree(path)
+        else:
+            os.remove(path)
+    else:
+        print
+        print "'%s' was asked to be deleted but does not exists." % path
+        print
+    
 
 def append_env_var(env, var, sep=":", before=True):
     """Append text to a environnement variable.

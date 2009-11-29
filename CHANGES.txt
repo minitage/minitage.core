@@ -4,6 +4,7 @@ Changes
 UP
 =====
 
+    - enhance remove_path function
     - fix a bug in bootstrapping buildout
     - rewrite fetchers
     - improve proxy handling
