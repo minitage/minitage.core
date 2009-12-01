@@ -207,7 +207,7 @@ class Minimerge(object):
         self._offline = options.get('offline', self._config._sections\
                                     .get('minimerge', {}).get('offline', False))
 
-        self._packages = options.get('packages', False)
+        self._packages = options.get('packages', [])
 
         # what are we doing
         self._action = options.get('action', False)
