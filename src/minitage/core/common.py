@@ -390,6 +390,7 @@ def which(program, environ=None, key = 'PATH', split = ':'):
             return fp+'.exe'
     raise IOError('Program not fond: %s in %s ' % (program, PATH))
 
+class MinibuildNotFoundException(Exception):pass
 def search_latest(regex, minilays):
     for mpath, directories, files in os.walk(minilays):
         subpath = mpath.replace(
@@ -402,7 +403,7 @@ def search_latest(regex, minilays):
                 if not minibuild.startswith('.'):
                     if re.match(regex, minibuild, re.M|re.S|re.U):
                         return minibuild
-    raise Exception('Regex %s didnt match or '
+    raise MinibuildNotFoundException('Regex %s didnt match or '
                     'minibuild not found in %s.' % (regex, minilays))
 
 # vim:set et sts=4 ts=4 tw=80:
