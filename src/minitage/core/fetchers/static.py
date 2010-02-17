@@ -38,7 +38,6 @@ from minitage.core.fetchers import interfaces
 from minitage.core.unpackers.interfaces import IUnpackerFactory
 import minitage.core.common
 
-
 class StaticFetchError(interfaces.IFetcherError):
     """StaticFetchError."""
 
@@ -105,7 +104,7 @@ class StaticFetcher(interfaces.IFetcher):
                 # if we have not specified the md5, try to download one
                 try:
                     if not md5:
-                        md5 = urllib2.urlopen("%s.md5" % uri).read()
+                        md5 = minitage.core.common.urlopen("%s.md5" % uri).read()
                         # maybe mark the file as already there
                         if os.path.exists(filepath):
                             self.logger.warning('File %s is already downloaded' % filepath)
@@ -129,7 +128,7 @@ class StaticFetcher(interfaces.IFetcher):
                 if newer:
                     if verbose:
                         self.logger.info('Downloading %s from %s.' % (filepath, uri))
-                    data = urllib2.urlopen(uri).read()
+                    data = minitage.core.common.urlopen(uri).read()
                     # save the downloaded file
                     filep = open(filepath, 'wb')
                     filep.write(data)

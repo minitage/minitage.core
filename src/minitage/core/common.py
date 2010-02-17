@@ -90,7 +90,7 @@ def remove_path(path):
         print
         print "'%s' was asked to be deleted but does not exists." % path
         print
-    
+
 
 def append_env_var(env, var, sep=":", before=True):
     """Append text to a environnement variable.
@@ -187,7 +187,7 @@ def get_from_cache(url,
             os.makedirs(download_cache)
 
     _, _, urlpath, _, fragment = urlparse.urlsplit(url)
-    if not fragment: 
+    if not fragment:
         fragment = ''
     md5_re = re.compile('md5[^=]*=(.*)', re.S|re.U)
     md5_re_match = md5_re.match(fragment)
@@ -293,11 +293,11 @@ def get_from_cache(url,
                 # without.
                 dfd = open(fname,'wb')
                 try:
-                    dfd.write(urllib2.urlopen(url).read())
+                    dfd.write(urlopen(url).read())
                 except:
                     url, info = url.split('#', 1)
                     if 'md5' in fragment:
-                        dfd.open(fname,'wb').write(urllib2.urlopen(url).read())
+                        dfd.write(urlopen(url).read())
                     else:
                         raise
                 dfd.flush()
@@ -405,5 +405,15 @@ def search_latest(regex, minilays):
                         return minibuild
     raise MinibuildNotFoundException('Regex %s didnt match or '
                     'minibuild not found in %s.' % (regex, minilays))
+
+GENTOO_FF_UA = 'Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.3) Gecko/20090912 Gentoo Shiretoko/3.5.3'
+def urlopen(uri, ua = GENTOO_FF_UA, *args, **kwargs):
+    """Fake user agent to prevent some basic sysadmins
+    restrictrions."""
+    request = urllib2.Request(uri)
+    request.add_header('User-Agent', ua)
+    opener = urllib2.build_opener()
+    urlo = opener.open(request)
+    return urlo
 
 # vim:set et sts=4 ts=4 tw=80:

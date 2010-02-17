@@ -15,6 +15,9 @@ UP
     - win32 compatibility
     - fix bug in new checkouts
     - add replace/per/os/dependencies mecanism
+    - fix a bug insde the get_from_cache helper when a fragmented url is used and the upstream server does not understand them
+    - add a special exception for search_latest when error happen.
+    - fake user agent in urlopen calls to prevent mad sysadmins restrictions on python useragent.
 
 1.0.19
 ===========
