@@ -83,6 +83,8 @@ def remove_path(path):
     """Remove a path."""
     if os.path.exists(path):
         if os.path.isdir(path):
+            os.unlink(path)
+        elif os.path.isdir(path):
             shutil.rmtree(path)
         else:
             os.remove(path)

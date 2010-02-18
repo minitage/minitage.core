@@ -4,6 +4,7 @@ Changes
 UP
 =====
 
+    - support symlink in remove_path (API)
     - enhance remove_path function
     - fix a bug in bootstrapping buildout
     - rewrite fetchers
