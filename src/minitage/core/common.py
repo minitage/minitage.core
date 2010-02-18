@@ -82,7 +82,9 @@ def test_md5(filep, md5sum_ref):
 def remove_path(path):
     """Remove a path."""
     if os.path.exists(path):
-        if os.path.isdir(path):
+        if os.path.islink(path):
+            os.unlink(path) 
+        elif os.path.isfile(path):
             os.unlink(path)
         elif os.path.isdir(path):
             shutil.rmtree(path)
