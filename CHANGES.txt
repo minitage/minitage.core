@@ -4,6 +4,8 @@ Changes
 UP
 =====
 
+    - add an only dependencies switch to buld only dependencys
+    - give means to select the python to build against for python modules (--all-python-versions or specify python to use along with the package (minimerge -pv foo python-2.4)
     - support symlink in remove_path (API)
     - enhance remove_path function
     - fix a bug in bootstrapping buildout

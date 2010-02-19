@@ -200,6 +200,8 @@ class Minimerge(object):
                                   .get('minimerge', {}).get('debug', False))
         self._fetchonly = options.get('fetchonly', False)
         self._fetchfirst = options.get('fetchfirst', False)
+        self._only_dependencies = options.get('only_dependencies', False)
+        self._all_python_versions = options.get('all_python_versions', False)
         self._update = options.get('update', False)
         self._upgrade = options.get('upgrade', True)
         self._pretend = options.get('pretend', False)
@@ -463,10 +465,10 @@ class Minimerge(object):
                         incomplete = True
                     if package.install_method == 'buildout':
                         cfg = package.minibuild_config._sections.get(
-                            'minibuild', 
+                            'minibuild',
                             {}
                         ).get(
-                            'buildout_config', 
+                            'buildout_config',
                             'buildout.cfg'
                         )
                         if not os.path.exists(
@@ -615,6 +617,9 @@ class Minimerge(object):
                 self.logger.debug('Shrinking packages away. _2/2_')
                 packages = self._cut_jumped_packages(packages)
 
+            if self._only_dependencies:
+                packages = [p for p in packages if not p.name in self._packages]
+
             self.logger.debug('Action:\t%s' % self._action)
             if packages:
                 self.logger.debug('Packages:')
@@ -638,6 +643,7 @@ class Minimerge(object):
             if not stop:
                 if answer:
                     self.logger.info('User choosed to continue')
+
 
                 # fetch first, or just in time
                 if self._fetchfirst:
@@ -718,7 +724,7 @@ class Minimerge(object):
                 pyversions.append(
                     package.name.replace('python-', '')
                 )
-            if package.category == 'eggs':
+            if package.category == 'eggs' and self._all_python_versions:
                 pyversions.extend(PYTHON_VERSIONS)
                 ALL = True
                 break

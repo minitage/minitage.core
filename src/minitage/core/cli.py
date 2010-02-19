@@ -82,6 +82,8 @@ def do_read_options():
     update_help = 'Update packages from where they come '\
             'prior to compilation step automaticly'
     ask_help = 'Do nothing, show what will be done and ask to continue'
+    only_dependencies_help = 'Do actions onto dependencies, do not build the given packages'
+    all_python_versions_help = 'Build python bindings for all python packages present in minitage'
     upgrade_help = 'Will try to rebuild already installed sofware. if '\
             'you need to be sure that all will be rebuilt (for buildout, it runs it in new mode whereas by default, buildout is running in non newest mode, activate '\
             'also the -R flag. If you want minimerge to update '\
@@ -132,6 +134,12 @@ def do_read_options():
         optparse.make_option('-p', '--pretend',
                              action='store_true', dest='pretend',
                              help = pretend_help),
+        optparse.make_option('--only-dependencies',
+                             action='store_true', dest='only_dependencies',
+                             help = only_dependencies_help), 
+        optparse.make_option('--all-python-versionss',
+                             action='store_true', dest='all_python_versions',
+                             help = all_python_versions_help),  
         optparse.make_option('-a', '--ask',
                              action='store_true', dest='ask',
                              help = ask_help),
@@ -228,6 +236,8 @@ def do_read_options():
         'update': options.update,
         'upgrade': options.upgrade,
         'verbose': options.verbose,
+        'only_dependencies': options.only_dependencies,
+        'all_python_versions': options.all_python_versions,
         'reinstall_minilays': options.reinstall_minilays,
         'binary': options.binary,
         'skip_self_upgrade': options.skip_self_upgrade,
