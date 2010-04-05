@@ -113,7 +113,7 @@ s_sfx = '((tag|branch)([A-Z]|\d)(\.|[A-Z]|\d)*)'
 # _rHEAD or _rTIP or _r1234 -> scm revision
 n_sfx = '(r(HEAD|TIP|\d+))'
 # major-minor
-mn_sfx = '((-\d+((\.\d+)*([a-z]?)))?)'
+mn_sfx = '((-\d+((\.\d+)*([a-z]?))*)?)'
 # complete sufix
 sufix = '((%s(_(%s|%s|%s|%s))*)*)' % (mn_sfx, p_sfx, n_sfx, s_sfx, v_sfx)
 # packagename : aZ1-az123
