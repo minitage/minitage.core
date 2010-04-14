@@ -551,6 +551,7 @@ class Minimerge(object):
 
                 # set offline and debug mode
                 options['offline'] = self._offline
+                options['minibuild'] = package
                 options['debug'] = self._debug
                 options['verbose'] = self.verbose
 
