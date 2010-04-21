@@ -43,7 +43,7 @@ def read(rnames):
 setup(
     name = name,
     version = version,
-    description="A meta package-manager to deploy projects on UNIX Systemes sponsorised by Makina Corpus.",
+    description="A meta package-manager to deploy projects on UNIX Systemes sponsored by Makina Corpus.",
     long_description = (
         read('README.txt')
         + '\n' +

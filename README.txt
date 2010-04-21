@@ -14,7 +14,7 @@ Introduction
 
 
 ======================================
-Makina Corpus sponsorised software
+Makina Corpus sponsored software
 ======================================
 |makinacom|_
 
