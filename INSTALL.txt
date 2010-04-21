@@ -4,7 +4,7 @@ QuickStart with minitage
 =============================
 
 The whole doc is not there
-++++++++++++++++++++++++++
+++++++++++++++++++++++++++++
 but on http://www.minitage.org
 
 
