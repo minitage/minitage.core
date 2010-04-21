@@ -2,7 +2,7 @@
 Introduction
 ==============================
 
-.. contents:
+.. contents::
 
 * minitage is a meta-package manager. It's a package manager which install packages with the help of other build systems.
 
