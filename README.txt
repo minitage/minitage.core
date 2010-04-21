@@ -12,7 +12,7 @@ Introduction
 
 
 ======================================
-Makina Corpus Sponsorised software
+Makina Corpus sponsorised software
 ======================================
 
   http://www.makina-corpus.com & http://makina-corpus.org
