@@ -471,12 +471,21 @@ class Minimerge(object):
                             'buildout_config',
                             'buildout.cfg'
                         )
-                        if not os.path.exists(
-                            os.path.join(
-                                self.get_install_path(package),
+                        cfg_fp = os.path.join(
+                            self.get_install_path(package),
                             cfg
+                        )
+                        if not os.path.exists(cfg_fp):
+                            raise MinimergeError(
+                                'The directory already present in %s previous to co/updating the code '
+                                'seems to be incomplete or unrelated '
+                                'as it does not have the buildout \'%s\' (%s).\n'
+                                '\tPlease move it to another place or change it to '
+                                'adequate the minibuild \'%s\' (%s) specification.' % (
+                                    self.get_install_path(package), cfg, cfg_fp,
+                                    package.name, package.path
+                                )
                             )
-                        ):
                             incomplete = True
                 if incomplete or not os.path.exists(destination):
                     self.logger.info('Fetching package %s from %s.' % (
