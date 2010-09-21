@@ -217,6 +217,7 @@ class Minibuild(object):
         self.src_md5 = None
         self.src_uri = None
         self.url = None
+        self.revision = None
         self.category = None
         self.minitage_config = minitage_config
         self.minibuild_config = None
@@ -269,6 +270,12 @@ class Minibuild(object):
         os_over = section.get('dependencies-%s-replace' % UNAME, '').strip().split()
         if os_over:
             self.dependencies = os_over
+
+        # our install method, can be empty
+        try:
+            self.revision = int(section.get('revision','0').strip() )
+        except:
+            self.revision = 0
 
         # our install method, can be empty
         self.install_method = section.get('install_method','').strip()
