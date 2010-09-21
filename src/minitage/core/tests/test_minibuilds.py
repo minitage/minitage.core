@@ -377,6 +377,35 @@ install-method-bypass = true
         open(mb_path,'w').write(minibuild)
         mb = api.Minibuild(path=mb_path)
         self.assertEquals(mb.install_method, 'buildoutaaaaaaaaaaaaa')
+
+    def testRevision(self):
+        """testRevision"""
+        minibuilds = [
+            {'minibuild': """
+[minibuild]
+category=eggs
+dependencies=python
+install_method=buildout
+src_type=hg
+src_uri=${minitage-eggs}/${minitage-dependencies}
+src_opts=${minitage-misc}
+             """, 
+             'revision': 0}, {'minibuild': """
+[minibuild]
+category=eggs
+dependencies=python
+install_method=buildout
+src_type=hg
+src_uri=${minitage-eggs}/${minitage-dependencies}
+src_opts=${minitage-misc}
+revision=1
+                              """, 'revision': 1}]
+
+        for minibuild in minibuilds:
+            open(mb_path, 'w').write(minibuild['minibuild'])
+            mb = api.Minibuild(path=mb_path)
+            mb.load()
+            self.assertEquals(minibuild['revision'], mb.revision)
  
     def testVars(self):
         """testVars"""
