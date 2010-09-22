@@ -48,6 +48,7 @@ import subprocess
 
 from distutils.dir_util import copy_tree
 
+from setuptools.package_index import PackageIndex
 from pkg_resources import Requirement, resource_filename
 from minitage.core.version import __version__
 letter_re = re.compile('^((?P<letter>[a-zA-Z]):)(?P<path>.*)', re.U|re.S|re.I)
@@ -297,7 +298,8 @@ def get_from_cache(url,
                 # without.
                 dfd = open(fname,'wb')
                 try:
-                    dfd.write(urlopen(url).read())
+                    pi = PackageIndex()
+                    pi._attempt_download(url, fname)
                 except:
                     url, info = url.split('#', 1)
                     if 'md5' in fragment:
