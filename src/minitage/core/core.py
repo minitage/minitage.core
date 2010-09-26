@@ -35,9 +35,11 @@ import ConfigParser
 import datetime
 import logging
 import logging.config
+import random
 import copy
 import re
 import shutil
+from cStringIO import StringIO
 from distutils.dir_util import copy_tree
 import pkg_resources
 
@@ -53,8 +55,6 @@ try:
     from os import uname
 except:
     from platform import uname
-
-
 
 DEFAULT_BINARIES_URL = 'http://distfiles.minitage.org/public/externals/minitage/packages'
 
@@ -96,7 +96,26 @@ class CircurlarDependencyError(MinimergeError):
 PYTHON_VERSIONS = ('2.4', '2.5', '2.6')
 
 def newline(fic):
-    open(fic, 'a').write('\n')
+    "keep just one new line at the end of the config!"""
+    lines = open(fic).readlines()
+    lines.reverse()
+    res = []
+    if lines:
+        begin = False
+        for line in lines:
+            if line.strip() != '':
+                begin = True
+            if begin:
+                res.append(line)
+    res.reverse()
+    res.append('\n')
+    rfic = open(fic, 'w')
+    for line in res:
+        if not line.endswith('\n'):
+            line = '%s\n' % line
+        rfic.write(line)
+    rfic.flush()
+    rfic.close()
 
 def get_default_arch():
     arch = uname()[4]
@@ -116,7 +135,11 @@ class Minimerge(object):
     def store_config(self, configp=None):
         if not configp:
             configp = self._config_path
-        self._wconfig.write(open(configp, 'w'))
+        shutil.copy2(configp, configp+'.sav')
+        fic = open(configp, 'w')
+        self._wconfig.write(fic)
+        fic.flush()
+        fic.close()
         newline(configp)
 
     def get_binary_urls(self, package):
@@ -157,6 +180,7 @@ class Minimerge(object):
                     - verbose: True to be verbose.
         """
         self.verbose = options.get('verbose', False)
+        self.history_dir = '.minitage'
         self._config_path = os.path.expanduser(options.get('config'))
         if not os.path.isfile(self._config_path):
             message = 'The config file is invalid: %s' % self._config_path
@@ -278,8 +302,9 @@ class Minimerge(object):
         if options.get('reinstall_minilays', False):
             self.reinstall_minilays()
         # TODO: desactivating :: need MORE TESTS !!!
-        # if not options.get('skip_self_upgrade', False):
-        #     self.update()
+        if not options.get('skip_self_upgrade', False):
+            self.update()
+
 
     def update(self):
         updates = up.UPDATES.keys()
@@ -293,8 +318,7 @@ class Minimerge(object):
         # mark everything done on new minitiage
         if self.first_run:
             for update in updates:
-                pass
-                #self._wconfig.set('updates', update, 'done')
+                self._wconfig.set('updates', update, 'done')
             self.store_config()
         else:
             for update in updates:
@@ -304,7 +328,9 @@ class Minimerge(object):
                 except:
                     pass
                 if not done:
-                    if pkg_resources.parse_version(update) <= pkg_resources.parse_version(__version__):
+                    old_version =v = pkg_resources.parse_version(update)
+                    current_version = pkg_resources.parse_version(__version__)
+                    if old_version <= current_version:
                         for u in up.UPDATES[update]:
                             if not u in callables_versions:
                                 callables_versions[u] = []
@@ -321,7 +347,7 @@ class Minimerge(object):
                             self._wconfig.set('updates', version, 'done')
                     except Exception, e:
                         self.store_config()
-                        self.logger.error('Updates failed, please either bugreport or '
+                        self.logger.error('Update failed, please either bugreport or '
                                           'contact the developers on IRC: '
                                           '#minitage@irc.freenode.org')
                         self.logger.error('Give them this snippet: %s' % todo)
@@ -403,6 +429,192 @@ class Minimerge(object):
                                          (mb.name, [m.name for m in ancestors]))
         return ancestors
 
+    def is_package_src_to_be_fetched(self, package):
+        """Does the package folder need to be fetched/unpacked"""
+        downloaded, incomplete, ret = False, False, False
+        destination = self.get_install_path(package)
+        if os.path.exists(destination):
+            files = [f for f in os.listdir(destination) if not f.startswith('.')]
+            if not files:
+                incomplete = True
+            if package.install_method == 'buildout':
+                cfg = package.minibuild_config._sections.get(
+                    'minibuild',
+                    {}
+                ).get(
+                    'buildout_config',
+                    'buildout.cfg'
+                )
+                cfg_fp = os.path.join(
+                    self.get_install_path(package),
+                    cfg
+                )
+                if not os.path.exists(cfg_fp):
+                    raise MinimergeError(
+                        'The directory already present in %s previous to co/updating the code '
+                        'seems to be incomplete or unrelated '
+                        'as it does not have the buildout \'%s\' (%s).\n'
+                        '\tPlease move it to another place or change it to '
+                        'adequate the minibuild \'%s\' (%s) specification.' % (
+                            self.get_install_path(package), cfg, cfg_fp,
+                            package.name, package.path
+                        )
+                    )
+                    incomplete = True
+        if incomplete or not os.path.exists(destination):
+            ret = True
+        return ret
+
+    def is_package_src_to_be_updated(self, package):
+        """Does the package folder need to be updated"""
+        ret = False
+        if (self._update
+            or self.has_new_revision(package)
+           ):
+            ret = True
+        return ret
+
+    def is_package_to_be_installed(self, package):
+        """Does this package need to be installed."""
+        ret = False
+        if (not self.is_installed(package)
+            and (self._action in ['install', 'reinstall'])):
+            ret = True
+        return ret
+
+    def is_package_to_be_reinstalled(self, package):
+        """Does this package need to be installed."""
+        ret = False
+        if ((self._action == 'reinstall')
+            and self.is_installed(package)
+           ):
+            ret = True
+        return ret
+
+    def is_package_to_be_upgraded(self, package):
+        """Does this package need to be upgraded."""
+        ret = False
+        if (self.is_installed(package)
+            and self.has_new_revision(package)
+            and (self._action in ['install', 'reinstall'])):
+            ret = True
+        return ret
+
+    def is_package_to_be_updated(self, package):
+        """Does this package need to be upgraded."""
+        ret = False
+        if (self.is_installed(package)
+            and ((self._update)
+                 or (self._action in ['install', 'reinstall']
+                     and self.has_new_revision(package))
+                )
+           ):
+            ret = True
+        return ret
+
+    def is_package_to_be_deleted(self, package):
+        """Does this package need to be upgraded."""
+        ret = False
+        if (self.is_installed(package)
+            and (self._action in ['delete'])):
+            ret = True
+        return ret
+
+    def is_package_marked(self, package, marker):
+        """Does the history contain the specific marker"""
+        fmarker = self.get_package_mark_common(package, marker)
+        if os.path.exists(fmarker):
+            return True
+        return False
+
+    def get_package_mark_common(self, package, marker):
+        """Get from the history the specific marker common function"""
+        ipath = self.get_install_path(package)
+        hd = os.path.join(ipath, self.history_dir, 'markers')
+        return os.path.join(hd, marker)
+
+
+    def get_package_mark(self, package, marker):
+        """Get from the history the specific marker"""
+        fmarker = self.get_package_mark_common(package, marker)
+        if os.path.exists(fmarker):
+            return open(fmarker).read()
+        return ''
+
+    def get_package_mark_as_file(self, package, marker):
+        """Get from the history the specific marker file descriptor"""
+        fmarker = self.get_package_mark_common(package, marker)
+        if os.path.exists(fmarker):
+            return open(fmarker)
+
+    def get_package_mark_path(self, package, marker):
+        """Get from the history the specific marker filepath"""
+        fmarker = self.get_package_mark_common(package, marker)
+        if os.path.exists(fmarker):
+            return fmarker
+
+    def set_package_mark(self, package, marker, text=''):
+        """Set in the history the specific marker with the wanted value"""
+        ipath = self.get_install_path(package)
+        hd = os.path.join(ipath, self.history_dir, 'markers')
+        if not os.path.exists(hd):
+            os.makedirs(hd)
+        fic = open(os.path.join(hd, marker), 'w')
+        fic.write(text)
+        fic.close()
+
+    def record_minibuild(self, package):
+        """Copy in the history the current minibuild"""
+        ipath = self.get_install_path(package)
+        hd = os.path.join(ipath, self.history_dir)
+        hdm = os.path.join(hd, 'minibuild')
+        if not os.path.exists(hd):
+            os.makedirs(hd)
+        shutil.copy2(package.path, hdm)
+
+    def get_installed_minibuild(self, package):
+        """Get in the history the relevant minibuild"""
+        mb = None
+        ipath = self.get_install_path(package)
+        hd = os.path.join(ipath, self.history_dir)
+        hdm = os.path.join(hd, 'minibuild')
+        if self.is_installed(package):
+            if os.path.exists(hdm):
+                mb = objects.Minibuild(path=hdm, minitage_config=self._config)
+            else:
+                # packae is installed but without history, old minitage versions
+                # take the reference minibuild as the installed one.
+                mb = package
+        return mb
+
+    def is_installed(self, package):
+        ip = self.get_install_path(package)
+        hd = os.path.join(ip, self.history_dir)
+        ret = False
+        # minitage has got the revision and history system
+        if self.is_package_marked(package, 'install'):
+            ret = True
+        return ret
+
+
+    def has_new_revision(self, package):
+        """Does this package has a new revision to be installed"""
+        oldrev = self.get_installed_revision(package)
+        ret = False
+        if oldrev is not None:
+            if package.revision > oldrev:
+                ret = True
+        return ret
+
+    def get_installed_revision(self, package):
+        """Get the installed revision of a package"""
+        revision = None
+        if self.is_installed(package):
+            mb = self.get_installed_minibuild(package)
+            if mb:
+                revision = mb.revision
+        return revision
+
     def _fetch(self, package):
         """
         @param param minitage.core.objects.Minibuid the minibuild to fetch
@@ -412,9 +624,9 @@ class Minimerge(object):
            - The fetcher exception.
         """
         self.logger.debug('Will fetch package %s.' % (package.name))
-        dest_container = os.path.join(self._prefix, package.category)
+        destination = self.get_install_path(package)
+        dest_container = os.path.dirname(destination)
         fetcherFactory = fetchers.IFetcherFactory(self._config_path)
-        destination = os.path.join(dest_container, package.name)
         # add maybe the scm to the path if it is avalaible
         mfetcher = fetcherFactory(package.src_type)
         sfetcher = fetcherFactory('static')
@@ -451,52 +663,21 @@ class Minimerge(object):
         urls_descriptions = []
         if self.use_binaries:
             urls_descriptions.extend([(True, sfetcher, url)
-                                      for url in  self.get_binary_urls(package)])
+                                      for url in self.get_binary_urls(package)])
         urls_descriptions.append((False, mfetcher, package.src_uri,))
         # create categ dir
         if not os.path.isdir(dest_container):
             os.makedirs(dest_container)
         for is_binary, fetcher, src_uri in urls_descriptions:
             try:
-                downloaded, incomplete = False, False
-                if os.path.exists(destination):
-                    files = [f for f in os.listdir(destination) if not f.startswith('.')]
-                    if not files:
-                        incomplete = True
-                    if package.install_method == 'buildout':
-                        cfg = package.minibuild_config._sections.get(
-                            'minibuild',
-                            {}
-                        ).get(
-                            'buildout_config',
-                            'buildout.cfg'
-                        )
-                        cfg_fp = os.path.join(
-                            self.get_install_path(package),
-                            cfg
-                        )
-                        if not os.path.exists(cfg_fp):
-                            raise MinimergeError(
-                                'The directory already present in %s previous to co/updating the code '
-                                'seems to be incomplete or unrelated '
-                                'as it does not have the buildout \'%s\' (%s).\n'
-                                '\tPlease move it to another place or change it to '
-                                'adequate the minibuild \'%s\' (%s) specification.' % (
-                                    self.get_install_path(package), cfg, cfg_fp,
-                                    package.name, package.path
-                                )
-                            )
-                            incomplete = True
-                if incomplete or not os.path.exists(destination):
+                if self.is_package_src_to_be_fetched(package):
                     self.logger.info('Fetching package %s from %s.' % (
                         package.name, src_uri)
                     )
-                    fetcher.fetch(
-                        destination,
-                        src_uri,
-                    )
+                    fetcher.fetch(destination, src_uri)
+                    self.set_package_mark(package, 'fetch', 'fetch')
                     downloaded = True
-                if self._update:
+                if self.is_package_src_to_be_updated(package):
                     self.logger.info('Updating package %s from %s.' % (
                         package.name, src_uri)
                     )
@@ -504,17 +685,14 @@ class Minimerge(object):
                         temp = os.path.join(os.path.dirname(destination),
                                             'minitage-checkout-tmp',
                                             package.name)
-
-                        fetcher.fetch(temp, package.src_uri)
                         if os.path.isdir(temp):
                             shutil.rmtree(temp)
+                        fetcher.fetch(temp, package.src_uri)
                         copy_tree(temp, destination)
                         shutil.rmtree(temp)
                     else:
-                        fetcher.update(
-                            destination,
-                            src_uri,
-                        )
+                        fetcher.update( destination, src_uri)
+                    self.set_package_mark(package, 'fetch', 'fetch')
                     downloaded = True
                 if is_binary and downloaded:
                     self.logger.info('Using binary package: %s' % package.name)
@@ -570,11 +748,17 @@ class Minimerge(object):
                 callback = getattr(maker, action, None)
                 if callback:
                     callback(ipath, options)
+                    if action in ['install', 'reinstall']:
+                        self.record_minibuild(package)
+                        self.set_package_mark(package, action, action)
                 else:
                     message = 'The action \'%s\' does not exists ' % action
                     message += 'in this \'%s\' component' \
                             % ( package.install_method)
                     raise ActionError(message)
+
+
+
 
     def _cut_jumped_packages(self, packages):
         """Remove jumped packages."""
@@ -587,6 +771,47 @@ class Minimerge(object):
         except Exception, e:
             pass
         return packages
+
+
+    def pretend(self, packages):
+        """Return a string indication what will be done on packages list"""
+        log = StringIO()
+        log.write('Action:\t%s\n\n' % self._action)
+        if packages:
+            self.logger.debug('Packages:')
+            for p in packages:
+                EMPTY_CELL = ' '
+                actionsd = {
+                    'fetch': (True==self.is_package_src_to_be_fetched(p)
+                              and 'f' or EMPTY_CELL),
+                    'updatecode': (True==self.is_package_src_to_be_updated(p)
+                                    and 'F' or EMPTY_CELL),
+                    'install': (True==self.is_package_to_be_installed(p)
+                                and 'I' or ''),
+                    'reinstall': (True==self.is_package_to_be_reinstalled(p)
+                                  and 'R'or ''),
+                    'delete': (True==self.is_package_to_be_deleted(p)
+                                and 'D' or ''),
+                    'upgrade': (True==self.is_package_to_be_upgraded(p)
+                                and 'U' or EMPTY_CELL),
+                    'update': (True==self.is_package_to_be_updated(p)
+                                and 'u' or EMPTY_CELL),
+                }
+                actions = '%s' % (
+                    '%(fetch)s%(updatecode)s'
+                    '%(install)s%(reinstall)s%(delete)s'
+                    '%(upgrade)s%(update)s' % actionsd
+                )
+                log.write('\t\t%s * %s\n' % (actions, p.name))
+        log.write('\n')
+        log.write('\t f : fetch\n')
+        log.write('\t F : update the code from repository\n')
+        log.write('\t I : install the package\n')
+        log.write('\t R : reinstall the package\n')
+        log.write('\t D : delete the package\n')
+        log.write('\t U : upgrade the package to the lastest revision if any\n')
+        log.write('\t u : update the package (for example, re run buildout)\n')
+        return log
 
     def main(self):
         """Main loop.
@@ -630,11 +855,15 @@ class Minimerge(object):
             if self._only_dependencies:
                 packages = [p for p in packages if not p.name in self._packages]
 
-            self.logger.debug('Action:\t%s' % self._action)
-            if packages:
-                self.logger.debug('Packages:')
-                for p in packages:
-                    self.logger.debug('\t\t* %s' % p.name)
+            packages = [p for p in packages
+                        if (
+                            self.is_package_to_be_installed(p)
+                            or self.is_package_to_be_reinstalled(p)
+                            or self.is_package_to_be_deleted(p)
+                           )
+                       ]
+            pretend = self.pretend(packages)
+            self.logger.debug(pretend.getvalue())
 
             stop = False
             answer = ''
@@ -681,7 +910,7 @@ class Minimerge(object):
                                 if not package in self._binaries:
                                     self._do_action(self._action, [package], pyvers)
 
-    def _select_pythons(self, packages):
+    def _select_pythons(self, packages, test=False):
         """Get pythons to build into dependencies.
         Handle multi site-packages is not that tricky:
             - We have to install python-major.minor only
@@ -718,6 +947,8 @@ class Minimerge(object):
                 ([new, packages, list], {'packagename': (buildout, parts)}
         """
         # select wich version of python are really needed.
+
+
         pyversions = []
         selected_pyver = {}
         metas = []
@@ -915,11 +1146,17 @@ class Minimerge(object):
     def get_install_path(self, package):
         """Get a minibuild install path location."""
         # installation prefix
-        return os.path.join(
-            self._prefix,
-            package.category,
-            package.name
-        )
+        ip = '/ia/am/a/non/existing/path%s%s' % (random.randint(0,123456789),
+                                             random.randint(0,123456789)
+                                            )
+        if not package.name.startswith('meta-'):
+            ip = os.path.join(
+                self._prefix,
+                package.category,
+                package.name
+            )
+        return ip
+
 
     def reinstall_packages(self, packages):
         update  = self._update
@@ -963,3 +1200,4 @@ class Minimerge(object):
     _find_minibuilds = find_minibuilds
     _find_minibuild = find_minibuild
     _compute_dependencies = compute_dependencies
+

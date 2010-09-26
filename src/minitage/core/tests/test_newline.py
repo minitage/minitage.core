@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Copyright (C) 2009, Mathieu PASQUET <kiorky@cryptelium.net>
 # All rights reserved.
 #
@@ -31,59 +32,104 @@ __docformat__ = 'restructuredtext en'
 
 import unittest
 import os
-import sys
-import shutil
-import optparse
-import ConfigParser
+import tempfile
+from cStringIO import StringIO
 
-from minitage.core import interfaces
+from minitage.core.core import newline
 
-class test(object):
+
+def write(file, content):
+    fic = open(file, 'w')
+    fic.write(content)
+    fic.flush()
+    fic.close()
+
+class testNewLine(unittest.TestCase):
+    """testNewLine"""
+
+    def setUp(self):
         """."""
+        self.file = tempfile.mkstemp()[1]
 
+    def tearDown(self):
+        """."""
+        if os.path.exists(self.file):
+            os.unlink(self.file)
 
-path = os.path.expanduser('~/iamauniquetestfileformatiwillberemoveafterthetest')
-
-
-class testInterfaces(unittest.TestCase):
-    """testInterfaces"""
-
-    def testFactory(self):
-        """testFactory"""
-        config = """
-[minibuild]
-dependencies=python
-src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
-src_type=hg
-install_method=buildout
-category=invalid
-
-[minitage.interface]
-item1=minitage.core.tests.test_interfaces:test
+    def testNewLine(self):
+        """testNewLine"""
+        write(self.file,
 """
-        open('%s' % path, 'w').write(config)
-        try:
-            interfaces.IFactory('not', path)
-        except interfaces.InvalidConfigForFactoryError,e:
-            self.assertTrue(isinstance(e,
-                                       interfaces.InvalidConfigForFactoryError))
+tata
+test
+"""
+        )
+        newline(self.file)
+        self.assertEquals(
+            '\ntata\ntest\n\n',
+            open(self.file).read()
+        )
+        write(self.file,
+"""
+tata
+test"""
+        )
+        newline(self.file)
+        self.assertEquals(
+            '\ntata\ntest\n\n',
+            open(self.file).read()
+        )
 
-        i = interfaces.IFactory('interface', path)
-        self.assertEquals(i.products['item1'].__name__, 'test')
-        self.assertRaises(interfaces.InvalidComponentClassError,
-                          i.register, 'foo', 'foo.Bar')
-        self.assertRaises(NotImplementedError, i.__call__, 'foo')
 
-    def testProduct(self):
-        """testProduct"""
-        p = interfaces.IProduct()
-        self.assertRaises(NotImplementedError, p.match, 'foo')
-def test_suite():            
+    def testEmptyFile(self):
+        """testEmptyFile"""
+        write(self.file,
+              """"""
+        )
+        newline(self.file)
+        self.assertEquals(
+            '\n',
+            open(self.file).read()
+        )
+
+    def testUtf8(self):
+        """tUtf8"""
+        write(self.file,
+              """çà@~#ø€ç±ø"""
+        )
+        newline(self.file)
+        self.assertEquals(
+            '\xc3\xa7\xc3\xa0@~#\xc3\xb8\xe2\x82\xac\xc3\xa7\xc2\xb1\xc3\xb8\n\n',
+            open(self.file).read()
+        )
+
+    def multipleLines(self):
+        """multipleLines"""
+        write(self.file,
+"""
+tata
+test
+
+
+
+
+"""
+        )
+        newline(self.file)
+        self.assertEquals(
+            '\ntata\ntest\n\n',
+            open(self.file).read()
+        )
+
+
+
+def test_suite():
     suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(testInterfaces)) 
-    return suite     
+    suite.addTest(unittest.makeSuite(testNewLine))
+    return suite
 
 if __name__ == '__main__':
     unittest.TextTestRunner(verbosity=2).run(test_suite())
 
-# vim:set et sts=4 ts=4 tw=80:
+
+

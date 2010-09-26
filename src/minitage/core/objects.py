@@ -165,11 +165,13 @@ class Minilay(collections.LazyLoadedDict):
                 self.loaded = True
             for minibuild in minibuilds:
                 if minibuild not in self.items:
-                    self[minibuild] = Minibuild(
-                        path = os.path.join(self.path, minibuild),
-                        minitage_config = self.minitage_config
-                    )
-                    self.items.append(minibuild)
+                    mb_path = os.path.join(self.path, minibuild)
+                    if os.path.isfile(mb_path):
+                        self[minibuild] = Minibuild(
+                            path = mb_path,
+                            minitage_config = self.minitage_config
+                        )
+                        self.items.append(minibuild)
 
 class Minibuild(object):
     """Minibuild object.
@@ -225,7 +227,7 @@ class Minibuild(object):
 
     def __getattribute__(self, attr):
         """Lazyload stuff."""
-        lazyloaded = ['config', 'url', 'category', 'src_md5',
+        lazyloaded = ['config', 'url', 'revision', 'category', 'src_md5',
                       'dependencies', 'description','src_opts',
                       'src_type', 'install_method', 'src_type']
         if attr in lazyloaded and not self.loaded:

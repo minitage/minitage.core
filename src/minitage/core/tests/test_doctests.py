@@ -17,8 +17,8 @@ from distutils.dir_util import copy_tree
 
 
 logging.basicConfig()
-
-current_dir = os.path.abspath(os.path.dirname(__file__))
+import minitage.core.tests
+current_dir =  minitage.core.tests.__path__[0]
 
 def rmdir(*args):
     dirname = os.path.join(*args)
@@ -141,5 +141,5 @@ def test_suite():
     return doc_suite(current_dir)
 
 if __name__ == '__main__':
-    unittest.main(defaultTest='test_suite')
+    unittest.TextTestRunner(verbosity=2).run(test_suite()) 
 

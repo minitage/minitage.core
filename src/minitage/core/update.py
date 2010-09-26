@@ -13,17 +13,8 @@
 # GNU General Public License for more details.
 
 __docformat__ = 'restructuredtext en'
-
-
-
-import logging
-import sys
 import os
-
 UPDATES = {}
-
-
-
 
 def upperl(minitage):
     minitage.logger.info('Creating CPAN')
@@ -39,10 +30,50 @@ def upperl(minitage):
     ):
         minitage.reinstall_packages(['perl-5.8'])
 
-def reinstall_minilays(minitage):
-    minitage.reinstall_minilays()
+def reinstall_minilays(self):
+    self.logger.info('Reinstallating minitage default minileys !')
+    self.reinstall_minilays()
 
-UPDATES['1.0.11'] = [#upperl, 
+def updateHistory(self, force=False):
+        """Copy the current minibuild prior to minimerge -s
+        if minitage installation does not have any history yet"""
+        hd = os.path.join(
+            self._prefix, '.minitage_history'
+        )
+        if not os.path.exists(hd):
+            force = True
+        if force and not self.first_run:
+            self.logger.info('Migrating existing and '
+                             'installed packages to use the '
+                             'minitage history system.')
+            for minilay in self._minilays:
+                minilay.load()
+                for mb in minilay:
+                    minibuild = minilay[mb]
+                    if not minibuild.name.startswith('.'):
+                        ip = self.get_install_path(minibuild)
+                        if os.path.exists(ip):
+                            if (not self.is_installed(minibuild)
+                                and (len(os.listdir(ip))>0)):
+                                self.set_package_mark(minibuild, 
+                                                      'install', 
+                                                      'install')
+                                self.record_minibuild(minibuild)
+            fic = open(hd, 'w')
+            fic.write("")
+            fic.close()
+            self.logger.info('Migration complete, please restart minimerge.')
+            self._action = None
+            self._packages = []
+
+def upgrademinilaysurl(self):
+    pass
+
+UPDATES['1.0.11'] = [#upperl,
                      reinstall_minilays]
+
+UPDATES['2.0'] = [updateHistory,
+                  reinstall_minilays,
+                  ]
 
 # vim:set et sts=4 ts=4 tw=80:

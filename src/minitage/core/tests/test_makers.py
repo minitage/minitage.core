@@ -29,7 +29,7 @@
 
 __docformat__ = 'restructuredtext en'
 import unittest
-from makers import (test_interfaces,
+from minitage.core.tests.makers import (test_interfaces,
                     test_buildout,
                    )
 def test_suite():
@@ -39,4 +39,7 @@ def test_suite():
              ):
         suite.addTest(m.test_suite())
     return suite
+if __name__ == '__main__':
+    unittest.TextTestRunner(verbosity=2).run(test_suite()) 
+
 # vim:set et sts=4 ts=4 tw=80:

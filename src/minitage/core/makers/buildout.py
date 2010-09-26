@@ -226,6 +226,8 @@ class BuildoutMaker(interfaces.IMaker):
         # prevent buildout from running if we have already installed stuff
         # and do not want to upgrade.
         options['upgrade'] = minimerge.getUpgrade()
+        if minimerge.has_new_revision(minibuild):
+            options['upgrade'] = True
 
         return options
 

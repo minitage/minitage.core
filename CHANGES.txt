@@ -1,12 +1,23 @@
 Changes
 ***********************************************
 
-UP
+2.0
 =====
 
-    - force eggs category reinstallation
-    - add an only dependencies switch to buld only dependencys
+FEATURES;
+
+    - Auto Update system.
+      When minimerge upgrade (easy_install -U), we have now the infrastrcuture to run update callbacks.
+    - Now minibuilds have revisions, this can facilitate their reinstallation as reverse dependencies
     - give means to select the python to build against for python modules (--all-python-versions or specify python to use along with the package (minimerge -pv foo python-2.4)
+    - force eggs category reinstallation
+    - add an only dependencies switch to buld only dependencies
+    - win32 compatibility (first rush, alpha quality)
+    - add replace/per/os/dependencies mecanism in minibuilds
+    - allow minibuild names with only major as version
+
+BUGS:
+
     - support symlink in remove_path (API)
     - enhance remove_path function
     - fix a bug in bootstrapping buildout
@@ -16,15 +27,12 @@ UP
     - make parts shut up
     - test incomplete downloads and redownload them (package level)
     - make minibuild name more permissive
-    - win32 compatibility
     - fix bug in new checkouts
-    - add replace/per/os/dependencies mecanism
     - fix a bug insde the get_from_cache helper when a fragmented url is used and the upstream server does not understand them
     - add a special exception for search_latest when error happen.
     - fake user agent in urlopen calls to prevent mad sysadmins restrictions on python useragent.
-    - allow minibuild names with only major as version
     - explicit error when the buildout configuration file is not there
-    - use setuptools package_indew.download helper funtion instead of directly urllib21 to avoid sourceforge download errors
+    - use setuptools package_index.download helper funtion instead of directly urllib2 to avoid sourceforge download errors
 
 1.0.19
 ===========
