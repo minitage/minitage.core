@@ -7,7 +7,7 @@ Changes
 FEATURES;
 
     - Auto Update system.
-      When minimerge upgrade (easy_install -U), we have now the infrastrcuture to run update callbacks.
+      When minimerge upgrade (easy_install -U), we have now the infrastructure to run update callbacks.
     - Now minibuilds have revisions, this can facilitate their reinstallation as reverse dependencies
     - give means to select the python to build against for python modules (--all-python-versions or specify python to use along with the package (minimerge -pv foo python-2.4)
     - force eggs category reinstallation
