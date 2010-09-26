@@ -69,8 +69,8 @@ def updateHistory(self, force=False):
 def upgrademinilaysurl(self):
     pass
 
-UPDATES['1.0.11'] = [#upperl,
-                     reinstall_minilays]
+#UPDATES['1.0.11'] = [#upperl,
+#                     reinstall_minilays]
 
 UPDATES['2.0'] = [updateHistory,
                   reinstall_minilays,
