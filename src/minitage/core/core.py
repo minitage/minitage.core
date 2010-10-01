@@ -485,9 +485,15 @@ class Minimerge(object):
     def is_package_to_be_reinstalled(self, package):
         """Does this package need to be installed."""
         ret = False
-        if ((self._action == 'reinstall')
-            and self.is_installed(package)
-           ):
+        if (
+            (
+                (self._action == 'reinstall') 
+                and self.is_installed(package)
+            ) 
+            or (
+                self.is_package_to_be_upgraded(package)
+               )
+        ):
             ret = True
         return ret
 
@@ -802,8 +808,12 @@ class Minimerge(object):
                     '%(install)s%(reinstall)s%(delete)s'
                     '%(upgrade)s%(update)s' % actionsd
                 )
-                log.write('\t\t%s * %s\n' % (actions, p.name))
+                revision = ''
+                if self.is_package_to_be_upgraded(p):
+                    revision = '[%s => %s]' % (self.get_installed_revision(p), p.revision)
+                log.write('\t\t%s * %s %s\n' % (actions, p.name, revision))
         log.write('\n')
+        log.write('\t FLAGS * PACKAGE_NAME [OLD_REVISION => NEW_REVISION]\n')
         log.write('\t f : fetch\n')
         log.write('\t F : update the code from repository\n')
         log.write('\t I : install the package\n')
@@ -859,6 +869,8 @@ class Minimerge(object):
                         if (
                             self.is_package_to_be_installed(p)
                             or self.is_package_to_be_reinstalled(p)
+                            or self.is_package_to_be_upgraded(p)
+                            or self.is_package_to_be_updated(p)
                             or self.is_package_to_be_deleted(p)
                            )
                        ]
