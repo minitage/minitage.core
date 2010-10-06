@@ -33,7 +33,7 @@ import sys
 from setuptools import setup, find_packages
 
 name = 'minitage.core'
-version = '2.0.3'
+version = '2.0.4'
 def read(rnames):
     setupdir =  os.path.dirname( os.path.abspath(__file__))
     return open(
@@ -65,7 +65,7 @@ setup(
     url = 'http://cheeseshop.python.org/pypi/%s' % name,
     license = 'BSD',
     namespace_packages = ['minitage', name],
-    install_requires = ['iniparse', 'zc.buildout',],
+    install_requires = ['iniparse', 'zc.buildout', 'mercurial'],
     zip_safe = False,
     include_package_data = True,
     packages = find_packages('src'),

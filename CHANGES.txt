@@ -6,6 +6,7 @@ UP
 =====
 
     - fix bug in pretend
+    - add mercurial to dependencies to facillitate buildout integration
 
 
 
