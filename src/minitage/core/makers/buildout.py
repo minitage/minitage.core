@@ -198,6 +198,7 @@ class BuildoutMaker(interfaces.IMaker):
         will build site-packages for
         For parts, we force to install only the 'part' buildout part.
         Arguments
+            - we can force parts with settings 'buildout_parts' in minibuild
             - minimerge a minitage.core.Minimerge instance
             - minibuild a minitage.core.object.Minibuild instance
             - kwargs:
@@ -206,7 +207,9 @@ class BuildoutMaker(interfaces.IMaker):
                   python to compile against.
         """
         options = {}
-        parts = []
+        parts = self.buildout_config = [a.strip() 
+                                        for a in minibuild.minibuild_config._sections[
+                                            'minibuild'].get('buildout_parts', '').split()] 
         if kwargs is None:
             kwargs = {}
 
@@ -222,6 +225,7 @@ class BuildoutMaker(interfaces.IMaker):
         self.buildout_config = minibuild.minibuild_config._sections[
             'minibuild'].get('buildout_config',
                              'buildout.cfg')
+
 
         # prevent buildout from running if we have already installed stuff
         # and do not want to upgrade.
