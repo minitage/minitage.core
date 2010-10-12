@@ -301,6 +301,7 @@ class Minimerge(object):
             for dir in minilays_search_paths if os.path.isdir(dir)]
         if options.get('reinstall_minilays', False):
             self.reinstall_minilays()
+        self.pyvers = pyvers
         # TODO: desactivating :: need MORE TESTS !!!
         if not options.get('skip_self_upgrade', False):
             self.update()
@@ -599,7 +600,7 @@ class Minimerge(object):
         ret = False
         if package.category == 'eggs':
             versions = []
-            packages, pm = self._select_pythons([package])
+            pm = self.pyvers
             if package.name in pm:
                 versions = pm[package.name]
             for version in versions:
@@ -856,7 +857,7 @@ class Minimerge(object):
                 pyvers = ''
                 if p.category == 'eggs':
                     versions, iversions = [], []
-                    packages, pm = self._select_pythons([p])
+                    pm = self.pyvers
                     if p.name in pm:
                         versions = pm[p.name]
                     for version in versions:
@@ -910,6 +911,7 @@ class Minimerge(object):
             # cut pythons we do not need !
             # also get the parts to do in 'eggs' buildout
             pypackages, pyvers = self._select_pythons(packages[:])
+            self.pyvers = pyvers
 
             # do not take python tree in account if we are in nodep mode
             if not self._nodeps:
