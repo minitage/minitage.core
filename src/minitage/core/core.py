@@ -902,6 +902,7 @@ class Minimerge(object):
                 packages = self._compute_dependencies(self._packages)
             else:
                 packages = self._find_minibuilds(self._packages)
+            direct_dependencies = self._find_minibuilds(self._packages)
 
             if self._jump:
                 # cut jumped dependencies.
@@ -910,7 +911,7 @@ class Minimerge(object):
 
             # cut pythons we do not need !
             # also get the parts to do in 'eggs' buildout
-            pypackages, pyvers = self._select_pythons(packages[:])
+            pypackages, pyvers = self._select_pythons(direct_dependencies)
             self.pyvers = pyvers
 
             # do not take python tree in account if we are in nodep mode
