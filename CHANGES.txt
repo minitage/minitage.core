@@ -7,8 +7,8 @@ UP
 
     - fix bug in pretend
     - add mercurial to dependencies to facillitate buildout integration
-
-
+    - add python versions for pretend and 'eggs' packages 
+    - rebuild 'eggs' packages only if they need to be (markers are now in place for the particular python version)
 
 2.0
 =====

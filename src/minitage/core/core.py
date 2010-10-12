@@ -597,8 +597,19 @@ class Minimerge(object):
         ip = self.get_install_path(package)
         hd = os.path.join(ip, self.history_dir)
         ret = False
+        if package.category == 'eggs':
+            versions = []
+            packages, pm = self._select_pythons([package])
+            if package.name in pm:
+                versions = pm[package.name]
+            for version in versions:
+                if self.is_package_marked(package, 'install-%s' % version): 
+                    ret = True
+                else:
+                    ret = False
+                    break
         # minitage has got the revision and history system
-        if self.is_package_marked(package, 'install'):
+        elif self.is_package_marked(package, 'install'):
             ret = True
         return ret
 
@@ -753,10 +764,44 @@ class Minimerge(object):
                     os.makedirs(ipath)
                 callback = getattr(maker, action, None)
                 if callback:
+                    if ((package.category == 'eggs')
+                        and (action in ['install', 'reinstall'])):
+                        if 'parts' in options:
+                            real_parts = []
+                            parts = options['parts'] 
+                            for v in PYTHON_VERSIONS:
+                                for part in parts:
+                                    if part.endswith(v):
+                                        reinstall = self.is_package_to_be_reinstalled(
+                                            package
+                                        )
+                                        if (not self.is_package_marked(
+                                            package, 
+                                            'install-%s' % v)
+                                            or reinstall):
+                                            real_parts.append(part)
+                            options['parts'] = real_parts
                     callback(ipath, options)
                     if action in ['install', 'reinstall']:
                         self.record_minibuild(package)
-                        self.set_package_mark(package, action, action)
+                        onlyrecord = True
+                        if package.category == 'eggs':
+                            onlyrecord = False
+                            parts = options.get('parts', [])
+                            if len(parts)>0:
+                                versions = []
+                                for part in parts:
+                                    for v in PYTHON_VERSIONS:
+                                        if part.endswith(v):
+                                            versions.append(v)
+                                for v in versions:
+                                    self.set_package_mark(package,
+                                                      'install-%s' % (v), 
+                                                      'install-%s' % (v))
+                            else:
+                                onlyrecord = True
+                        if onlyrecord:
+                            self.set_package_mark(package, action, action)
                 else:
                     message = 'The action \'%s\' does not exists ' % action
                     message += 'in this \'%s\' component' \
@@ -808,12 +853,25 @@ class Minimerge(object):
                     '%(install)s%(reinstall)s%(delete)s'
                     '%(upgrade)s%(update)s' % actionsd
                 )
+                pyvers = ''
+                if p.category == 'eggs':
+                    versions, iversions = [], []
+                    packages, pm = self._select_pythons([p])
+                    if p.name in pm:
+                        versions = pm[p.name]
+                    for version in versions:
+                        reinstall = self.is_package_to_be_reinstalled(p)
+                        if (not self.is_package_marked(p, 'install-%s' % version)
+                            or reinstall):
+                            iversions.append(version)
+                    if len(iversions)>0:
+                        pyvers = '(%s)' % (', '.join(iversions))
                 revision = ''
                 if self.is_package_to_be_upgraded(p):
                     revision = '[%s => %s]' % (self.get_installed_revision(p), p.revision)
-                log.write('\t\t%s * %s %s\n' % (actions, p.name, revision))
+                log.write('\t\t%s * %s %s %s\n' % (actions, p.name, revision, pyvers))
         log.write('\n')
-        log.write('\t FLAGS * PACKAGE_NAME [OLD_REVISION => NEW_REVISION]\n')
+        log.write('\t FLAGS * PACKAGE_NAME [OLD_REVISION => NEW_REVISION]\ (python versions)')
         log.write('\t f : fetch\n')
         log.write('\t F : update the code from repository\n')
         log.write('\t I : install the package\n')
