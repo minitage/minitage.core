@@ -1100,11 +1100,18 @@ class Minimerge(object):
         #  - cut prior python dependencies if we have any
         #  - set python versions to build against for eggs.
         py_pn = [package.name for package in python_deptree]
-        for package in packages[:]:
+        dp = []
+        for p in packages:
+            dp.extend(
+                [self.find_minibuild(m) for m in p.dependencies]
+            )
+
+        dp = dp + packages[:]
+        for package in dp:
             # cut dependency if we need to cut it.
             # cut also not others python.
             if package.name in py_pn + [python[0] for python in pythons]:
-                packages.pop(packages.index(package))
+                dp.pop(dp.index(package))
             if package.category == 'eggs':
                 selected_pyver[package.name] = pyversions
 
@@ -1113,7 +1120,7 @@ class Minimerge(object):
         for package in python_deptree:
             packages.insert(0, package)
 
-        return packages, selected_pyver
+        return dp, selected_pyver
 
     def _sync(self):
         """Sync or install our minilays."""
