@@ -873,7 +873,7 @@ class Minimerge(object):
                     revision = '[%s => %s]' % (self.get_installed_revision(p), p.revision)
                 log.write('\t\t%s * %s %s %s\n' % (actions, p.name, revision, pyvers))
         log.write('\n')
-        log.write('\t FLAGS * PACKAGE_NAME [OLD_REVISION => NEW_REVISION]\ (python versions)')
+        log.write('\t FLAGS * PACKAGE_NAME [OLD_REVISION => NEW_REVISION] (python versions)\n')
         log.write('\t f : fetch\n')
         log.write('\t F : update the code from repository\n')
         log.write('\t I : install the package\n')
@@ -912,8 +912,9 @@ class Minimerge(object):
 
             # cut pythons we do not need !
             # also get the parts to do in 'eggs' buildout
-            pypackages, pyvers = self._select_pythons(direct_dependencies)
+            _, pyvers = self._select_pythons(packages)
             self.pyvers = pyvers
+            pypackages, _ = self._select_pythons(direct_dependencies)
 
             # do not take python tree in account if we are in nodep mode
             emerge_packages = packages[:]
