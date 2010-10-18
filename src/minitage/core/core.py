@@ -488,9 +488,9 @@ class Minimerge(object):
         ret = False
         if (
             (
-                (self._action == 'reinstall') 
+                (self._action == 'reinstall')
                 and self.is_installed(package)
-            ) 
+            )
             or (
                 self.is_package_to_be_upgraded(package)
                )
@@ -604,7 +604,7 @@ class Minimerge(object):
             if package.name in pm:
                 versions = pm[package.name]
             for version in versions:
-                if self.is_package_marked(package, 'install-%s' % version): 
+                if self.is_package_marked(package, 'install-%s' % version):
                     ret = True
                 else:
                     ret = False
@@ -769,7 +769,7 @@ class Minimerge(object):
                         and (action in ['install', 'reinstall'])):
                         if 'parts' in options:
                             real_parts = []
-                            parts = options['parts'] 
+                            parts = options['parts']
                             for v in PYTHON_VERSIONS:
                                 for part in parts:
                                     if part.endswith(v):
@@ -777,7 +777,7 @@ class Minimerge(object):
                                             package
                                         )
                                         if (not self.is_package_marked(
-                                            package, 
+                                            package,
                                             'install-%s' % v)
                                             or reinstall):
                                             real_parts.append(part)
@@ -797,7 +797,7 @@ class Minimerge(object):
                                             versions.append(v)
                                 for v in versions:
                                     self.set_package_mark(package,
-                                                      'install-%s' % (v), 
+                                                      'install-%s' % (v),
                                                       'install-%s' % (v))
                             else:
                                 onlyrecord = True
@@ -915,8 +915,11 @@ class Minimerge(object):
             self.pyvers = pyvers
 
             # do not take python tree in account if we are in nodep mode
+            emerge_packages = packages[:]
             if not self._nodeps:
-                packages = pypackages
+                noecho = [packages.insert(0, p)
+                          for p in pypackages
+                          if not p in packages]
 
             # cut jumped dependencies again.
             if self._jump:
