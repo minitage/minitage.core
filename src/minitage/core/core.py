@@ -471,6 +471,7 @@ class Minimerge(object):
         ret = False
         if (self._update
             or self.has_new_revision(package)
+            or not self.is_installed(package)
            ):
             ret = True
         return ret
