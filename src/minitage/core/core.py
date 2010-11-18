@@ -916,12 +916,12 @@ class Minimerge(object):
             self.pyvers = pyvers
             pypackages, _ = self._select_pythons(direct_dependencies)
 
-            # do not take python tree in account if we are in nodep mode
-            emerge_packages = packages[:]
+            ## do not take python tree in account if we are in nodep mode
             if not self._nodeps:
-                noecho = [packages.insert(0, p)
-                          for p in pypackages
-                          if not p in packages]
+                noecho = [pypackages.append(p)
+                          for p in packages
+                          if not p.name in [q.name for q in pypackages]]
+                packages = pypackages
 
             # cut jumped dependencies again.
             if self._jump:
@@ -1121,11 +1121,15 @@ class Minimerge(object):
                 selected_pyver[package.name] = pyversions
 
         # insert our selected python(s) deptree at the top of our packages list
-        python_deptree.reverse()
-        for package in python_deptree:
-            packages.insert(0, package)
+        python_deptree.extend(dp)
 
-        return dp, selected_pyver
+        # filter doublons
+        selected_p = []
+        noecho = [selected_p.append(p)
+                  for p in python_deptree
+                  if not p.name in [q.name for q in selected_p]]
+
+        return python_deptree, selected_pyver
 
     def _sync(self):
         """Sync or install our minilays."""
