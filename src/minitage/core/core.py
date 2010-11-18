@@ -912,12 +912,19 @@ class Minimerge(object):
 
             # cut pythons we do not need !
             # also get the parts to do in 'eggs' buildout
-            _, pyvers = self._select_pythons(packages[:])
+            pypackages, pyvers = self._select_pythons(packages[:])
+            import pdb;pdb.set_trace()  ## Breakpoint ##
             self.pyvers = pyvers
-            pypackages, _ = self._select_pythons(direct_dependencies)
+            #pypackages, _ = self._select_pythons(direct_dependencies)
 
             ## do not take python tree in account if we are in nodep mode
             if not self._nodeps:
+                import pdb;pdb.set_trace()  ## Breakpoint ##
+                # fiter only python deptree
+                pypackages = [p for p in pypackages 
+                              if not p.name in [d.name for d in direct_dependencies]]
+
+                # add dependency packages
                 noecho = [pypackages.append(p)
                           for p in packages
                           if not p.name in [q.name for q in pypackages]]
@@ -1129,7 +1136,7 @@ class Minimerge(object):
                   for p in python_deptree
                   if not p.name in [q.name for q in selected_p]]
 
-        return python_deptree, selected_pyver
+        return selected_p, selected_pyver
 
     def _sync(self):
         """Sync or install our minilays."""
