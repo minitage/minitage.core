@@ -913,13 +913,11 @@ class Minimerge(object):
             # cut pythons we do not need !
             # also get the parts to do in 'eggs' buildout
             pypackages, pyvers = self._select_pythons(packages[:])
-            import pdb;pdb.set_trace()  ## Breakpoint ##
             self.pyvers = pyvers
             #pypackages, _ = self._select_pythons(direct_dependencies)
 
             ## do not take python tree in account if we are in nodep mode
             if not self._nodeps:
-                import pdb;pdb.set_trace()  ## Breakpoint ##
                 # fiter only python deptree
                 pypackages = [p for p in pypackages 
                               if not p.name in [d.name for d in direct_dependencies]]
