@@ -42,6 +42,7 @@ import shutil
 from cStringIO import StringIO
 from distutils.dir_util import copy_tree
 import pkg_resources
+import subprocess
 
 from iniparse import ConfigParser as WritableConfigParser
 
@@ -50,6 +51,7 @@ from minitage.core.fetchers import interfaces as fetchers
 from minitage.core.makers import interfaces as makers
 from minitage.core.version import __version__
 from minitage.core import update as up
+from minitage.core.common import newline
 
 try:
     from os import uname
@@ -57,6 +59,7 @@ except:
     from platform import uname
 
 DEFAULT_BINARIES_URL = 'http://distfiles.minitage.org/public/externals/minitage/packages'
+CORE_MINILAYS_URLBASE = 'https://github.com/minitage/minilays'
 
 class MinimergeError(Exception):
     """General Minimerge Error"""
@@ -95,27 +98,7 @@ class CircurlarDependencyError(MinimergeError):
 
 PYTHON_VERSIONS = ('2.4', '2.5', '2.6')
 
-def newline(fic):
-    "keep just one new line at the end of the config!"""
-    lines = open(fic).readlines()
-    lines.reverse()
-    res = []
-    if lines:
-        begin = False
-        for line in lines:
-            if line.strip() != '':
-                begin = True
-            if begin:
-                res.append(line)
-    res.reverse()
-    res.append('\n')
-    rfic = open(fic, 'w')
-    for line in res:
-        if not line.endswith('\n'):
-            line = '%s\n' % line
-        rfic.write(line)
-    rfic.flush()
-    rfic.close()
+
 
 def get_default_arch():
     arch = uname()[4]
@@ -276,7 +259,6 @@ class Minimerge(object):
 
         # installed binaries packages
         self._binaries = []
-
 
         # sortings pathes to let the default minilays be at worse priority
         def minilays_sort(path, path2):
@@ -726,9 +708,9 @@ class Minimerge(object):
 
     def _do_action(self, action, packages, pyvers = None):
         """Do action.
-        Install, delete or reinstall a list of packages (minibuild instances).
+        Install, delete, generate .env,  or reinstall a list of packages (minibuild instances).
         Arguments
-            - action: reinstall|install|delete action to do.
+            - action: reinstall|install|delete|generate_env action to do.
             - packages: minibuilds to deal with in order!
             - pyvers: dict(package, [pythonver,]
         """
@@ -802,15 +784,16 @@ class Minimerge(object):
                                                       'install-%s' % (v))
                             else:
                                 onlyrecord = True
+                        self.generate_env(package)
                         if onlyrecord:
                             self.set_package_mark(package, action, action)
+                elif action == 'generate_env':
+                    self.generate_env(package)
                 else:
                     message = 'The action \'%s\' does not exists ' % action
                     message += 'in this \'%s\' component' \
                             % ( package.install_method)
                     raise ActionError(message)
-
-
 
 
     def _cut_jumped_packages(self, packages):
@@ -943,6 +926,7 @@ class Minimerge(object):
                             or self.is_package_to_be_upgraded(p)
                             or self.is_package_to_be_updated(p)
                             or self.is_package_to_be_deleted(p)
+                            or self._action == 'generate_env'
                            )
                        ]
             pretend = self.pretend(packages)
@@ -989,7 +973,7 @@ class Minimerge(object):
                                 self._fetch(package)
                             # if we do not want just to fetch, let's go ,
                             if not self._fetchonly:
-                                # (install|delete|reinstall) baby.
+                                # (install|delete|reinstall|generate_env) baby.
                                 if not package in self._binaries:
                                     self._do_action(self._action, [package], pyvers)
 
@@ -1145,18 +1129,9 @@ class Minimerge(object):
 
         default_minilays = self.get_default_minilays()
         minimerge_section = self._config._sections.get('minimerge', {})
-        urlbase = '%s/%s' % (
-            minimerge_section\
-            .get('minilays_url','')\
-            .strip(),
-            version
-        )
-
+        urlbase = '%s.%s' % (CORE_MINILAYS_URLBASE, version)
         f = fetchers.IFetcherFactory(self._config_path)
-        hg = f(minimerge_section\
-               .get('minilays_scm','')\
-               .strip()
-              )
+        hg = f('static')
 
         # create default minilay dir in case
         if not os.path.isdir(os.path.join(self._prefix,'minilays')):
@@ -1166,7 +1141,7 @@ class Minimerge(object):
                                            self._prefix,
                                            'minilays',
                                            minilay),
-                                           '/'.join((urlbase, minilay, '%s.tbz2' % minilay))
+                                           '/'.join(( '%s.%s' % (urlbase, minilay), 'tarball', 'master'))
                                        )\
             for minilay in default_minilays]
         for d, url in default_minilays_pathes_urls:
@@ -1268,6 +1243,21 @@ class Minimerge(object):
                 .get('minimerge', {})\
                 .get('default_minilays','')\
                 .split('\n')]
+
+    def generate_env(self, mb):
+        try:
+            self.logger.debug('.env will be regenerated for %s' % mb.name)
+            top = [os.path.join(self._prefix, 'bin', 'paster'), 
+                   'create', '-q',
+                   '-t', 'minitage.instances.env',
+                   '--no-interactive',
+                   mb.name
+                  ] 
+            retcode = subprocess.call(top)
+            self.logger.info('.env has been regenerated for %s' % mb.name)
+        except:
+            # minitage.paste is not installed anymore
+            self.logger.warning('Not regenerating .envs for %s' % mb.path) 
 
     def reinstall_minilays(self):
         ms = self.get_default_minilays()

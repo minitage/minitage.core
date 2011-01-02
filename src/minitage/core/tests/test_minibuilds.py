@@ -276,7 +276,7 @@ install_method=buildout
 #        mb = None
 #        open(mb_path,'w').write(minibuild)
 #        mb = api.Minibuild(path=mb_path)
-#        self.assertRaises(objects.InvalidCategoryError, mb.load) 
+#        self.assertRaises(objects.InvalidCategoryError, mb.load)
 
         minibuild = """
 [minibuild]
@@ -289,7 +289,7 @@ category-bypass = true
         mb = None
         open(mb_path,'w').write(minibuild)
         mb = api.Minibuild(path=mb_path)
-        self.assertEquals(mb.category, 'bypassed')  
+        self.assertEquals(mb.category, 'bypassed')
 
     def testMinibuildWithoutInstallMethodNeitherDependencies(self):
         """testMinibuildWithoutInstallMethodNeitherDependencies"""
@@ -363,7 +363,7 @@ category=zope
         mb = None
         open(mb_path,'w').write(minibuild)
         mb = api.Minibuild(path=mb_path)
-        self.assertRaises(objects.InvalidInstallMethodError, mb.load) 
+        self.assertRaises(objects.InvalidInstallMethodError, mb.load)
 
         minibuild = """
 [minibuild]
@@ -389,7 +389,7 @@ install_method=buildout
 src_type=hg
 src_uri=${minitage-eggs}/${minitage-dependencies}
 src_opts=${minitage-misc}
-             """, 
+             """,
              'revision': 0}, {'minibuild': """
 [minibuild]
 category=eggs
@@ -406,7 +406,74 @@ revision=1
             mb = api.Minibuild(path=mb_path)
             mb.load()
             self.assertEquals(minibuild['revision'], mb.revision)
- 
+
+    def testWrite(self):
+        """testRevision"""
+        minibuilds = ["""
+[minibuild]
+#comment
+category=eggs
+dependencies=python
+install_method=buildout
+src_type=hg
+src_uri=${minitage-eggs}/${minitage-dependencies}
+                      """,]
+        minibuild = minibuilds[0]
+        data = dict(
+            dependencies = ['foo', 'bar'],
+            install_method = '',
+            src_uri = 'foo2',
+            description = 'foo3',
+            src_type = 'svn',
+            url = 'foo5',
+            revision = '666',
+            category = 'foo7',
+            src_opts = 'foo9',
+            src_md5 = 'foo10',
+        )
+        open(mb_path, 'w').write(minibuild)
+        mb = api.Minibuild(path=mb_path)
+        mb.load()
+        self.assertNotEquals(mb.category, 'foo7')
+        mb.write(**data)
+        self.assertEquals(
+            open(mb_path).read(), 
+            '\n[minibuild]\n'
+            '#comment\n'
+            'category=foo7\n'
+            'dependencies=foo bar\n'
+            'install_method=\n'
+            'src_type=svn\n'
+            'src_uri=foo2\n'
+            'description = foo3\n'
+            'url = foo5\n'
+            'src_md5 = foo10\n'
+            'src_opts = foo9\n'
+            'revision = 666\n\n'
+        )
+        self.assertEquals(mb.category, 'foo7')
+        del data['description']
+        del data['dependencies']
+        open(mb_path, 'w').write(minibuild)
+        mb = api.Minibuild(path=mb_path)
+        mb.load() 
+        mb.write(**data)
+        self.assertEquals(
+            open(mb_path).read(), 
+            '\n[minibuild]\n'
+            '#comment\n'
+            'category=foo7\n'
+            'dependencies=python\n'
+            'install_method=\n'
+            'src_type=svn\n'
+            'src_uri=foo2\n'
+            'url = foo5\n'
+            'src_md5 = foo10\n'
+            'src_opts = foo9\n'
+            'revision = 666\n\n'
+        )
+
+
     def testVars(self):
         """testVars"""
         minibuild = """
@@ -422,8 +489,8 @@ src_opts=${minitage-misc}
 [minitage.variables]
 minitage-dependencies = http://hg.minitage.org/minitage/buildouts/dependencies
 minitage-misc = ${minitage-eggs}/${minitage-dependencies}
-minitage-eggs = http://hg.minitage.org/minitage/buildouts/eggs  
-""" 
+minitage-eggs = http://hg.minitage.org/minitage/buildouts/eggs
+"""
         s = tempfile.mkstemp()[1]
         f = open(s, 'w')
         f.write(configs)
@@ -431,7 +498,7 @@ minitage-eggs = http://hg.minitage.org/minitage/buildouts/eggs
         config = ConfigParser.ConfigParser()
         config.readfp(f)
         open(mb_path,'w').write(minibuild)
-        mb = api.Minibuild(path=mb_path, 
+        mb = api.Minibuild(path=mb_path,
                            minitage_config=config
                            )
         mb.load()
@@ -439,16 +506,16 @@ minitage-eggs = http://hg.minitage.org/minitage/buildouts/eggs
                           '/minitage/buildouts/eggs'
                           '/http://hg.minitage.org'
                           '/minitage/buildouts'
-                          '/dependencies', mb.src_opts) 
+                          '/dependencies', mb.src_opts)
         self.assertEquals('http://hg.minitage.org'
                           '/minitage/buildouts/eggs'
                           '/http://hg.minitage.org'
                           '/minitage/buildouts'
-                          '/dependencies', mb.src_uri)  
-def test_suite():            
+                          '/dependencies', mb.src_uri)
+def test_suite():
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(testMinibuilds))
-    return suite        
+    return suite
 
 if __name__ == '__main__':
     suite = unittest.TestSuite()

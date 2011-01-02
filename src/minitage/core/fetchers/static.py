@@ -34,9 +34,13 @@ import urllib2
 import shutil
 import logging
 
+from distutils.dir_util import copy_tree
+
 from minitage.core.fetchers import interfaces
 from minitage.core.unpackers.interfaces import IUnpackerFactory
 import minitage.core.common
+
+from StringIO import StringIO
 
 class StaticFetchError(interfaces.IFetcherError):
     """StaticFetchError."""
@@ -88,8 +92,14 @@ class StaticFetcher(interfaces.IFetcher):
             opts = {}
         md5 = opts.get('md5', None)
 
+        github = False
+        if 'github.com' in urllib2.urlparse.urlparse(uri).netloc:
+            github = True
+
         download_dir = '%s/.download' % dest
         filename = os.path.split(uri)[1]
+        if github:
+            filename += '.tar.gz'
         filepath = os.path.join(download_dir, filename)
         md5path = os.path.join(download_dir, '%s.md5' % filename)
 
@@ -101,10 +111,25 @@ class StaticFetcher(interfaces.IFetcher):
         if (md5 and not minitage.core.common.test_md5(filepath, md5))\
            or not md5:
             try:
-                # if we have not specified the md5, try to download one
+                # if we have not specified the md5, try to get one
                 try:
+                    downloaded_bits = None
                     if not md5:
-                        md5 = minitage.core.common.urlopen("%s.md5" % uri).read()
+                        md5 = None
+                        if github:
+                            resp = minitage.core.common.urlopen(uri)
+                            length = resp.headers.getheader('content-length')
+                            downloaded_bits = resp.read()
+                            if length: length = int(length)
+                            if length != len(downloaded_bits):
+                                raise Exception('Download incomplete, please '
+                                                'retry launching minimerge or '
+                                                'bugreport!')
+                            md5 = minitage.core.common.md5sum(StringIO(downloaded_bits))
+                        else:
+                            resp = minitage.core.common.urlopen("%s.md5" % uri)
+                            md5 = resp.read()
+
                         # maybe mark the file as already there
                         if os.path.exists(filepath):
                             self.logger.warning('File %s is already downloaded' % filepath)
@@ -119,8 +144,11 @@ class StaticFetcher(interfaces.IFetcher):
                                 )
                 except urllib2.HTTPError, e:
                     if e.code == 404:
-                        self.logger.info('MD5 not found at %s, integrity will not be checked.' % "%s.md5" % uri)
-                # handle file exc. as well
+                        self.logger.info(
+                            'MD5 not found at %s, '
+                            'integrity will not be checked.' % ("%s.md5" % uri)
+                        )
+                        # handle file exc. as well
                 except urllib2.URLError, e:
                     if e.reason.errno == 2:
                         self.logger.info('MD5 not found at %s, integrity will not be checked.' % "%s.md5" % uri)
@@ -128,10 +156,11 @@ class StaticFetcher(interfaces.IFetcher):
                 if newer:
                     if verbose:
                         self.logger.info('Downloading %s from %s.' % (filepath, uri))
-                    data = minitage.core.common.urlopen(uri).read()
+                    if not downloaded_bits:
+                        downloaded_bits = minitage.core.common.urlopen(uri).read()
                     # save the downloaded file
                     filep = open(filepath, 'wb')
-                    filep.write(data)
+                    filep.write(downloaded_bits)
                     filep.flush()
                     filep.close()
                     new_md5 = minitage.core.common.md5sum(filepath)
@@ -152,13 +181,27 @@ class StaticFetcher(interfaces.IFetcher):
                     f = IUnpackerFactory(self.config)
                     u = f(filepath)
                     if u:
-                        u.unpack(filepath, dest)
+                        tmpdir = os.path.join(dest, '.minitage.download.tmp')
+                        u.unpack(filepath, tmpdir)
+                        dirs = [os.path.join(tmpdir, d)
+                                for d in os.listdir(tmpdir)
+                                if (os.path.isdir(os.path.join(tmpdir, d))
+                                    and not d.startswith('.')
+                                   )]
+                        directory = tmpdir
+                        if len(dirs) == 1:
+                            directory = dirs[0]
+                        copy_tree(directory, dest)
+                        shutil.rmtree(tmpdir)
                     # or move it to dest.
                     else:
                         if os.path.isfile(filepath):
                             shutil.copy(filepath, os.path.join(dest, filename))
                         if os.path.isdir(filepath):
                             shutil.copytree(filepath, os.path.join(dest, filename))
+                    # if we have only one subdir, just move the files outthere.
+
+
                 except Exception, e:
                     message = 'Can\'t install file %s in its destination %s.'
                     raise StaticFetchError(message % (filepath, dest))

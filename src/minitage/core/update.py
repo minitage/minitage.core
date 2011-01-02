@@ -13,7 +13,12 @@
 # GNU General Public License for more details.
 
 __docformat__ = 'restructuredtext en'
+
 import os
+import sys
+
+import subprocess
+
 UPDATES = {}
 
 def upperl(minitage):
@@ -55,8 +60,8 @@ def updateHistory(self, force=False):
                         if os.path.exists(ip):
                             if (not self.is_installed(minibuild)
                                 and (len(os.listdir(ip))>0)):
-                                self.set_package_mark(minibuild, 
-                                                      'install', 
+                                self.set_package_mark(minibuild,
+                                                      'install',
                                                       'install')
                                 self.record_minibuild(minibuild)
             fic = open(hd, 'w')
@@ -69,11 +74,66 @@ def updateHistory(self, force=False):
 def upgrademinilaysurl(self):
     pass
 
+def reinstall_core_libs(self):
+    self.reinstall_packages(['readline-6', 'ncurses-5', 'openssl-1'])
+
+def migrate_minibuilds_to_new_libs_2019(self):
+    migrate_minibuilds_to_new_libs(self,
+        {#'openssl-0.9': 'openssl-1',
+         #'ncurses-5.6': 'ncurses-5',
+         #'openssl-0.9': 'openssl-1',
+        })
+
+def migrate_minibuilds_to_new_libs_2018(self):
+    migrate_minibuilds_to_new_libs(self,
+        {'libxml2-2.6': 'libxml2-2.7',
+         'py-libxml2-2.6': 'py-libxml2-2.7',
+        })
+
+def migrate_minibuilds_to_new_libs(self, deps_ups):
+    updated = {}
+    minilays = [mn
+                for mn in self._minilays
+                #if not mn in ['dependencies', 'eggs']
+               ]
+    for minilay in minilays:
+        mn = os.path.basename(minilay.path)
+        minilay.load()
+        for mbk in minilay:
+            mb = minilay[mbk]
+            mb.load()
+            for old in deps_ups:
+                new = deps_ups[old]
+                dependencies = mb.raw_dependencies
+                if old in dependencies:
+                    i = dependencies.index(old)
+                    dependencies.pop(i)
+                    dependencies.insert(i, new)
+                    mb.revision += 1
+                    mb.write(dependencies=dependencies,
+                            revision=mb.revision)
+                    if not mb.path in updated:
+                        updated[mb.path] = mb
+    # try to regenerate .env
+    for mpath in updated:
+        mb = updated[mpath]
+        path = self.get_install_path(mb)
+        env = os.path.join(path, 'sys', 'share', 'minitage', 'minitage.env')
+        if os.path.exists(env):
+            self.generate_env(mb)
+
 #UPDATES['1.0.11'] = [#upperl,
 #                     reinstall_minilays]
 
 UPDATES['2.0'] = [updateHistory,
                   reinstall_minilays,
                   ]
+UPDATES['2.0.18'] = [
+    reinstall_minilays,
+    migrate_minibuilds_to_new_libs_2018 ,
+]
+UPDATES['99999999.2.0.19'] = [
+#    reinstall_core_libs,
+]
 
 # vim:set et sts=4 ts=4 tw=80:

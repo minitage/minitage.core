@@ -33,9 +33,12 @@ __docformat__ = 'restructuredtext en'
 
 import os
 import ConfigParser
+import shutil
 import re
 
 from minitage.core import collections
+from minitage.core.common  import newline
+from iniparse import ConfigParser as WritableConfigParser
 
 try:
     from os import uname
@@ -131,6 +134,16 @@ def check_minibuild_name(name):
         return True
     return False
 
+def mfilter(f):
+    ret = False
+    for pref in ('.'):
+        if f.startswith(pref):
+            ret = True
+    for suf in ('.svn', '.sav', 'ignore'):
+        if f.endswith(suf):
+            ret = True
+    return ret
+
 class Minilay(collections.LazyLoadedDict):
     """Minilays are list of minibuilds.
     they have a special loaded attribute to lazy load them.
@@ -158,13 +171,16 @@ class Minilay(collections.LazyLoadedDict):
             # 0 is valid
             if item is not None:
                 minibuild = os.path.join(self.path, item)
-                if os.path.isfile(minibuild):
+                if os.path.isfile(minibuild) and not mfilter(minibuild):
                     minibuilds.append(item)
             else:
-                minibuilds = os.listdir(self.path)
+                minibuilds = [a
+                              for a in os.listdir(self.path)
+                              if not mfilter(a)]
                 self.loaded = True
             for minibuild in minibuilds:
-                if minibuild not in self.items:
+                if ((minibuild not in self.items)
+                    and (not mfilter(minibuild))):
                     mb_path = os.path.join(self.path, minibuild)
                     if os.path.isfile(mb_path):
                         self[minibuild] = Minibuild(
@@ -212,6 +228,7 @@ class Minibuild(object):
         self.name = self.path.split(os.path.sep).pop()
         self.state = None
         self.dependencies = None
+        self.raw_dependencies = None
         self.description = None
         self.install_method = None
         self.src_type = None
@@ -224,10 +241,12 @@ class Minibuild(object):
         self.minitage_config = minitage_config
         self.minibuild_config = None
         self.loaded = None
+        self.section = None
 
     def __getattribute__(self, attr):
         """Lazyload stuff."""
         lazyloaded = ['config', 'url', 'revision', 'category', 'src_md5',
+                      'raw_dependencies',
                       'dependencies', 'description','src_opts',
                       'src_type', 'install_method', 'src_type']
         if attr in lazyloaded and not self.loaded:
@@ -261,6 +280,7 @@ class Minibuild(object):
 
         # our dependencies, can be empty
         self.dependencies = section.get('dependencies','').strip().split()
+        self.raw_dependencies = section.get('dependencies','').strip().split()
         # specific os dependencies
         os_dependencies = section.get('dependencies-%s' % UNAME, None)
         if os_dependencies:
@@ -351,6 +371,66 @@ class Minibuild(object):
         self.minibuild_config = config
 
         return self
+
+    def write(self,
+              path=None,
+              dependencies = None,
+              src_uri = None,
+              description = None,
+              install_method = None,
+              src_type = None,
+              url = None,
+              revision = None,
+              category = None,
+              src_opts = None,
+              src_md5 = None,
+             ):
+        """Store/Update the minibuild config
+        """
+        to_write = {
+            'dependencies': dependencies,
+            'src_uri': src_uri,
+            'description': description,
+            'install_method': install_method,
+            'src_type': src_type,
+            'url': url,
+            'revision': revision,
+            'category': category,
+            'src_opts': src_opts,
+            'src_md5': src_md5,
+        }
+
+        # open config
+        if not path:
+            path = self.path
+        shutil.copy2(path, path+'.sav')
+        wconfig = WritableConfigParser()
+        wconfig.read(path)
+
+        for metadata in to_write:
+            print self.name
+            if self.name == 'libxml2-2.7':
+                if metadata == 'src_uri':
+                    import pdb;pdb.set_trace()  ## Breakpoint ##
+
+            value = to_write[metadata]
+            if isinstance(value, list):
+                if len(value) < 1:
+                    value = None
+                else:
+                    value =  ' '.join(value)
+            if value is not None:
+                wconfig.set('minibuild' , metadata, value)
+
+        # write back cofig
+        fic = open(path, 'w')
+        wconfig.write(fic)
+        fic.flush()
+        fic.close()
+        newline(path)
+
+        # reload minibuild
+        self.load()
 
     def parse_vars(self):
         variables = getattr(self.minitage_config, '_sections', {}).get(

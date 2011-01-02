@@ -53,6 +53,28 @@ from pkg_resources import Requirement, resource_filename
 from minitage.core.version import __version__
 letter_re = re.compile('^((?P<letter>[a-zA-Z]):)(?P<path>.*)', re.U|re.S|re.I)
 
+def newline(fic):
+    "keep just one new line at the end of the config!"""
+    lines = open(fic).readlines()
+    lines.reverse()
+    res = []
+    if lines:
+        begin = False
+        for line in lines:
+            if line.strip() != '':
+                begin = True
+            if begin:
+                res.append(line)
+    res.reverse()
+    res.append('\n')
+    rfic = open(fic, 'w')
+    for line in res:
+        if not line.endswith('\n'):
+            line = '%s\n' % line
+        rfic.write(line)
+    rfic.flush()
+    rfic.close()
+
 class MinimergeError(Exception): pass
 
 def splitstrip(l, token=None):
@@ -63,7 +85,9 @@ def splitstrip(l, token=None):
 
 def md5sum(filep):
     """Return the md5 sium of a file"""
-    fobj = open(filep,'rb')
+    fobj = filep
+    if isinstance(filep, basestring):
+        fobj = open(filep,'rb')
     m = md5()
     while True:
         d = fobj.read(8096)

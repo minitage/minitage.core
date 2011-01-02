@@ -106,6 +106,9 @@ def do_read_options():
         optparse.make_option('-R', '--reinstall',
                              action='store_true', dest='reinstall',
                              help = reinstall_help),
+        optparse.make_option('-E', '--generate-env',
+                             action='store_true', dest='generate_env',
+                             help =  '(re)generate instance .env shell file'), 
         optparse.make_option('--rm',
                              action='store_true', dest='delete',
                              help = delete_help),
@@ -201,6 +204,8 @@ def do_read_options():
         options.action = 'sync'
     elif options.install:
         options.action = 'install'
+    elif options.generate_env:
+        options.action = 'generate_env' 
     else:
         options.action = default_action
 
