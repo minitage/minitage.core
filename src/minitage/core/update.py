@@ -79,9 +79,10 @@ def reinstall_core_libs(self):
 
 def migrate_minibuilds_to_new_libs_2019(self):
     migrate_minibuilds_to_new_libs(self,
-        {#'openssl-0.9': 'openssl-1',
-         #'ncurses-5.6': 'ncurses-5',
-         #'openssl-0.9': 'openssl-1',
+        {'openssl-0.9': 'openssl-1',
+         'ncurses-5.6': 'ncurses-5',
+         'readline-5.2': 'readline-6',
+         'postgis-1.4': 'postgis-1.5',
         })
 
 def migrate_minibuilds_to_new_libs_2018(self):
@@ -132,8 +133,8 @@ UPDATES['2.0.18'] = [
     reinstall_minilays,
     migrate_minibuilds_to_new_libs_2018 ,
 ]
-UPDATES['99999999.2.0.19'] = [
-#    reinstall_core_libs,
+UPDATES['2.0.19'] = [
+    migrate_minibuilds_to_new_libs_2019 ,
 ]
 
 # vim:set et sts=4 ts=4 tw=80:

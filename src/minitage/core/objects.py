@@ -408,7 +408,6 @@ class Minibuild(object):
         wconfig.read(path)
 
         for metadata in to_write:
-            print self.name
             if self.name == 'libxml2-2.7':
                 if metadata == 'src_uri':
                     import pdb;pdb.set_trace()  ## Breakpoint ##
