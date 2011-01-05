@@ -136,8 +136,8 @@ def check_minibuild_name(name):
 
 def mfilter(f):
     ret = False
-    for pref in ('.'):
-        if f.startswith(pref):
+    for pref in ('.', 'readme'):
+        if f.lower().startswith(pref):
             ret = True
     for suf in ('.svn', '.sav', 'ignore'):
         if f.endswith(suf):
