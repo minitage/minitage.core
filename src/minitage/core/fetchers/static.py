@@ -93,7 +93,8 @@ class StaticFetcher(interfaces.IFetcher):
         md5 = opts.get('md5', None)
 
         github = False
-        if 'github.com' in urllib2.urlparse.urlparse(uri).netloc:
+        # [1] == netloc <> python2.4
+        if 'github.com' in urllib2.urlparse.urlparse(uri)[1]:
             github = True
 
         download_dir = '%s/.download' % dest
