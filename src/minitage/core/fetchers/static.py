@@ -93,7 +93,7 @@ class StaticFetcher(interfaces.IFetcher):
         md5 = opts.get('md5', None)
 
         github = False
-        # [1] == netloc <> python2.4
+        # [1] == netloc <> python2.4
         if 'github.com' in urllib2.urlparse.urlparse(uri)[1]:
             github = True
 
