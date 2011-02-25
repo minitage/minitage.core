@@ -2,14 +2,15 @@ Changes
 ***********************************************
 
 
-2.0.18
-========
+2.0.23 - (unreleased)
+===========================
 
     - fix bug in pretend
     - move to github
     - add mercurial to dependencies to facillitate buildout integration
     - add python versions for pretend and 'eggs' packages 
     - rebuild 'eggs' packages only if they need to be (markers are now in place for the particular python version)
+    - remove useless mercurial dep
 
 2.0
 =====
