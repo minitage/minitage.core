@@ -1,15 +1,13 @@
-
-=============================
 QuickStart with minitage
 =============================
 
 The whole doc is not there
-++++++++++++++++++++++++++++
+-----------------------------------
 but on http://www.minitage.org
 
 
 Check your Python
-+++++++++++++++++++++
+---------------------
 You need a python with setuptools, zlib, bz2 and ssl support.
 
 Try that in your interpretery::
@@ -26,11 +24,11 @@ If you do not have that, you can give a try to my pyboostrapper that bootstrap
 a python somewhere::
 
     wget http://git.minitage.org/git/minitage/shell/plain/PyBootstrapper.sh
-    chmod +x PyBootstrapper.sh
+    chmod -x PyBootstrapper.sh
     bash ./PyBootstrapper.sh /path/to/pythonPrefix
 
 Using virtualenv
-+++++++++++++++++++
+-------------------
 You 'd better to use `virtualenv <http://pypi.python.org/pypi/virtualenv>`_ ,
 minitage fits well with it.
 
@@ -56,7 +54,7 @@ environments.
     KEEP IN MIND THAT YOU MUST ACTIVATE VIRTUALENV AT ANY TIME YOU USE IT.
 
 minitage installation
-++++++++++++++++++++++
+----------------------
 The whole doc is not there but on http://www.minitage.org/installation.html.
 
 Minitage is a classical python egg, you can get it throught easy_install.
@@ -73,7 +71,7 @@ To install minitage in a stable version, follow those steps:
 
 
 Syncing packages
-++++++++++++++++++++++
+----------------------
 
     To sync all your minilays
 

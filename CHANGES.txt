@@ -1,9 +1,9 @@
-Changes
-***********************************************
+Changelog for minitage.core
+===============================
 
 
-2.0.23 - (unreleased)
-===========================
+2.0.24 (unreleased)
+---------------------------
 
     - fix bug in pretend
     - move to github
@@ -13,7 +13,7 @@ Changes
     - remove useless mercurial dep
 
 2.0
-=====
+-----
 
 FEATURES;
 
@@ -46,38 +46,38 @@ BUGS:
     - use setuptools package_index.download helper funtion instead of directly urllib2 to avoid sourceforge download errors
 
 1.0.19
-===========
+-----------
 
     - distribute fix
 
 1.0.18
-========
+--------
 
     - remove deprecationwarning
 
 1.0.17
-=========
+---------
 
     - remove deprecationwarning
 
 1.0.16
-=======
+-------
 
 
     - oups, left print
 
 1.0.15
-========
+--------
 
     - let the default minilay be at lower priority among all
 
 1.0.14
-=======
+-------
 
     - desactivating updates manager for more tests.
 
 -> 1.0.13
-==========
+----------
 
     - Minitage now allows binaries to be used instead of compiling programs,
       in the gentoo -k way.
@@ -85,24 +85,24 @@ BUGS:
       upgrade.
 
 1.0.5
-=======
+-------
 
     - bugfix on url md5sum fragments
 
 1.0.4
-=========
+---------
 
     - make conditionnal weither we are offline or not the download in the get_from_cache function.
 
 1.0.0 -> 1.0.3
-==================
+------------------
 
     - x64 enlightments
     - add optionnal force switch to the download cache function
 
 
 1.0
-=====
+-----
 
     - some API adds like 'search_latest' and 'which'
     - bugfix in interfaces for configuration handling
@@ -112,48 +112,48 @@ BUGS:
 
 
 0.32
-=====
+-----
 
     - Fetch by default over http
 
 0.4.30
-========
+--------
     - Bind buildout newest mode with -u option
 
 
 0.4.30
-=======
+-------
 
     - do not delete directories but overwrite when the package src uri change.
 
 
 0.4.29
-=======
+-------
 
     - Make minitage lives on git
 
 0.4.28
-=======
+-------
 
     - Make minitage git aware both in recipes and in core.
 
 0.4.27
-=======
+-------
 
     - force setuptools version
 
 0.4.26
-=======
+-------
 
     - bugfix on common functions (API)
 
 0.4.21
-=======
+-------
 
     - quiet mode is now optionnal are there are numerous bugs with it.
 
 0.4.8
-===========
+-----------
     - Maintenance release
 
         - testruner
@@ -163,59 +163,59 @@ BUGS:
           quiet as possible.
 
 0.4.5
-===========
+-----------
     - Bug in fetchers (not critical ...)
 
 0.4.4
-============
+------------
     - Add an option (-f)
         - when set : fetch all before build
         - when not set : fetch and build each package one after another
 
 0.4.2
-============
+------------
     - Remove the category check
 
 0.4.2
-============
+------------
     - Remove the backtrace from the launcher when minimerge fails
 
 0.4.1
-============
+------------
     - Release version
 
 0.4_alpha12
-============
+------------
     - Fix scm type validator
 
 0.4_alpha11
-============
+------------
     - bzr DVCS integration
 
 0.4_alpha10
-============
+------------
     - Add support for variables in minibuilds setted in minitage configuration
       file. Use $name in minibuilds and set it in the [minitage.variables]
       section.
 
 0.4_alpha9
-===========
+-----------
     - reinforce buildout code
 
 0.4_alpha8
-===========
+-----------
     - restore previous version scheme
 
 a0.4_alpha5
-============
+------------
     - add mercurial explicit dependency
 
 0.4_alpha4
-============
+------------
     - remove old minilay
 
 0.4_alpha1
-============
+------------
 
 This is a pre release, minitage is working. But it is not empty from bugs.
 Feel free to give your feedback :)
@@ -230,7 +230,7 @@ Feel free to give your feedback :)
 
 
 up to 0.3
-==========
+----------
 
 - not public, nothing to see there.
 
