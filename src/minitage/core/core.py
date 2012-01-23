@@ -688,11 +688,12 @@ class Minimerge(object):
                                             package.name)
                         if os.path.isdir(temp):
                             shutil.rmtree(temp)
-                        fetcher.fetch(temp, package.src_uri)
+
+                        fetcher.fetch(temp, package.src_uri, {'branch':package.scm_branch})
                         copy_tree(temp, destination)
                         shutil.rmtree(temp)
                     else:
-                        fetcher.update( destination, src_uri)
+                        fetcher.update(destination, src_uri, {'branch':package.scm_branch})
                     self.set_package_mark(package, 'fetch', 'fetch')
                     downloaded = True
                 if is_binary and downloaded:

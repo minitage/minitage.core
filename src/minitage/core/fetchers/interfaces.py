@@ -209,11 +209,19 @@ class IFetcher(interfaces.IProduct):
             self.fetch(dest, uri, opts, verbose)
         else:
             self.update_wc(dest, uri, opts, verbose)
+            # atm, only git has the use case of in place branches
+            # others can use plain url 
+            branch = opts.get('branch', None)
+            adds = ''
+            if bool(branch):
+                adds = '%s -' % branch
+                self.switch_branch(dest, branch)
             self.goto_revision(dest, uri, opts, verbose)
             self.log.info(
-                'Updated %s / %s (%s) [%s].' % (
+                'Updated %s / %s (%s%s) [%s].' % (
                     dest,
                     uri,
+                    adds,
                     opts.get('revision',
                              self.default_revision),
                     self.name
@@ -228,6 +236,7 @@ class IFetcher(interfaces.IProduct):
             - dest: destination to fetch to
             - opts : arguments for the fetcher
 
+                - branch: particular branch to get
                 - revision: particular revision to deal with.
                 - args: misc arguments to give to the underlying program
                 - goto-revision-args: misc arguments to give to udpate to a specified version
@@ -255,6 +264,11 @@ class IFetcher(interfaces.IProduct):
                         'checkout'
                     )
                 copy_move_tree(checkout_dest, dest)
+            # atm, only git has the use case of in place branches
+            # others can use plain url 
+            branch = opts.get('branch', None)
+            if bool(branch):
+                self.switch_branch(dest, branch)
             self.goto_revision(dest, uri, opts, verbose)
             self.log.info(
                 'Checkouted %s / %s (%s) [%s].' % (
@@ -268,6 +282,14 @@ class IFetcher(interfaces.IProduct):
         else:
             raise InvalidUrlError('this uri \'%s\' is invalid' % uri)
         self.check_valid_co(dest, uri)
+
+    def switch_branch(self, dest, branch):
+        """Switch to another branch"""
+        raise Exception('not implemented')
+
+    def get_branch(self, dest):
+        """Switch to another branch"""
+        raise Exception('not implemented') 
 
     def fetch_or_update(self, dest, uri, opts = None, verbose=False):
         """Fetch or update a package (call the one of those 2 methods).
@@ -308,16 +330,20 @@ class IFetcher(interfaces.IProduct):
             message += 'please install it or maybe get it into your PATH'
             raise FetcherNotInPathError(message)
 
-    def _scm_cmd(self, command, verbose=False):
+    def _scm_cmd(self, command, verbose=False, output=False):
         """Helper to run scm commands."""
         self._check_scm_presence()
+        ret = None
         logging.getLogger(__logger__).debug(
             'Running %s %s ' % (self.executable, command))
         try:
-            minitage.core.common.Popen('%s %s' % (self.executable, command), verbose)
+            ret = minitage.core.common.Popen(
+                '%s %s' % (self.executable, command), 
+                verbose=verbose,
+                output=output)
         except Exception, e:
-            import pdb;pdb.set_trace()  ## Breakpoint ##
             raise FetcherRuntimeError('%s' % e)
+        return ret
 
     def _remove_versionned_directories(self, dest):
         """Remove all directories which contains history.

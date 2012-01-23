@@ -170,20 +170,21 @@ def is_local_url(url):
         return True
     return False
 
-def Popen(command, verbose=False):
+def Popen(command, verbose=False, output=False):
     # FIXME: Popen strange behaviour
-    ret = os.system(command)
-    #stdout = None
-    #if not verbose:
-    #    stdout = subprocess.PIPE
-    # p = subprocess.Popen(command,
-    #                      shell=True,
-    #                      stdin=subprocess.PIPE,
-    #                      stdout = stdout,
-    #                      stderr=subprocess.PIPE,
-    #                     )
-    # ret = p.wait()
-    if ret != 0:
+    ret = None
+    if not output:
+        cret = os.system(command)
+    else:
+        stdout = subprocess.PIPE
+        p = subprocess.Popen(command,
+                              shell=True,
+                              stdin=subprocess.PIPE,
+                              stdout=subprocess.PIPE,
+                              stderr=subprocess.PIPE,
+                             )
+        cret = p.wait()
+    if cret != 0:
         error = ''
         #if not verbose:
         #    error = p.stdout.read()
@@ -195,6 +196,9 @@ def Popen(command, verbose=False):
                             '----------------------------------------------------------\n' % (command)
                            )
         raise MinimergeError(message)
+    if output:
+        ret = p.stdout.read() + '\n\n' + p.stderr.read()
+    return ret
 
 def get_from_cache(url,
                    download_cache = None,
