@@ -407,6 +407,53 @@ revision=1
             mb.load()
             self.assertEquals(minibuild['revision'], mb.revision)
 
+    def testLoad(self):
+        """testRevision"""
+        minibuilds = ["""
+[minibuild]
+#comment
+category=eggs
+dependencies=python
+install_method=buildout
+src_type=hg 
+scm_branch=masterchef
+src_uri=${minitage-eggs}/${minitage-dependencies}
+                      """,]
+        minibuild = minibuilds[0]
+        open(mb_path, 'w').write(minibuild)
+        mb = api.Minibuild(path=mb_path)
+        mb.load()
+        self.assertEquals(mb.scm_branch, 'masterchef')
+        minibuilds = ["""
+[minibuild]
+#comment
+category=eggs
+dependencies=python
+install_method=buildout
+src_type=hg 
+scm_branch=
+src_uri=${minitage-eggs}/${minitage-dependencies}
+                      """,]
+        minibuild = minibuilds[0]
+        open(mb_path, 'w').write(minibuild)
+        mb = api.Minibuild(path=mb_path)
+        mb.load()
+        self.assertEquals(mb.scm_branch, None)
+        minibuilds = ["""
+[minibuild]
+#comment
+category=eggs
+dependencies=python
+install_method=buildout
+src_type=hg 
+src_uri=${minitage-eggs}/${minitage-dependencies}
+                      """,]
+        minibuild = minibuilds[0]
+        open(mb_path, 'w').write(minibuild)
+        mb = api.Minibuild(path=mb_path)
+        mb.load()
+        self.assertEquals(mb.scm_branch, None)
+
     def testWrite(self):
         """testRevision"""
         minibuilds = ["""
@@ -430,6 +477,7 @@ src_uri=${minitage-eggs}/${minitage-dependencies}
             category = 'foo7',
             src_opts = 'foo9',
             src_md5 = 'foo10',
+            scm_branch = 'foo11',
         )
         open(mb_path, 'w').write(minibuild)
         mb = api.Minibuild(path=mb_path)
@@ -438,39 +486,19 @@ src_uri=${minitage-eggs}/${minitage-dependencies}
         mb.write(**data)
         self.assertEquals(
             open(mb_path).read(), 
-            '\n[minibuild]\n'
-            '#comment\n'
-            'category=foo7\n'
-            'dependencies=foo bar\n'
-            'install_method=\n'
-            'src_type=svn\n'
-            'src_uri=foo2\n'
-            'description = foo3\n'
-            'url = foo5\n'
-            'src_md5 = foo10\n'
-            'src_opts = foo9\n'
-            'revision = 666\n\n'
+            '\n[minibuild]\n#comment\ncategory=foo7\ndependencies=foo bar\ninstall_method=\nsrc_type=svn\nsrc_uri=foo2\nrevision = 666\ndescription = foo3\nsrc_md5 = foo10\nurl = foo5\nsrc_opts = foo9\nscm_branch = foo11\n\n',
         )
         self.assertEquals(mb.category, 'foo7')
         del data['description']
         del data['dependencies']
+        del data['scm_branch']
         open(mb_path, 'w').write(minibuild)
         mb = api.Minibuild(path=mb_path)
         mb.load() 
         mb.write(**data)
         self.assertEquals(
             open(mb_path).read(), 
-            '\n[minibuild]\n'
-            '#comment\n'
-            'category=foo7\n'
-            'dependencies=python\n'
-            'install_method=\n'
-            'src_type=svn\n'
-            'src_uri=foo2\n'
-            'url = foo5\n'
-            'src_md5 = foo10\n'
-            'src_opts = foo9\n'
-            'revision = 666\n\n'
+            '\n[minibuild]\n#comment\ncategory=foo7\ndependencies=python\ninstall_method=\nsrc_type=svn\nsrc_uri=foo2\nrevision = 666\nsrc_md5 = foo10\nurl = foo5\nsrc_opts = foo9\n\n' 
         )
 
 

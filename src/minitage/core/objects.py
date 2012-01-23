@@ -35,6 +35,7 @@ import os
 import ConfigParser
 import shutil
 import re
+from ordereddict import OrderedDict
 
 from minitage.core import collections
 from minitage.core.common  import newline
@@ -193,7 +194,7 @@ class Minibuild(object):
     """Minibuild object.
     Contains all package metadata including
      - dependenciess
-     - url
+     - scm_branch : opionnal scm branch
      - fetch method
      - fetch method options
      - project 's url
@@ -234,6 +235,7 @@ class Minibuild(object):
         self.src_type = None
         self.src_opts = None
         self.src_md5 = None
+        self.scm_branch = None
         self.src_uri = None
         self.url = None
         self.revision = None
@@ -246,7 +248,7 @@ class Minibuild(object):
     def __getattribute__(self, attr):
         """Lazyload stuff."""
         lazyloaded = ['config', 'url', 'revision', 'category', 'src_md5',
-                      'raw_dependencies',
+                      'raw_dependencies', 'scm_branch',
                       'dependencies', 'description','src_opts',
                       'src_type', 'install_method', 'src_type']
         if attr in lazyloaded and not self.loaded:
@@ -359,6 +361,9 @@ class Minibuild(object):
         # misc metadata, optionnal
         self.url = section.get('url','').strip()
         self.description = section.get('description','').strip()
+        self.scm_branch = section.get('scm_branch','').strip()
+        if not self.scm_branch:
+            self.scm_branch = None
 
         # but in any case, we must at least have dependencies
         # or a install method
@@ -384,21 +389,23 @@ class Minibuild(object):
               category = None,
               src_opts = None,
               src_md5 = None,
+              scm_branch = None,
              ):
         """Store/Update the minibuild config
         """
-        to_write = {
-            'dependencies': dependencies,
-            'src_uri': src_uri,
-            'description': description,
-            'install_method': install_method,
-            'src_type': src_type,
-            'url': url,
-            'revision': revision,
-            'category': category,
-            'src_opts': src_opts,
-            'src_md5': src_md5,
-        }
+        to_write = OrderedDict(
+            [('dependencies', dependencies),
+            ('src_uri', src_uri),
+            ('install_method', install_method),
+            ('src_type', src_type),
+            ('revision', revision),
+            ('category', category),
+            ('description', description),
+            ('src_md5', src_md5),
+            ('url', url),
+            ('src_opts', src_opts),
+            ('scm_branch', scm_branch),]
+        )
 
         # open config
         if not path:
@@ -408,10 +415,6 @@ class Minibuild(object):
         wconfig.read(path)
 
         for metadata in to_write:
-            if self.name == 'libxml2-2.7':
-                if metadata == 'src_uri':
-                    import pdb;pdb.set_trace()  ## Breakpoint ##
-
             value = to_write[metadata]
             if isinstance(value, list):
                 if len(value) < 1:
