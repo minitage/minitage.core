@@ -53,16 +53,26 @@ class testGit(unittest.TestCase):
         md = tempfile.mkdtemp()
         opts.update({'path2': md})
         os.system("""
-                 mkdir -p %(path2)s
-                 rm -rf %(path)s
-                 cd %(path2)s
-                 echo '666'>file
-                 git init
-                 git add .
-                 git commit -a -m 'initial import'
-                 echo '666'>file2
-                 git add .
-                 git commit -m 'second revision'
+                  mkdir -p %(path2)s
+                  rm -rf %(path)s
+                  cd %(path2)s
+                  echo '666'>file
+                  git init
+                  git add .
+                  git commit -a -m 'initial import'
+                  echo '666'>file2
+                  git add .
+                  git commit -m 'second revision'
+                  git checkout -b brancha
+                  touch a
+                  git add a
+                  git commit -m a
+                  git checkout master
+                  git checkout -b branchb
+                  touch b
+                  git add b
+                  git commit -m b
+                  git checkout master 
                  git clone %(path2)s %(path)s
                   """ % opts)
 
@@ -123,13 +133,13 @@ class testGit(unittest.TestCase):
         git = scm.GitFetcher()
         git.fetch(opts['dest'], 'file://%s' % opts['path'], dict(revision='HEAD~'))
         self.assertTrue(os.path.isdir('%s/%s' % (opts['dest'], '.git')))
-        git.update(opts['dest'], 'file://%s master' % opts['path'])
+        git.update(opts['dest'], 'file://%s -b master' % opts['path'])
         self.assertTrue(os.path.isfile(os.path.join(opts['dest'], 'file2')))
-        git.update(opts['dest'], 'file://%s master' % opts['path'], dict(revision='HEAD~'))
+        git.update(opts['dest'], 'file://%s -b master' % opts['path'], dict(revision='HEAD~'))
         self.assertFalse(os.path.isfile(os.path.join(opts['dest'], 'file2')))
         shutil.rmtree(opts['dest'])
         git.fetch(opts['dest'], 'file://%s' % opts['path'], dict(revision='HEAD~'))
-        git.update(opts['dest'])
+        git.update(opts['dest'],  'file://%s' % opts['path'])
         self.assertTrue(os.path.isfile(os.path.join(opts['dest'], 'file2')))
 
     def testFetchOrUpdate_fetch(self):
@@ -466,7 +476,7 @@ def test_suite():
     #suite.addTest(unittest.makeSuite(testBzr))
     #suite.addTest(unittest.makeSuite(testHg))
     #suite.addTest(unittest.makeSuite(testSvn))
-    #suite.addTest(unittest.makeSuite(testGit))
+    suite.addTest(unittest.makeSuite(testGit))
     return suite
 
 if __name__ == '__main__':

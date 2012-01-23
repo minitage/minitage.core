@@ -148,7 +148,8 @@ class IFetcher(interfaces.IProduct):
                  executable = None ,
                  config = None,
                  metadata_directory = None,
-                 default_revision = 'HEAD',):
+                 default_revision = 'HEAD',
+                 branch=None):
         """
         Attributes:
             - name : name of the fetcher
@@ -166,6 +167,9 @@ class IFetcher(interfaces.IProduct):
         self._scm_found = None
         self.default_revision = default_revision
         mconfig = config.get('minimerge', {})
+        if branch is None:
+            branch = mconfig.get('branch', None)
+        self.branch = branch  
         self._proxies = {
             'http_proxy': mconfig.get('http_proxy', None),
             'https_proxy': mconfig.get('https_proxy', None),
@@ -262,7 +266,7 @@ class IFetcher(interfaces.IProduct):
                 )
             )
         else:
-            raise interfaces.InvalidUrlError('this uri \'%s\' is invalid' % uri)
+            raise InvalidUrlError('this uri \'%s\' is invalid' % uri)
         self.check_valid_co(dest, uri)
 
     def fetch_or_update(self, dest, uri, opts = None, verbose=False):
@@ -312,6 +316,7 @@ class IFetcher(interfaces.IProduct):
         try:
             minitage.core.common.Popen('%s %s' % (self.executable, command), verbose)
         except Exception, e:
+            import pdb;pdb.set_trace()  ## Breakpoint ##
             raise FetcherRuntimeError('%s' % e)
 
     def _remove_versionned_directories(self, dest):
