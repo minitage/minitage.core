@@ -17,7 +17,10 @@ __docformat__ = 'restructuredtext en'
 import os
 import sys
 
+import copy
 import subprocess
+from minitage.core.common import remove_path
+from glob import glob
 
 UPDATES = {}
 
@@ -85,6 +88,33 @@ def migrate_minibuilds_to_new_libs_2019(self):
          'postgis-1.4': 'postgis-1.5',
         })
 
+
+def reinstall_pil(self):
+    pys = []
+    for v in self.PYTHON_VERSIONS:
+        py = self._find_minibuild('python-%s' % v)
+        if self.is_installed(py):
+            pys.append(v)
+    pil = self._find_minibuild('pil-1.1.7')
+    update, upgrade = self._update, self._upgrade
+    for v in pys:
+        self.pyvers = {pil.name: [v]}
+        if self.is_installed(pil):
+            for p in glob(self._prefix+'/eggs/cache/PIL-1.1.7*%s*'%v):
+                print "DELETING OLD PIL FOR PYTHON%s" % v
+                remove_path(p)
+            ps = self._compute_dependencies([pil.name])
+            pps = self.install_filter(ps)
+            reinstalled = [a.name for a in pps]
+            if not 'pil-1.1.7' in reinstalled:
+                reinstalled.append('pil-1.1.7')
+            self.reinstall_packages(reinstalled, force=True, pyvers=self.pyvers)
+    self._update, self._upgrade = update, upgrade
+
+def migrate_minibuilds_to_new_libs_2029(self):
+    self._sync(['dependencies', 'eggs'])
+    reinstall_pil(self)
+
 def migrate_minibuilds_to_new_libs_2018(self):
     migrate_minibuilds_to_new_libs(self,
         {'libxml2-2.6': 'libxml2-2.7',
@@ -135,6 +165,9 @@ UPDATES['2.0.18'] = [
 ]
 UPDATES['2.0.19'] = [
     migrate_minibuilds_to_new_libs_2019 ,
+]
+UPDATES['2.0.28'] = [
+    migrate_minibuilds_to_new_libs_2029 ,
 ]
 
 # vim:set et sts=4 ts=4 tw=80:

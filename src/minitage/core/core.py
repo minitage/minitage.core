@@ -165,6 +165,7 @@ class Minimerge(object):
         self.verbose = options.get('verbose', False)
         self.history_dir = '.minitage'
         self._config_path = os.path.expanduser(options.get('config'))
+        self.PYTHON_VERSIONS = copy.deepcopy(PYTHON_VERSIONS)
         if not os.path.isfile(self._config_path):
             message = 'The config file is invalid: %s' % self._config_path
             raise InvalidConfigFileError(message)
@@ -759,7 +760,7 @@ class Minimerge(object):
                                     if part.endswith(v):
                                         reinstall = self.is_package_to_be_reinstalled(
                                             package
-                                        )
+                                        ) or action == 'reinstall'
                                         if (not self.is_package_marked(
                                             package,
                                             'install-%s' % v)
@@ -903,7 +904,7 @@ class Minimerge(object):
             ## do not take python tree in account if we are in nodep mode
             if not self._nodeps:
                 # fiter only python deptree
-                pypackages = [p for p in pypackages 
+                pypackages = [p for p in pypackages
                               if not p.name in [d.name for d in direct_dependencies]]
 
                 # add dependency packages
@@ -920,16 +921,7 @@ class Minimerge(object):
             if self._only_dependencies:
                 packages = [p for p in packages if not p.name in self._packages]
 
-            packages = [p for p in packages
-                        if (
-                            self.is_package_to_be_installed(p)
-                            or self.is_package_to_be_reinstalled(p)
-                            or self.is_package_to_be_upgraded(p)
-                            or self.is_package_to_be_updated(p)
-                            or self.is_package_to_be_deleted(p)
-                            or self._action == 'generate_env'
-                           )
-                       ]
+            packages = self.install_filter(packages)
             pretend = self.pretend(packages)
             self.logger.debug(pretend.getvalue())
 
@@ -1121,10 +1113,13 @@ class Minimerge(object):
 
         return selected_p, selected_pyver
 
-    def _sync(self):
-        """Sync or install our minilays."""
+    def _sync(self, minilays_to_sync=None):
+        """Sync or install our minilays.
+        minilays_to_sync, minilays name to sync (filter)
+        """
         # install our default minilays
         self.logger.info('Syncing minilays.')
+        if not minilays_to_sync: minilays_to_sync = []
         version = '.'.join( __version__.split('.')[:2])
 
 
@@ -1146,6 +1141,9 @@ class Minimerge(object):
                                        )\
             for minilay in default_minilays]
         for d, url in default_minilays_pathes_urls:
+            if len(minilays_to_sync):
+                if not os.path.basename(d) in minilays_to_sync:
+                    continue
             self.logger.info('Syncing %s from %s [via %s]' % (d, url, hg.name))
             if not os.path.exists(d):
                 hg.fetch(d, url)
@@ -1156,6 +1154,9 @@ class Minimerge(object):
         for minilay in [m
                         for m in self._minilays
                         if not os.path.basename(m.path) in default_minilays]:
+            if len(minilays_to_sync):
+                if not os.path.basename(minilay.path) in minilays_to_sync:
+                    continue
             path = minilay.path
             type = None
             # querying scm factory for registered scms
@@ -1228,7 +1229,7 @@ class Minimerge(object):
         return ip
 
 
-    def reinstall_packages(self, packages):
+    def reinstall_packages(self, packages, force=False, pyvers=None):
         update  = self._update
         upgrade = self._upgrade
         self._update  = True
@@ -1236,7 +1237,10 @@ class Minimerge(object):
         for package in packages:
             package = self.find_minibuild(package)
             self._fetch(package)
-            self._do_action('install', [package])
+            action = 'install'
+            if force:
+                action = 'reinstall'
+            self._do_action(action, [package], pyvers=pyvers)
 
     def get_default_minilays(self):
         return [s.strip() \
@@ -1248,17 +1252,17 @@ class Minimerge(object):
     def generate_env(self, mb):
         try:
             self.logger.debug('.env will be regenerated for %s' % mb.name)
-            top = [os.path.join(self._prefix, 'bin', 'paster'), 
+            top = [os.path.join(self._prefix, 'bin', 'paster'),
                    'create', '-q',
                    '-t', 'minitage.instances.env',
                    '--no-interactive',
                    mb.name
-                  ] 
+                  ]
             retcode = subprocess.call(top)
             self.logger.info('.env has been regenerated for %s' % mb.name)
         except:
             # minitage.paste is not installed anymore
-            self.logger.warning('Not regenerating .envs for %s' % mb.path) 
+            self.logger.warning('Not regenerating .envs for %s' % mb.path)
 
     def reinstall_minilays(self):
         ms = self.get_default_minilays()
@@ -1285,4 +1289,23 @@ class Minimerge(object):
     _find_minibuilds = find_minibuilds
     _find_minibuild = find_minibuild
     _compute_dependencies = compute_dependencies
+
+
+
+    def install_filter(self, packages):
+        """ Return only packages really needing action"""
+        packages = [p for p in packages
+                    if (
+                        self.is_package_to_be_installed(p)
+                        or self.is_package_to_be_reinstalled(p)
+                        or self.is_package_to_be_upgraded(p)
+                        or self.is_package_to_be_updated(p)
+                        or self.is_package_to_be_deleted(p)
+                        or self._action == 'generate_env'
+                    )
+                   ]
+        return packages
+
+
+
 

@@ -169,7 +169,7 @@ class IFetcher(interfaces.IProduct):
         mconfig = config.get('minimerge', {})
         if branch is None:
             branch = mconfig.get('branch', None)
-        self.branch = branch  
+        self.branch = branch
         self._proxies = {
             'http_proxy': mconfig.get('http_proxy', None),
             'https_proxy': mconfig.get('https_proxy', None),
@@ -210,7 +210,7 @@ class IFetcher(interfaces.IProduct):
         else:
             self.update_wc(dest, uri, opts, verbose)
             # atm, only git has the use case of in place branches
-            # others can use plain url 
+            # others can use plain url
             branch = opts.get('branch', None)
             adds = ''
             if bool(branch):
@@ -265,7 +265,7 @@ class IFetcher(interfaces.IProduct):
                     )
                 copy_move_tree(checkout_dest, dest)
             # atm, only git has the use case of in place branches
-            # others can use plain url 
+            # others can use plain url
             branch = opts.get('branch', None)
             if bool(branch):
                 self.switch_branch(dest, branch)
@@ -289,7 +289,7 @@ class IFetcher(interfaces.IProduct):
 
     def get_branch(self, dest):
         """Switch to another branch"""
-        raise Exception('not implemented') 
+        raise Exception('not implemented')
 
     def fetch_or_update(self, dest, uri, opts = None, verbose=False):
         """Fetch or update a package (call the one of those 2 methods).
@@ -338,7 +338,7 @@ class IFetcher(interfaces.IProduct):
             'Running %s %s ' % (self.executable, command))
         try:
             ret = minitage.core.common.Popen(
-                '%s %s' % (self.executable, command), 
+                '%s %s' % (self.executable, command),
                 verbose=verbose,
                 output=output)
         except Exception, e:
