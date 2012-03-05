@@ -345,27 +345,27 @@ class GitFetcher(interfaces.IFetcher):
     def get_branch(self, dest, verbose=True):
         args = ''
         if not verbose:
-            args += ' -q ' 
+            args += ' -q '
         cwd = os.getcwd()
         branch = None
         try:
             try:
                 os.chdir(dest)
-                ret = self._scm_cmd('branch %s' % (args,), 
+                ret = self._scm_cmd('branch %s' % (args,),
                                     verbose=verbose, output=True)
-                branch = [a.split()[1] 
-                          for a in ret.splitlines() 
+                branch = [a.split()[1]
+                          for a in ret.splitlines()
                           if a.startswith('*')][0]
             except Exception, e:
                 raise e
         finally:
-            os.chdir(cwd) 
+            os.chdir(cwd)
         return branch
 
     def switch_branch(self, dest, branch, verbose=True):
         args = ''
         if not verbose:
-            args += ' -q ' 
+            args += ' -q '
         cwd = os.getcwd()
         try:
             try:
@@ -377,7 +377,7 @@ class GitFetcher(interfaces.IFetcher):
                 raise e
         finally:
             os.chdir(cwd)
-        
+
 
     def update_wc(self, dest, uri, opts, verbose=True):
         args = opts.get('args', '')

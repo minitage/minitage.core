@@ -72,7 +72,7 @@ class testGit(unittest.TestCase):
                   touch b
                   git add b
                   git commit -m b
-                  git checkout master 
+                  git checkout master
                   git clone %(path2)s %(path)s
                   """ % opts)
 
@@ -86,19 +86,19 @@ class testGit(unittest.TestCase):
         """testUrlChanged"""
         git = scm.GitFetcher()
         self.assertRaises(interfaces.FetcherRuntimeError,
-                          git.fetch, 
-                          opts['dest'], 
-                          'file://%s' % opts['path2'], 
-                          {'branch':'foo'}) 
-        git.fetch(opts['dest'], 
-                  'file://%s' % opts['path2'], 
-                  {'branch':'brancha'})  
+                          git.fetch,
+                          opts['dest'],
+                          'file://%s' % opts['path2'],
+                          {'branch':'foo'})
+        git.fetch(opts['dest'],
+                  'file://%s' % opts['path2'],
+                  {'branch':'brancha'})
         self.assertEquals(git.get_branch(opts['dest']), 'brancha')
         # test update on another branch
-        git.update(opts['dest'], 
-                  'file://%s' % opts['path2'], 
-                  {'branch':'branchb'})  
-        self.assertEquals(git.get_branch(opts['dest']), 'branchb') 
+        git.update(opts['dest'],
+                  'file://%s' % opts['path2'],
+                  {'branch':'branchb'})
+        self.assertEquals(git.get_branch(opts['dest']), 'branchb')
 
     def testUrlChanged(self):
         """testUrlChanged"""
