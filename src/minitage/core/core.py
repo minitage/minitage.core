@@ -96,7 +96,7 @@ class CircurlarDependencyError(MinimergeError):
     """There are circular dependencies in the dependency tree"""
 
 
-PYTHON_VERSIONS = ('2.4', '2.5', '2.6')
+PYTHON_VERSIONS = ('2.4', '2.5', '2.6', '2.7')
 
 
 

@@ -100,6 +100,8 @@ class BuildoutMaker(interfaces.IMaker):
         cwd = os.getcwd()
         os.chdir(directory)
         bcmd = os.path.normpath('./bin/buildout')
+        minibuild = opts.get('minibuild', None)
+        dependency_or_egg = getattr(minibuild, 'category', None) in ['dependencies', 'eggs']
         if not opts:
             opts = {}
         try:
@@ -108,10 +110,11 @@ class BuildoutMaker(interfaces.IMaker):
                 self.logger.debug('Buildout is running in verbose mode!')
                 argv.append('-vvvvvvv')
             installed_cfg = os.path.join(directory, '.installed.cfg')
-            if not opts.get('upgrade', True)\
-               and not os.path.exists(installed_cfg):
+            if (not opts.get('upgrade', True)
+                and not dependency_or_egg
+                and not os.path.exists(installed_cfg)):
                 argv.append('-N')
-            if opts.get('upgrade', False):
+            if opts.get('upgrade', False) or dependency_or_egg:
                 self.logger.debug('Buildout is running in newest mode!')
                 argv.append('-n')
             if opts.get('offline', False):
@@ -123,8 +126,6 @@ class BuildoutMaker(interfaces.IMaker):
             parts = opts.get('parts', False)
             if isinstance(parts, str):
                 parts = parts.split()
-
-            minibuild = opts.get('minibuild', None)
             category = ''
             if minibuild: category = minibuild.category
             # Try to upgrade only if we need to
