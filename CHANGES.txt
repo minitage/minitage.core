@@ -2,7 +2,7 @@ Changelog for minitage.core
 ===============================
 
 
-2.0.30 (unreleased)
+2.0.30 (2012-03-24)
 -------------------
 
 - support py27
