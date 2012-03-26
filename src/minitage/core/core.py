@@ -165,7 +165,7 @@ class Minimerge(object):
         self.verbose = options.get('verbose', False)
         self.history_dir = '.minitage'
         self._config_path = os.path.expanduser(options.get('config'))
-        self.PYTHON_VERSIONS = copy.deepcopy(PYTHON_VERSIONS)
+        self.PYTHON_VERSIONS = copy.copy(PYTHON_VERSIONS)
         if not os.path.isfile(self._config_path):
             message = 'The config file is invalid: %s' % self._config_path
             raise InvalidConfigFileError(message)
@@ -280,7 +280,7 @@ class Minimerge(object):
         # and mutating into real Minilays objects
         self._minilays = [objects.Minilay(
             path = os.path.expanduser(dir),
-            minitage_config = copy.deepcopy(self._config)) \
+            minitage_config = copy.copy(self._config)) \
             for dir in minilays_search_paths if os.path.isdir(dir)]
         if options.get('reinstall_minilays', False):
             self.reinstall_minilays()

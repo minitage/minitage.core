@@ -65,7 +65,7 @@ setup(
     url = 'http://cheeseshop.python.org/pypi/%s' % name,
     license = 'BSD',
     namespace_packages = ['minitage', name],
-    install_requires = ['iniparse', 'zc.buildout', 'minitage.paste >= 1.3.1850', 'ordereddict'],
+    install_requires = ['iniparse', 'zc.buildout', 'minitage.paste >= 1.3.1850', 'ordereddict','setuptools'],
     zip_safe = False,
     include_package_data = True,
     packages = find_packages('src'),
