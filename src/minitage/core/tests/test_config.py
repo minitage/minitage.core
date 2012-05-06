@@ -42,6 +42,7 @@ class testConfig(unittest.TestCase):
 
     def testConfig(self):
         """testConfig"""
+        os.environ['MINITAGE_TESTING'] = "1"
         path = '%s/iamauniqueminiermgeconfigtest' % sys.exec_prefix
         mydict = {'path': path}
         test1 = """
@@ -68,6 +69,7 @@ EOF""" % mydict
         self.assertRaises(core.InvalidConfigFileError, api.Minimerge, opts)
         # cleanup
         os.remove(path)
+        os.environ['MINITAGE_TESTING'] = "0"
 
 def test_suite():            
     suite = unittest.TestSuite()

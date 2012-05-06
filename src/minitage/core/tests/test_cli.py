@@ -34,6 +34,9 @@ import os
 import tempfile
 import shutil
 
+
+from pprint import pprint
+
 from minitage.core import core, cli, api
 from minitage.core.tests import test_common 
 
@@ -51,19 +54,27 @@ class TestCli(unittest.TestCase):
         """."""
         shutil.rmtree(os.path.expanduser(path)) 
     
-    def testActions(self):
+    def testCLIActions(self):
         """Test minimerge actions."""
         actions = {'-R': 'reinstall',
                    '--rm': 'delete',
                    '--install': 'install',
                    '--sync': 'sync'}
+        actions = {
+                   '--sync': 'sync'} 
         sys.argv = [sys.argv[0], '-c', 'non existing', 'foo']
         self.assertRaises(core.InvalidConfigFileError, cli.do_read_options)
+        # first upgrade per default
+        sys.argv = [sys.argv[0], '--sync', '--config', os.path.join(path, 'etc', 'minimerge.cfg'), 'foo']
+        opts = cli.do_read_options()
+        minimerge = api.Minimerge(opts) 
+        self.assertEquals(getattr(minimerge, '_action'), None)
         for action in actions:
             sys.argv = [sys.argv[0], action, '--config', os.path.join(path, 'etc', 'minimerge.cfg'), 'foo']
             opts = cli.do_read_options()
             minimerge = api.Minimerge(opts)
             self.assertEquals(getattr(minimerge, '_action'), opts['action'])
+
 
         sys.argv = [sys.argv[0], '--config', os.path.join(path, 'etc', 'minimerge.cfg'), 'foo']
         opts = cli.do_read_options()

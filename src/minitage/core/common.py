@@ -219,7 +219,7 @@ def get_from_cache(url,
         if not os.path.isdir(download_cache):
             os.makedirs(download_cache)
 
-    _, _, urlpath, _, fragment = urlparse.urlsplit(url)
+    _, netloc, urlpath, _, fragment = urlparse.urlsplit(url)
     if not fragment:
         fragment = ''
     md5_re = re.compile('md5[^=]*=(.*)', re.S|re.U)
@@ -227,6 +227,7 @@ def get_from_cache(url,
     if not file_md5 and md5_re_match:
         file_md5 = md5_re_match.groups()[0]
     filename = urlpath.split('/')[-1]
+    cache_sub_dir = '%s_%s' % (netloc, '_'.join(urlpath.split('/')[:-1]))
     if '\\' in filename and (sys.platform.startswith('cyg') or
                             sys.platform.startswith('win')):
         filename = os.path.basename(filename)
@@ -236,13 +237,17 @@ def get_from_cache(url,
     # get the file from the right place
     fname = tmp2 = file_present = ''
     if download_cache:
+        cache_sub_dir = os.path.join(download_cache, cache_sub_dir)
         # if we have a cache, try and use it
         if logger:
             logger.debug(
                 'Searching cache at %s' % download_cache)
         if os.path.isdir(download_cache):
             # just cache files for now
-            fname = os.path.join(download_cache, filename)
+            fname = os.path.join(cache_sub_dir, filename)
+        pcache_sub_dir = os.path.join(cache_sub_dir)
+        if not os.path.isdir(pcache_sub_dir):
+            os.makedirs(pcache_sub_dir) 
 
     # do not download if we have the file
     file_present = os.path.exists(fname)
@@ -296,7 +301,7 @@ def get_from_cache(url,
             tmp2 = None
             if download_cache:
                 # set up the cache and download into it
-                fname = os.path.join(download_cache, filename)
+                fname = os.path.join(cache_sub_dir, filename)
                 if logger:
                     logger.debug(
                         'Cache download %s as %s' % (
@@ -305,11 +310,11 @@ def get_from_cache(url,
                     )
             else:
                 # use tempfile
-                tmp2 = tempfile.mkdtemp('buildout-' + filename)
+                tmp2 = tempfile.mkdtemp('buildout-' + cache_sub_dir + filename)
                 fname = os.path.join(tmp2, filename)
             if logger:
                 logger.info(
-                    'Downloading %s in %s' % (url,fname)
+                    'Downloading %s in %s' % (url, fname)
                 )
 
             local_file = '/not/existing/file/or/directory'

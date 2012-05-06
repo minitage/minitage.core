@@ -40,33 +40,36 @@ setup = os.environ.get('MINITAGE_CORE_SETUPPY', None)
 
 def createMinitageEnv(directory):
     """Initialise a minitage in a particular directory."""
-
     if os.path.exists(os.path.expanduser(directory)):
         raise Exception("Please (re)move %s before test" % directory)
     # faking dev mode
-    os.chdir('/')
     module =  os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
-    mc =  os.path.dirname(module)
-    os.system("""
-              mkdir %(path)s
-              cd /
-              virtualenv %(path)s --no-site-packages
-              source %(path)s/bin/activate
-              easy_install virtualenv
-              # can be python-ver or python
-              $(ls %(path)s/bin/easy_install) -Uf "%(eggs)s" zc.buildout setuptools iniparse
-              pushd %(mc)s
-              python=$(ls -1 %(path)s/bin/python*|head -n1)
-              $python setup.py develop
-              $python -c 'from minitage.core.common import first_run;first_run()'
-              """ % {
-                  'eggs': eggs,
-                  'path': directory,
-                  'setup': setup,
-                  'module': module,
-                  'mc': mc,
-              }
-             )
+    mc =  os.path.dirname(module) 
+    script = """
+    cd /
+    virtualenv %(path)s --no-site-packages
+    source %(path)s/bin/activate
+    easy_install virtualenv
+    # can be python-ver or python
+    $(ls %(path)s/bin/easy_install) -Uf "%(eggs)s" zc.buildout setuptools iniparse
+    pushd %(mc)s
+    python=$(ls -1 %(path)s/bin/python*|head -n1)
+    $python setup.py develop
+    $python -c 'from minitage.core.common import first_run;first_run()'
+    """ % {
+        'eggs': eggs,
+        'path': directory,
+        'setup': setup,
+        'module': module,
+        'mc': mc,
+    }
+    os.makedirs(directory)
+    pscript = os.path.join(directory, 'minitage_install')
+    fic = open(pscript, 'w')
+    fic.write(script)
+    fic.close()
+    os.chdir('/')
+    os.system("bash %s" % pscript)
 
 def write(file, s):
     """Write content to a file."""

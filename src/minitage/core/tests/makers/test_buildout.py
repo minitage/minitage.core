@@ -76,7 +76,7 @@ class TestBuildout(unittest.TestCase):
         b.delete(p)
         self.assertFalse(os.path.isdir(p))
 
-    def testInstall(self):
+    def testBInstall(self):
         """testInstall"""
         mf = makers.interfaces.IMakerFactory(config)
         buildout = mf('buildout')
@@ -125,7 +125,7 @@ class TestBuildout(unittest.TestCase):
         buildout.reinstall(ipath)
         self.assertTrue(True)
 
-    def testGetOptions(self):
+    def testBGetOptions(self):
         """testGetOptions."""
         sys.argv = [sys.argv[0], '--config',
                     '%s/etc/minimerge.cfg' % path, 'minibuild-0']
@@ -135,9 +135,14 @@ class TestBuildout(unittest.TestCase):
 [minibuild]
 install_method=buildout
 """)
+        class mconfig(dict):
+            def __init__(self, *args, **kwargs):
+                dict.__init__(self, *args, **kwargs)
+                self._sections = {'minibuild':{'buildout_parts': ''}}
         minibuild = api.Minibuild('minibuild')
         minibuild.category = 'eggs'
         minibuild.name = 'toto'
+        minibuild.minibuild_config = mconfig()
         mf = makers.interfaces.IMakerFactory(config)
         buildout = mf('buildout')
         pyvers = {'python_versions': ['2.4', '2.5']}

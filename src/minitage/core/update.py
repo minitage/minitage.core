@@ -41,6 +41,7 @@ def upperl(minitage):
 def reinstall_minilays(self):
     self.logger.info('Reinstallating minitage default minileys !')
     self.reinstall_minilays()
+    self.load_minilays()
 
 def updateHistory(self, force=False):
         """Copy the current minibuild prior to minimerge -s

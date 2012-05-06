@@ -223,29 +223,18 @@ class Minimerge(object):
         self._action = options.get('action', False)
 
         self._minilays = []
-        minilays_search_paths = []
-        # minilays can be ovvrided by env["MINILAYS"]
-        minilays_search_paths.extend(
-            os.environ.get('MINILAYS', '').strip().split()
-        )
+        
         self.first_run = options.get('first_run', False)
-        # minilays are in minilays/
-        minilays_parent = os.path.join(self._prefix, 'minilays')
-        self.minilays_parent = minilays_parent
-        if os.path.isdir(minilays_parent):
-            minilays_search_paths.extend([os.path.join(minilays_parent, dir)
-                                        for dir in os.listdir(minilays_parent)])
-        # they are too in etc/minmerge.cfg[minilays]
-        minimerge_section = self._config._sections.get('minimerge', {})
-        minilays_section = minimerge_section.get('minilays', '')
-        minilays_search_paths.extend(minilays_section.strip().split())
 
+        # they are too in etc/minmerge.cfg[minilays]
+        self.minimerge_section = self._config._sections.get('minimerge', {})
+        
         # minitage binaries
         self.use_binaries = options.get('binary', False)
 
-        self.binaries_urls = minimerge_section.get('binaries_url', '').strip().split()
-        self.binaries_platform = minimerge_section.get('binaries_platform', '').strip()
-        self.binaries_arch = minimerge_section.get('binaries_arch', '').strip()
+        self.binaries_urls = self.minimerge_section.get('binaries_url', '').strip().split()
+        self.binaries_platform = self.minimerge_section.get('binaries_platform', '').strip()
+        self.binaries_arch = self.minimerge_section.get('binaries_arch', '').strip()
         if not self.binaries_platform in ('linux2'):
             if not self.binaries_platform == sys.platform:
                 self.binaries_platform = None
@@ -261,7 +250,33 @@ class Minimerge(object):
         # installed binaries packages
         self._binaries = []
 
+
+        self.load_minilays()
+        if options.get('reinstall_minilays', False):
+            self.reinstall_minilays()
+        self.pyvers = {}
+        # TODO: desactivating :: need MORE TESTS !!!
+        if not options.get('skip_self_upgrade', False):
+            self.update()
+
+
+    def load_minilays(self):
+        # filtering valid ones
+        # and mutating into real Minilays objects
         # sortings pathes to let the default minilays be at worse priority
+        minilays_search_paths = []
+        # minilays can be ovvrided by env["MINILAYS"]
+        minilays_search_paths.extend(
+            os.environ.get('MINILAYS', '').strip().split()
+        )
+        minilays_section = self.minimerge_section.get('minilays', '')
+        minilays_search_paths.extend(minilays_section.strip().split())  
+        # minilays are in minilays/
+        minilays_parent = os.path.join(self._prefix, 'minilays')
+        self.minilays_parent = minilays_parent
+        if os.path.isdir(minilays_parent):
+            minilays_search_paths.extend([os.path.join(minilays_parent, dir)
+                                        for dir in os.listdir(minilays_parent)]) 
         def minilays_sort(path, path2):
             if os.path.dirname(path2) == self.minilays_parent:
                 if os.path.basename(
@@ -274,21 +289,12 @@ class Minimerge(object):
                 ) in self.get_default_minilays():
                     return 1
             return 0
-        minilays_search_paths.sort(minilays_sort)
-
-        # filtering valid ones
-        # and mutating into real Minilays objects
+        minilays_search_paths.sort(minilays_sort) 
         self._minilays = [objects.Minilay(
             path = os.path.expanduser(dir),
-            minitage_config = copy.copy(self._config)) \
-            for dir in minilays_search_paths if os.path.isdir(dir)]
-        if options.get('reinstall_minilays', False):
-            self.reinstall_minilays()
-        self.pyvers = {}
-        # TODO: desactivating :: need MORE TESTS !!!
-        if not options.get('skip_self_upgrade', False):
-            self.update()
-
+            minitage_config = copy.copy(self._config)) 
+            for dir in minilays_search_paths
+            if os.path.isdir(dir)] 
 
     def update(self):
         updates = up.UPDATES.keys()
@@ -336,7 +342,8 @@ class Minimerge(object):
                                           '#minitage@irc.freenode.org')
                         self.logger.error('Give them this snippet: %s' % todo)
                         self.logger.error('Give them this error also: %s' % e)
-                        sys.exit(1)
+                        if not os.environ.get('MINITAGE_TESTING', '') == '1':
+                            sys.exit(1)
         self.store_config()
 
     def find_minibuild(self, package):

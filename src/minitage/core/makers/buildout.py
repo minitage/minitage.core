@@ -95,6 +95,8 @@ class BuildoutMaker(interfaces.IMaker):
             - dir : directory where the packge is
             - opts : arguments for the maker
         """
+        if opts is None:
+            opts = {}
         self.logger.info('Running buildout in %s (%s)' % (directory,
                                                           self.buildout_config))
         cwd = os.getcwd()
