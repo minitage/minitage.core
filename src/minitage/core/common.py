@@ -227,7 +227,8 @@ def get_from_cache(url,
     if not file_md5 and md5_re_match:
         file_md5 = md5_re_match.groups()[0]
     filename = urlpath.split('/')[-1]
-    cache_sub_dir = '%s_%s' % (netloc, '_'.join(urlpath.split('/')[:-1]))
+    #cache_sub_dir = '%s_%s' % (netloc, '_'.join(urlpath.split('/')[:-1]))
+    cache_sub_dir = ""
     if '\\' in filename and (sys.platform.startswith('cyg') or
                             sys.platform.startswith('win')):
         filename = os.path.basename(filename)
