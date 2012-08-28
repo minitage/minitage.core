@@ -2,25 +2,12 @@
 __docformat__ = 'restructuredtext en'
 
 import sys
-import os
-import re
-import shutil
 
-from minitage.core.cli import do_read_options
-from minitage.core import core
-from minitage.core.common import first_run
+from minitage.core.cli import get_minimerge
 
 def launch():
     try:
-        prefix = os.path.abspath(sys.exec_prefix)
-        config = os.path.join(prefix, 'etc', 'minimerge.cfg')
-        firstrun = False
-        if not os.path.isfile(config):
-            firstrun = True
-            first_run()
-        options = do_read_options()
-        options['first_run'] = firstrun
-        minimerge = core.Minimerge(options)
+        minimerge = get_minimerge()
         minimerge.main()
     except Exception, e:
         #raise

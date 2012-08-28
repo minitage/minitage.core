@@ -35,6 +35,7 @@ import sys
 import optparse
 
 from minitage.core import core
+from minitage.core.common import first_run
 
 
 usage = """
@@ -49,7 +50,32 @@ IMPORTANT NODE: buildout is running by default in non newest mode, see -u option
 """ % {'arg': sys.argv[0]}
 
 
-def do_read_options():
+class Options(object):
+    action              = None
+    ask                 = False
+    config              = None
+    debug               = False
+    fetchfirst          = False
+    fetchonly           = False
+    jump                = False
+    nodeps              = False
+    offline             = False
+    packages            = []
+    path                = None
+    pretend             = False
+    sync                = False
+    reinstall_minilays  = False
+    reinstall           = False
+    update              = False
+    upgrade             = False
+    verbose             = True
+    only_dependencies   = False
+    all_python_versions = False
+    reinstall_minilays  = False
+    binary              = False
+    skip_self_upgrade   = False
+
+def do_read_options(read_options=True):
     """Parse the command line thought arguments
        and throws CliError if any error.
     Returns
@@ -108,7 +134,7 @@ def do_read_options():
                              help = reinstall_help),
         optparse.make_option('-E', '--generate-env',
                              action='store_true', dest='generate_env',
-                             help =  '(re)generate instance .env shell file'), 
+                             help =  '(re)generate instance .env shell file'),
         optparse.make_option('--rm',
                              action='store_true', dest='delete',
                              help = delete_help),
@@ -139,10 +165,10 @@ def do_read_options():
                              help = pretend_help),
         optparse.make_option('--only-dependencies',
                              action='store_true', dest='only_dependencies',
-                             help = only_dependencies_help), 
+                             help = only_dependencies_help),
         optparse.make_option('--all-python-versionss',
                              action='store_true', dest='all_python_versions',
-                             help = all_python_versions_help),  
+                             help = all_python_versions_help),
         optparse.make_option('-a', '--ask',
                              action='store_true', dest='ask',
                              help = ask_help),
@@ -172,7 +198,14 @@ def do_read_options():
                          (flags_group, flags)]
     ]
     [parser.add_option_group(group) for group in [actions_group, modifiers_group, flags_group]]
-    (options, args) = parser.parse_args()
+    if read_options:
+        (options, args) = parser.parse_args()
+    else:
+        # grabs defaults
+
+        options = Options()
+        options.path = path
+        args = []
 
     if (options.reinstall and options.delete) or\
        (options.fetchonly and options.offline) or \
@@ -183,18 +216,20 @@ def do_read_options():
         message = 'You must precise which packages you want to deal with'
         raise core.NoPackagesError(message)
 
-    if len(sys.argv) == 1:
-        print 'minimerge v%s' % parser.version
-        parser.print_usage()
-        print '\'%s --help\' for more inforamtion on usage.' % sys.argv[0]
 
     actionsCount = 0
-    for action in [options.reinstall, options.install, options.delete]:
-        if action:
-            actionsCount += 1
-    if actionsCount > 1:
-        message = 'You must precise only one action at a time'
-        raise core.TooMuchActionsError(message)
+    if read_options:
+        if len(sys.argv) == 1:
+            print 'minimerge v%s' % parser.version
+            parser.print_usage()
+            print '\'%s --help\' for more inforamtion on usage.' % sys.argv[0]
+
+        for action in [options.reinstall, options.install, options.delete]:
+            if action:
+                actionsCount += 1
+        if actionsCount > 1:
+            message = 'You must precise only one action at a time'
+            raise core.TooMuchActionsError(message)
 
     if options.delete:
         options.action = 'delete'
@@ -205,10 +240,9 @@ def do_read_options():
     elif options.install:
         options.action = 'install'
     elif options.generate_env:
-        options.action = 'generate_env' 
+        options.action = 'generate_env'
     else:
         options.action = default_action
-
     if not options.config:
         for file in ['%s/etc/minimerge.cfg' % path, '~/.minimerge.cfg']:
             file = os.path.expanduser(file)
@@ -248,4 +282,18 @@ def do_read_options():
         'skip_self_upgrade': options.skip_self_upgrade,
     }
     return minimerge_options
+
+def get_minimerge(read_options=True):
+    prefix = os.path.abspath(sys.exec_prefix)
+    config = os.path.join(prefix, 'etc', 'minimerge.cfg')
+    firstrun = False
+    if not os.path.isfile(config):
+        firstrun = True
+        first_run()
+    options = do_read_options()
+    options['first_run'] = firstrun
+    if not read_options:
+        options['nolog'] = True
+    minimerge = core.Minimerge(options)
+    return minimerge
 
