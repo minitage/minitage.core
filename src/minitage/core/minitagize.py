@@ -72,6 +72,7 @@ def sbuildouts(directory):
 def make_minilay(directory, buildouts):
     minimerge = get_minimerge(read_options=False)
     default_minibuild = os.path.basename(directory)
+    categ = os.path.basename(os.path.dirname(directory))
     minilayname = '0%s' % hashlib.md5(directory).hexdigest()
     minilaydir = os.path.join(minimerge.minilays_parent, minilayname)
     minibuild = os.path.join(minilaydir, os.path.basename(directory))
@@ -82,6 +83,7 @@ def make_minilay(directory, buildouts):
         os.makedirs(minilaydir)
     MINIBUILDS = []
     MCONTENT = open(os.path.join(DATA, 'minibuild')).read()
+    MCONTENT = re.sub('category=.*', 'category=%s'%categ, MCONTENT)
 
     def minibuild(cfg):
         minibuild_content = MCONTENT
