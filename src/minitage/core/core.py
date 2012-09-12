@@ -223,12 +223,12 @@ class Minimerge(object):
         self._action = options.get('action', False)
 
         self._minilays = []
-        
+
         self.first_run = options.get('first_run', False)
 
         # they are too in etc/minmerge.cfg[minilays]
         self.minimerge_section = self._config._sections.get('minimerge', {})
-        
+
         # minitage binaries
         self.use_binaries = options.get('binary', False)
 
@@ -270,13 +270,13 @@ class Minimerge(object):
             os.environ.get('MINILAYS', '').strip().split()
         )
         minilays_section = self.minimerge_section.get('minilays', '')
-        minilays_search_paths.extend(minilays_section.strip().split())  
+        minilays_search_paths.extend(minilays_section.strip().split())
         # minilays are in minilays/
         minilays_parent = os.path.join(self._prefix, 'minilays')
         self.minilays_parent = minilays_parent
         if os.path.isdir(minilays_parent):
             minilays_search_paths.extend([os.path.join(minilays_parent, dir)
-                                        for dir in os.listdir(minilays_parent)]) 
+                                        for dir in os.listdir(minilays_parent)])
         def minilays_sort(path, path2):
             if os.path.dirname(path2) == self.minilays_parent:
                 if os.path.basename(
@@ -289,12 +289,12 @@ class Minimerge(object):
                 ) in self.get_default_minilays():
                     return 1
             return 0
-        minilays_search_paths.sort(minilays_sort) 
+        minilays_search_paths.sort(minilays_sort)
         self._minilays = [objects.Minilay(
             path = os.path.expanduser(dir),
-            minitage_config = copy.copy(self._config)) 
+            minitage_config = copy.copy(self._config))
             for dir in minilays_search_paths
-            if os.path.isdir(dir)] 
+            if os.path.isdir(dir)]
 
     def update(self):
         updates = up.UPDATES.keys()
@@ -1248,6 +1248,8 @@ class Minimerge(object):
             if force:
                 action = 'reinstall'
             self._do_action(action, [package], pyvers=pyvers)
+        self._update  = update
+        self._upgrade = upgrade
 
     def get_default_minilays(self):
         return [s.strip() \

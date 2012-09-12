@@ -91,17 +91,21 @@ def migrate_minibuilds_to_new_libs_2019(self):
 
 
 def reinstall_pil(self):
+    self._sync(['dependencies', 'eggs'])
     pys = []
     for v in self.PYTHON_VERSIONS:
         py = self._find_minibuild('python-%s' % v)
         if self.is_installed(py):
             pys.append(v)
     pil = self._find_minibuild('pil-1.1.7')
-    update, upgrade = self._update, self._upgrade
+    update = self._update
+    upgrade = self._upgrade
+    packages = self._packages
+    nodeps = self._nodeps
     for v in pys:
         self.pyvers = {pil.name: [v]}
         if self.is_installed(pil):
-            for p in (glob(self._prefix+'/eggs/cache/PIL-1.1.7*%s*'%v)+ 
+            for p in (glob(self._prefix+'/eggs/cache/PIL-1.1.7*%s*'%v)+
                       glob(self._prefix+'/eggs/cache/Pillow-1.7.7*%s*'%v)) :
                 print "DELETING OLD PIL FOR PYTHON%s" % v
                 remove_path(p)
@@ -110,8 +114,14 @@ def reinstall_pil(self):
             reinstalled = [a.name for a in pps]
             if not 'pil-1.1.7' in reinstalled:
                 reinstalled.append('pil-1.1.7')
-            self.reinstall_packages(reinstalled, force=True, pyvers=self.pyvers)
-    self._update, self._upgrade = update, upgrade
+            self._packages=reinstalled
+            self.reinstall_packages(reinstalled,
+                                    force=True,
+                                    pyvers=self.pyvers)
+    self._update    = update
+    self._upgrade   = upgrade
+    self._packages  = packages
+    self._nodeps    = nodeps
 
 def migrate_minibuilds_to_new_libs_2029(self):
     self._sync(['dependencies', 'eggs'])
@@ -174,6 +184,6 @@ UPDATES['2.0.28'] = [
 UPDATES['2.0.41'] = [
     reinstall_pil,
 ]
- 
+
 
 # vim:set et sts=4 ts=4 tw=80:
