@@ -101,7 +101,8 @@ def reinstall_pil(self):
     for v in pys:
         self.pyvers = {pil.name: [v]}
         if self.is_installed(pil):
-            for p in glob(self._prefix+'/eggs/cache/PIL-1.1.7*%s*'%v):
+            for p in (glob(self._prefix+'/eggs/cache/PIL-1.1.7*%s*'%v)+ 
+                      glob(self._prefix+'/eggs/cache/Pillow-1.7.7*%s*'%v)) :
                 print "DELETING OLD PIL FOR PYTHON%s" % v
                 remove_path(p)
             ps = self._compute_dependencies([pil.name])
@@ -170,5 +171,9 @@ UPDATES['2.0.19'] = [
 UPDATES['2.0.28'] = [
     migrate_minibuilds_to_new_libs_2029 ,
 ]
+UPDATES['2.0.41'] = [
+    reinstall_pil,
+]
+ 
 
 # vim:set et sts=4 ts=4 tw=80:
