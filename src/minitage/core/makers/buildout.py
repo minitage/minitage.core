@@ -232,12 +232,20 @@ class BuildoutMaker(interfaces.IMaker):
                 vers = minitage.core.core.PYTHON_VERSIONS
             parts = ['site-packages-%s' % ver for ver in vers]
 
-        options['parts'] = parts
         self.buildout_config = minibuild.minibuild_config._sections[
             'minibuild'].get('buildout_config',
                              'buildout.cfg')
+        content = ''
+        if minibuild.category == 'eggs':
+            try:
+                fic = open(os.path.join(minimerge.get_install_path(minibuild), self.buildout_config))
+                content = fic.read()
+                fic.close()
+            except:
+                pass
+            parts = [p for p in parts+['site-packages'] if '[%s]'%p in content]
 
-
+        options['parts'] = parts
         # prevent buildout from running if we have already installed stuff
         # and do not want to upgrade.
         options['upgrade'] = minimerge.getUpgrade()
