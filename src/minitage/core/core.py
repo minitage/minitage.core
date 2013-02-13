@@ -52,6 +52,7 @@ from minitage.core.makers import interfaces as makers
 from minitage.core.version import __version__
 from minitage.core import update as up
 from minitage.core.common import newline
+from minitage.core.common import PYTHON_VERSIONS
 
 try:
     from os import uname
@@ -96,7 +97,6 @@ class CircurlarDependencyError(MinimergeError):
     """There are circular dependencies in the dependency tree"""
 
 
-PYTHON_VERSIONS = ('2.4', '2.5', '2.6', '2.7')
 
 
 
@@ -749,6 +749,7 @@ class Minimerge(object):
                 # set offline and debug mode
                 options['offline'] = self._offline
                 options['minibuild'] = package
+                options['minimerge'] = self
                 options['debug'] = self._debug
                 options['verbose'] = self.verbose
 

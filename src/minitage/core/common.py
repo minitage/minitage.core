@@ -53,6 +53,9 @@ from pkg_resources import Requirement, resource_filename
 from minitage.core.version import __version__
 letter_re = re.compile('^((?P<letter>[a-zA-Z]):)(?P<path>.*)', re.U|re.S|re.I)
 
+
+PYTHON_VERSIONS = ('2.4', '2.5', '2.6', '2.7')
+
 def newline(fic):
     "keep just one new line at the end of the config!"""
     lines = open(fic).readlines()

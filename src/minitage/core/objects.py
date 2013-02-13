@@ -32,13 +32,17 @@
 __docformat__ = 'restructuredtext en'
 
 import os
+import sys
 import ConfigParser
 import shutil
 import re
 from ordereddict import OrderedDict
 
 from minitage.core import collections
-from minitage.core.common  import newline
+from minitage.core.common  import (
+    newline,
+    PYTHON_VERSIONS,
+)
 from iniparse import ConfigParser as WritableConfigParser
 
 try:
@@ -204,6 +208,7 @@ class Minibuild(object):
      - False: not ;loaded
      - True:  loaded
     It will read those options in the minibuild section
+      - python : (optionna) python to boostrap buildout with (default to latest present in dependencies or sys.executable)
       - src_uri : url to fetch from
       - src_type : how to fetch (valid methods are 'svn' and 'hg', and 'git',
       and 'bzr')
@@ -244,11 +249,12 @@ class Minibuild(object):
         self.minibuild_config = None
         self.loaded = None
         self.section = None
+        self.python = None
 
     def __getattribute__(self, attr):
         """Lazyload stuff."""
         lazyloaded = ['config', 'url', 'revision', 'category', 'src_md5',
-                      'raw_dependencies', 'scm_branch',
+                      'raw_dependencies', 'scm_branch', 'python',
                       'dependencies', 'description','src_opts',
                       'src_type', 'install_method', 'src_type']
         if attr in lazyloaded and not self.loaded:
@@ -374,7 +380,7 @@ class Minibuild(object):
 
         self.parse_vars()
         self.minibuild_config = config
-
+        self.python = self.choose_python(section.get('python','').strip())
         return self
 
     def write(self,
@@ -389,6 +395,7 @@ class Minibuild(object):
               category = None,
               src_opts = None,
               src_md5 = None,
+              python = None,
               scm_branch = None,
              ):
         """Store/Update the minibuild config
@@ -404,6 +411,7 @@ class Minibuild(object):
             ('src_md5', src_md5),
             ('url', url),
             ('src_opts', src_opts),
+            ('python', python),
             ('scm_branch', scm_branch),]
         )
 
@@ -456,5 +464,26 @@ class Minibuild(object):
                                         variables[pattern]
                                     )
                                 )
+
+
+    def choose_python(self, pyname=None):
+        python = sys.executable
+        spys = ['python-%s' % a for a in PYTHON_VERSIONS]
+        prefix = os.path.join(self.minitage_config.get('minimerge', 'prefix'))
+        if not self.category in ['dependencies']:
+            if pyname in spys and not pyname in self.dependencies:
+                self.dependencies.append(pyname)
+            a_pys = [p for p in self.dependencies if p in spys]
+            a_pys.sort()
+            if a_pys:
+                if pyname in a_pys:
+                    py = pyname
+                else:
+                    py = a_pys[0]
+                python = os.path.join(
+                    prefix, 'dependencies', py,
+                    'parts', 'part', 'bin', 'python'
+                )
+        return python
 
 # vim:set et sts=4 ts=4 tw=80:

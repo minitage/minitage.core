@@ -152,6 +152,7 @@ class BuildoutMaker(interfaces.IMaker):
             #        'bin',
             #        'buildout')):
             bootstrap_args = ''
+            py = self.choose_python(directory, opts)
             if os.path.exists('bootstrap.py'):
                 # if this bootstrap.py supports distribute, just use it!
                 content = open('bootstrap.py').read()
@@ -160,7 +161,7 @@ class BuildoutMaker(interfaces.IMaker):
                     bootstrap_args += ' %s ' % '--distribute'
                 bootstrap_args += ' -c %s ' % self.buildout_config
                 minitage.core.common.Popen(
-                    '%s bootstrap.py %s ' % (sys.executable, bootstrap_args,),
+                    '%s bootstrap.py %s ' % (py, bootstrap_args,),
                     opts.get('verbose', False)
                 )
             else:
@@ -194,6 +195,13 @@ class BuildoutMaker(interfaces.IMaker):
             os.chdir(cwd)
             raise BuildoutError('Buildout failed:\n\t%s' % instance)
         os.chdir(cwd)
+
+    def choose_python(self, directory, opts):
+        python = sys.executable
+        mb =  opts.get('minibuild', None)
+        if os.path.exists(mb.python):
+            python = mb.python
+        return python
 
     def get_options(self, minimerge, minibuild, **kwargs):
         """Get python options according to the minibuild and minimerge instance.
