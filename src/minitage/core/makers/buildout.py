@@ -33,6 +33,7 @@ import os
 import sys
 import logging
 
+import urllib2
 
 from minitage.core.makers  import interfaces
 import minitage.core.core
@@ -156,6 +157,40 @@ class BuildoutMaker(interfaces.IMaker):
             if os.path.exists('bootstrap.py'):
                 # if this bootstrap.py supports distribute, just use it!
                 content = open('bootstrap.py').read()
+                # special handly plone case
+                buildout1 = False
+                try:
+                    def findcfgs(path, cfgs=None):
+                        if not cfgs: cfgs=[]
+                        for p, ids, ifs in os.walk(path):
+                            for i in ifs:
+                                if i.endswith('.cfg'):
+                                    cfgs.append(os.path.join(p, i))
+                        return cfgs
+                    files = findcfgs('.')
+                    for f in files:
+                        fic = open(f)
+                        if 'buildout.dumppick' in fic.read():
+                            buildout1 = True
+                        fic.close()
+                except Exception, e:
+                    pass
+                if buildout1:
+                    # try to donwload an uptodate bootstrap
+                    try:
+                        try:
+                            open(os.path.join(opts['minimerge'].history_dir, 'updated_bootstrap'))
+                        except:
+                            fic = open('bootstrap.py', 'w')
+                            data = urllib2.urlopen('http://downloads.buildout.org/1/bootstrap.py').read()
+                            fic.write(data)
+                            fic.close()
+                            self.logger.info('Bootstrap updated')
+                            fic = open(os.path.join(opts['minimerge'].history_dir, 'updated_bootstrap'), 'w')
+                            fic.write('foo')
+                            fic.close()
+                    except:
+                        pass
                 if '--distribute' in content:
                     self.logger.warning('Using distribute !')
                     bootstrap_args += ' %s ' % '--distribute'

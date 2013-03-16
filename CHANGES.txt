@@ -5,7 +5,7 @@ Changelog for minitage.core
 2.0.46 (unreleased)
 -------------------
 
-- Nothing changed yet.
+- try to detect buildout infra < 1 & run a buildout1 boostrap in case
 
 
 2.0.45 (2013-02-13)
