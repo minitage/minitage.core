@@ -49,7 +49,7 @@ def isbuildout(cfg):
         data = open(cfg).read()
         if (
              not re.search('\/minitage.[^/]*\.cfg', cfg)
-            and not re.search('\/\.[^/]*\.cfg', cfg)   
+            and not re.search('\/\.[^/]*\.cfg', cfg)
             and ('[buildout]' in data or '[versions]' in data)
         ):
             ret = True
@@ -65,9 +65,17 @@ def relative(path1, path2):
 
 
 def sbuildouts(directory):
-    return [os.path.join(directory, a)
-            for a in os.listdir(directory)
+    contents = os.listdir(directory)
+    bs =  [os.path.join(directory, a)
+            for a in contents
             if isbuildout(os.path.join(directory, a))]
+    plips = os.path.join(directory, 'plips')
+    if 'plips' in contents:
+        bs += [os.path.join(plips, a)
+               for a in os.listdir(plips)
+               if isbuildout(os.path.join(plips, a))]
+    bs = [a for a in bs if not a.startswith('minitage')]
+    return bs
 
 def make_minilay(directory, buildouts):
     minimerge = get_minimerge(read_options=False)
@@ -86,7 +94,7 @@ def make_minilay(directory, buildouts):
         os.makedirs(minilaydir)
     MINIBUILDS = []
     MCONTENT = open(os.path.join(DATA, 'minibuild')).read()
-    MCONTENT = re.sub('category=.*', 
+    MCONTENT = re.sub('category=.*',
                       'category=%s'% categ, MCONTENT)
     configs_mapping = dict([(os.path.basename(a),
                              buildouts[a])
@@ -95,13 +103,13 @@ def make_minilay(directory, buildouts):
     def minibuild(cfg):
         minibuild_content = MCONTENT
         minibuild_content = re.sub(
-            'buildout_config=.*', 
+            'buildout_config=.*',
             'buildout_config=%s' % (
                 os.path.basename(
                     configs_mapping.get(
                         cfg, 'minitage.buildout.cfg'
                     )
-                ) 
+                )
             )
             ,minibuild_content
         )
@@ -132,14 +140,22 @@ def make_minilay(directory, buildouts):
         f.write(minibuild_content)
         f.close()
 
-def wrap(buildout):
-    directory = os.path.dirname(buildout)
+def wrap(buildout, directory=None):
+    if not directory:
+        directory = os.path.dirname(buildout)
+    buildout_dir = os.path.dirname(buildout)
+    buildout_name = os.path.basename(buildout)
+    prefix = relative(
+        directory,
+        os.path.dirname(buildout)
+    ).replace('/', '_').replace('.', '_')
+    if prefix and prefix != '_': prefix += '-'
+    else: prefix = ''
     m = os.path.join(directory, '.minitagecfg')
     cache = os.path.join(directory, '.cache')
-    b = os.path.join(m, os.path.basename(buildout))
-    d = os.path.join(
-        directory,
-        'minitage.%s' % os.path.basename(buildout))
+    newcfg = prefix+buildout_name
+    b = os.path.join(m, newcfg)
+    d = os.path.join(directory, 'minitage.%s' % newcfg)
     cfg = ''
     for match, config in targets:
         if match.search(buildout):
@@ -149,21 +165,36 @@ def wrap(buildout):
         logger.warn('%s cant be wrapped!' % buildout)
     logger.warn(
         "Wraping %s (%s) in %s->%s" % (buildout, config, d, b))
-    if not os.path.isdir(cache):
-        os.makedirs(cache)
-    if not os.path.isdir(m):
-        os.makedirs(m)
+    if not os.path.isdir(cache): os.makedirs(cache)
+    if not os.path.isdir(m): os.makedirs(m)
     copy_tree(os.path.join(DATA, 'wrap'), m)
     f = open(b, 'w')
-    f.write(TEMPLATE % {
-        'orig': relative( directory, buildout), 
-        'wrapper': relative(directory, os.path.join(m, cfg))
-    })
-    if os.path.exists(d): 
-        os.unlink(d)
+    cfgwrap = relative(directory, os.path.join(m, cfg))
+    if not cfg in cfgwrap:
+        cfgwrap = relative(os.path.join(m, cfg), directory)
+    contents = TEMPLATE % {
+        'orig': relative(directory, buildout),
+        'wrapper': cfgwrap
+    }
+    if "plip" in buildout:
+        contents += PLIP
+    f.write(contents)
+    if os.path.exists(d): os.unlink(d)
     os.symlink(b, d)
     f.close()
     return d
+
+PLIP = """
+[buildout]
+develop-eggs-directory = develop-eggs
+bin-directory = ${buildout:directory}/bin
+parts-directory = ${buildout:directory}/parts
+sources-dir = ${buildout:directory}/src
+installed = ${buildout:directory}/.installed.cfg
+[instance]
+var = ${buildout:directory}/var
+"""
+
 
 def main():
     (options, args) = parser.parse_args()
@@ -186,7 +217,7 @@ def main():
     installed = {}
     for i in buildouts:
         try:
-           installed[i] = wrap(i)
+           installed[i] = wrap(i, directory)
         except Exception, e:
             logger.warn('cant wrap; %s' % i)
     helper = os.path.join(directory, '.minitagecfg', 'b.sh')
