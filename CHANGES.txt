@@ -2,7 +2,7 @@ Changelog for minitage.core
 ===============================
 
 
-2.0.48 (unreleased)
+2.0.48 (2013-03-25)
 -------------------
 
 - Better minitagify template (travis, qa)
