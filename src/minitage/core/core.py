@@ -52,6 +52,7 @@ from minitage.core.makers import interfaces as makers
 from minitage.core.version import __version__
 from minitage.core import update as up
 from minitage.core.common import newline
+from minitage.core.fetchers.interfaces import InvalidUrlError
 from minitage.core.common import PYTHON_VERSIONS
 
 try:
@@ -959,7 +960,7 @@ class Minimerge(object):
                         if not package.name.startswith('meta-'):
                             # fetch if not offline
                             if not (self._offline or self._action == 'delete'):
-                                self._fetch(package)
+                                self.fetch(package)
                     # if we do not want just to fetch, let's go ,
                     # (install|delete|reinstall) baby.
                     if not self._fetchonly:
@@ -971,7 +972,7 @@ class Minimerge(object):
                         if not package.name.startswith('meta-'):
                             # fetch if not offline
                             if not (self._offline or self._action == 'delete'):
-                                self._fetch(package)
+                                self.fetch(package)
                             # if we do not want just to fetch, let's go ,
                             if not self._fetchonly:
                                 # (install|delete|reinstall|generate_env) baby.
@@ -1236,6 +1237,29 @@ class Minimerge(object):
             )
         return ip
 
+    def fetch(self, package):
+        message = (
+            '%s was not fetched correctly '
+            'but as buildout is there, we continue' % (
+                package.name)
+        )
+        try:
+            self._fetch(package)
+        except Exception, e:
+            fail = True
+            if package.install_method == 'buildout':
+
+                mf = makers.IMakerFactory(self._config_path)
+                buildout = mf(package.install_method)
+                buildout.get_options(self, package)
+                if os.path.exists(
+                    os.path.join(
+                        self.get_install_path(package),
+                        buildout.buildout_config)):
+                    fail = False
+                    self.logger.error(message)
+            if fail:
+                raise
 
     def reinstall_packages(self, packages, force=False, pyvers=None):
         update  = self._update
@@ -1244,7 +1268,7 @@ class Minimerge(object):
         self._upgrade = True
         for package in packages:
             package = self.find_minibuild(package)
-            self._fetch(package)
+            self.fetch(package)
             action = 'install'
             if force:
                 action = 'reinstall'
