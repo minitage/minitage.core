@@ -91,6 +91,7 @@ def do_read_options(read_options=True):
 
     default_action = 'install'
     path = sys.exec_prefix
+    nofetch_help = 'Skip fetch (offline implicitly enable nofetch)'
 
     offline_help = 'Build offline, do not try to connect outside.'
     debug_help = 'Run in debug mode'
@@ -152,6 +153,9 @@ def do_read_options(read_options=True):
         optparse.make_option('-f', '--fetchfirst',
                              action='store_true', dest='fetchfirst',
                              help = fetchfirst_help),
+        optparse.make_option('--nofetch',
+                             action='store_true', dest='nofetch',
+                             help = nofetch_help), 
         optparse.make_option('-k', '--use-binaries',
                              action='store_true', dest='binary',
                              help = 'Search and install binaries instead of classicly compile.'),
@@ -273,6 +277,7 @@ def do_read_options(read_options=True):
         'path': path,
         'pretend': options.pretend,
         'update': options.update,
+        'nofetch': options.nofetch,
         'upgrade': options.upgrade,
         'verbose': options.verbose,
         'only_dependencies': options.only_dependencies,

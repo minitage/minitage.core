@@ -219,6 +219,9 @@ class Minimerge(object):
                                     .get('minimerge', {}).get('offline', False))
 
         self._packages = options.get('packages', [])
+        self._nofetch = options.get('nofetch', False)
+        if self._offline:
+            self._nofetch = True
 
         # what are we doing
         self._action = options.get('action', False)
@@ -595,14 +598,10 @@ class Minimerge(object):
             pm = self.pyvers
             if package.name in pm:
                 versions = pm[package.name]
-            for version in versions:
-                if self.is_package_marked(package, 'install-%s' % version):
-                    ret = True
-                else:
-                    ret = False
-                    break
+                ret = True in [self.is_package_marked(package, 'install-%s' % version)
+                               for version in versions]
         # minitage has got the revision and history system
-        elif self.is_package_marked(package, 'install'):
+        if not ret and self.is_package_marked(package, 'install'):
             ret = True
         return ret
 
@@ -1238,6 +1237,9 @@ class Minimerge(object):
         return ip
 
     def fetch(self, package):
+        if self._nofetch:
+            self.logger.warn('Skip fetch')
+            return
         message = (
             '%s was not fetched correctly '
             'but as buildout is there, we continue' % (

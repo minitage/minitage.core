@@ -176,14 +176,20 @@ class BuildoutMaker(interfaces.IMaker):
                 except Exception, e:
                     pass
                 if buildout1:
-                    # try to donwload an uptodate bootstrap
+                    booturl = 'http://downloads.buildout.org/1/bootstrap.py'
+                    #booturl = 'file:///opt/off-minitage/sources/buildout/bootstrap/bootstrap.py'
+                else:
+                    booturl = 'http://downloads.buildout.org/2/bootstrap.py'
+                # try to donwload an uptodate bootstrap
+                if not opts['minimerge']._offline:
                     try:
                         try:
                             open(os.path.join(opts['minimerge'].history_dir, 'updated_bootstrap'))
                         except:
                             fic = open('bootstrap.py', 'w')
-                            data = urllib2.urlopen('http://downloads.buildout.org/1/bootstrap.py').read()
+                            data = urllib2.urlopen(booturl).read()
                             fic.write(data)
+                            content = data
                             fic.close()
                             self.logger.info('Bootstrap updated')
                             fic = open(os.path.join(opts['minimerge'].history_dir, 'updated_bootstrap'), 'w')
@@ -253,9 +259,10 @@ class BuildoutMaker(interfaces.IMaker):
                   python to compile against.
         """
         options = {}
-        parts = self.buildout_config = [a.strip() 
-                                        for a in minibuild.minibuild_config._sections[
-                                            'minibuild'].get('buildout_parts', '').split()] 
+        parts = self.buildout_config = [
+            a.strip()
+            for a in minibuild.minibuild_config._sections[
+                'minibuild'].get('buildout_parts', '').split()]
         if kwargs is None:
             kwargs = {}
 
@@ -286,7 +293,6 @@ class BuildoutMaker(interfaces.IMaker):
         options['upgrade'] = minimerge.getUpgrade()
         if minimerge.has_new_revision(minibuild):
             options['upgrade'] = True
-
         return options
 
 # vim:set et sts=4 ts=4 tw=80:
