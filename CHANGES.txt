@@ -6,6 +6,7 @@ Changelog for minitage.core
 -------------------
 
 - Better offline bootstrap assumptions
+- minitagify script installs now minilay with a symlink
 
 
 2.0.49 (2013-03-28)

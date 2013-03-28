@@ -85,7 +85,9 @@ def make_minilay(directory, buildouts):
         default_minibuild,
         hashlib.md5(directory).hexdigest()
     )
-    minilaydir = os.path.join(minimerge.minilays_parent, minilayname)
+    minilaytarget = os.path.join(minimerge.minilays_parent, minilayname)
+    minilaydir = os.path.join(
+        directory, '.minitagecfg', minilayname)
     minibuild = os.path.join(minilaydir, os.path.basename(directory))
     if not len(buildouts):
         buildouts.append(
@@ -139,6 +141,18 @@ def make_minilay(directory, buildouts):
         f = open(mpath, 'w')
         f.write(minibuild_content)
         f.close()
+    if os.path.exists(minilaytarget):
+        os.unlink(minilaytarget)
+    os.symlink(
+        relative(minilaydir, minimerge.minilays_parent), 
+        minilaytarget)
+    logger.warn(
+        "Installed minilay %s by symlink: %s" %(
+            os.path.abspath(
+                relative(minilaydir, minimerge.minilays_parent)
+            ), 
+            minilaytarget))
+        
 
 def wrap(buildout, directory=None):
     if not directory:
