@@ -7,6 +7,8 @@ Changelog for minitage.core
 
 - Better offline bootstrap assumptions
 - minitagify script installs now minilay with a symlink
+- better buildout maker (offline mode)
+- returns a correct exit code (before we intentionnaly hide an error)
 
 
 2.0.49 (2013-03-28)
