@@ -39,6 +39,8 @@ from minitage.core.makers  import interfaces
 import minitage.core.core
 import minitage.core.common
 
+from iniparse import ConfigParser
+
 class BuildoutError(interfaces.IMakerError):
     """General Buildout Error."""
 
@@ -98,10 +100,36 @@ class BuildoutMaker(interfaces.IMaker):
         """
         if opts is None:
             opts = {}
-        self.logger.info('Running buildout in %s (%s)' % (directory,
-                                                          self.buildout_config))
+        self.logger.info(
+            'Running buildout in %s (%s)' % (directory,
+                                             self.buildout_config))
         cwd = os.getcwd()
         os.chdir(directory)
+        dcfg = os.path.expanduser('~/.buildout/default.cfg')
+        downloads_caches = [
+            os.path.abspath('../../downloads/dist'),
+            os.path.abspath('../../downloads/minitage/eggs'),
+            os.path.abspath('../../download/dist'),
+            os.path.abspath('../../download/minitage/eggs'),
+        ]
+        if os.path.exists(dcfg):
+            try:
+                cfg = ConfigParser()
+                cfg.read(dcfg)
+                buildout = dict(cfg.items('buildout'))
+                for k in ['download-directory', 'download-cache']:
+                    if k in buildout:
+                        places = [k,
+                                  '%s/dist' % k,
+                                  '%s/minitage/eggs'%k]
+                        downloads_caches.extend(places)
+            except Exception, e:
+                pass
+        find_links = []
+        cache = os.path.abspath('../../eggs/cache')
+        for c in [cache] + downloads_caches:
+            if os.path.exists(c) and not c in find_links:
+                find_links.append(c)
         bcmd = os.path.normpath('./bin/buildout')
         minibuild = opts.get('minibuild', None)
         dependency_or_egg = getattr(minibuild, 'category', None) in ['dependencies', 'eggs']
@@ -177,7 +205,6 @@ class BuildoutMaker(interfaces.IMaker):
                     pass
                 if buildout1:
                     booturl = 'http://downloads.buildout.org/1/bootstrap.py'
-                    #booturl = 'file:///opt/off-minitage/sources/buildout/bootstrap/bootstrap.py'
                 else:
                     booturl = 'http://downloads.buildout.org/2/bootstrap.py'
                 # try to donwload an uptodate bootstrap
@@ -200,6 +227,10 @@ class BuildoutMaker(interfaces.IMaker):
                 if '--distribute' in content:
                     self.logger.warning('Using distribute !')
                     bootstrap_args += ' %s ' % '--distribute'
+                if opts['minimerge']._offline:
+                    bootstrap_args += ' -t '
+                if find_links:
+                    bootstrap_args += ''.join([' -f %s ' % c for c in find_links])
                 bootstrap_args += ' -c %s ' % self.buildout_config
                 minitage.core.common.Popen(
                     '%s bootstrap.py %s ' % (py, bootstrap_args,),
@@ -224,12 +255,12 @@ class BuildoutMaker(interfaces.IMaker):
                     )
             else:
                 self.logger.debug('Installing parts')
+                cmd = '%s -c %s %s ' % (
+                    bcmd,
+                    self.buildout_config,
+                    ' '.join(argv))
                 minitage.core.common.Popen(
-                    '%s -c %s  %s ' % (
-                        bcmd,
-                        self.buildout_config,
-                        ' '.join(argv),
-                    ),
+                    cmd,
                     opts.get('verbose', False)
                 )
         except Exception, instance:
@@ -273,7 +304,6 @@ class BuildoutMaker(interfaces.IMaker):
             if not vers:
                 vers = minitage.core.core.PYTHON_VERSIONS
             parts = ['site-packages-%s' % ver for ver in vers]
-
         self.buildout_config = minibuild.minibuild_config._sections[
             'minibuild'].get('buildout_config',
                              'buildout.cfg')

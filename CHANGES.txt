@@ -5,7 +5,7 @@ Changelog for minitage.core
 2.0.50 (unreleased)
 -------------------
 
-- Nothing changed yet.
+- Better offline bootstrap assumptions
 
 
 2.0.49 (2013-03-28)
