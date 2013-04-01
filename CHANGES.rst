@@ -2,7 +2,7 @@ Changelog for minitage.core
 ===============================
 
 
-2.0.54 (unreleased)
+2.0.54 (2013-04-01)
 -------------------
 
 - test layer bugfix
