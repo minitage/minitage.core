@@ -1,32 +1,3 @@
-# Copyright (C) 2009, Mathieu PASQUET <kiorky@cryptelium.net>
-# All rights reserved.
-#
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions are met:
-#
-# 1. Redistributions of source code must retain the above copyright notice,
-#    this list of conditions and the following disclaimer.
-# 2. Redistributions in binary form must reproduce the above copyright
-#    notice, this list of conditions and the following disclaimer in the
-#    documentation and/or other materials provided with the distribution.
-# 3. Neither the name of the <ORGANIZATION> nor the names of its
-#    contributors may be used to endorse or promote products derived from
-#    this software without specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-# POSSIBILITY OF SUCH DAMAGE.
-
-
-
 __docformat__ = 'restructuredtext en'
 
 import sys
@@ -36,38 +7,31 @@ import unittest
 import tempfile
 
 from minitage.core import interfaces, makers, fetchers
-from minitage.core.tests  import test_common
 from minitage.core import api
 from minitage.core import cli
 
+from minitage.core.tests import base
+from minitage.core.testing import make_dummy_buildoutdir
 
 
-ocwd = os.getcwd()
-path = tempfile.mkdtemp()
-ipath = tempfile.mkdtemp()
-shutil.rmtree(path)
-shutil.rmtree(ipath)
-config=os.path.join(path,'etc','minimerge.cfg')
-testopts = dict(path=path)
-class TestBuildout(unittest.TestCase):
+class TestBuildout(base.TestCase):
     """testBuildout"""
 
     def setUp(self):
         """."""
-        os.chdir(ocwd)
-        test_common.createMinitageEnv(path)
-        test_common.make_dummy_buildoutdir(ipath)
+        self.path = self.layer['p']
+        self.ipath =  self.layer['p'] +'/test/testbuildout'
+        self.config=os.path.join(self.path,'etc','minimerge.cfg')
+        make_dummy_buildoutdir(self.ipath)
 
     def tearDown(self):
         """."""
-        if os.path.isdir(path):
-            shutil.rmtree(path)
-        if os.path.isdir(ipath):
-            shutil.rmtree(ipath) 
+        if os.path.exists(self.ipath):
+            shutil.rmtree(self.ipath)
 
     def testDelete(self):
         """testDelete"""
-        p = '%s/%s' % (path, 'test2')
+        p = '%s/%s' % (self.path, 'test2')
         if not os.path.isdir(p):
             os.mkdir(p)
         mf = makers.interfaces.IMakerFactory()
@@ -78,59 +42,57 @@ class TestBuildout(unittest.TestCase):
 
     def testBInstall(self):
         """testInstall"""
-        mf = makers.interfaces.IMakerFactory(config)
+        mf = makers.interfaces.IMakerFactory(self.config)
         buildout = mf('buildout')
         # must not die ;)
-        buildout.install(ipath)
+        buildout.install(self.ipath, {"offline":True})
         self.assertTrue(True)
 
     def testInstallPart(self):
         """testInstall"""
-        mf = makers.interfaces.IMakerFactory(config)
+        mf = makers.interfaces.IMakerFactory(self.config)
         buildout = mf('buildout')
         # must not die ;)
-        buildout.install(ipath, {'parts': 'y'})
-        self.assertEquals(open('%s/testbar' % ipath,'r').read(), 'foo')
-        os.remove('%s/testbar' % ipath)
+        buildout.install(self.ipath, {'offline':True,'parts': 'y'})
+        self.assertEquals(open('%s/testbar' % self.ipath,'r').read(), 'foo')
+        os.remove('%s/testbar' % self.ipath)
 
 
     def testInstallMultiPartStr(self):
         """testInstallMultiPartStr"""
-        mf = makers.interfaces.IMakerFactory(config)
+        mf = makers.interfaces.IMakerFactory(self.config)
         buildout = mf('buildout')
-        buildout.install(ipath, {'parts': ['y', 'z']})
-        buildout.install(ipath, {'parts': 'y z'})
-        self.assertEquals(open('%s/testbar' % ipath,'r').read(), 'foo')
-        self.assertEquals(open('%s/testres' % ipath,'r').read(), 'bar')
-        os.remove('%s/testbar' % ipath)
-        os.remove('%s/testres' % ipath)
+        buildout.install(self.ipath, {"offline":True, 'parts': ['y', 'z']})
+        buildout.install(self.ipath, {"offline":True, 'parts': 'y z'})
+        self.assertEquals(open('%s/testbar' % self.ipath,'r').read(), 'foo')
+        self.assertEquals(open('%s/testres' % self.ipath,'r').read(), 'bar')
+        os.remove('%s/testbar' % self.ipath)
+        os.remove('%s/testres' % self.ipath)
 
 
     def testInstallMultiPartList(self):
         """testInstallMultiPartList"""
-        mf = makers.interfaces.IMakerFactory(config)
+        mf = makers.interfaces.IMakerFactory(self.config)
         buildout = mf('buildout')
-        buildout.install(ipath, {'parts': ['y', 'z']})
-        self.assertEquals(open('%s/testbar' % ipath,'r').read(), 'foo')
-        self.assertEquals(open('%s/testres' % ipath,'r').read(), 'bar')
-        os.remove('%s/testbar' % ipath)
-        os.remove('%s/testres' % ipath)
+        buildout.install(self.ipath, {"offline":True, 'parts': ['y', 'z']})
+        self.assertEquals(open('%s/testbar' % self.ipath,'r').read(), 'foo')
+        self.assertEquals(open('%s/testres' % self.ipath,'r').read(), 'bar')
+        os.remove('%s/testbar' % self.ipath)
+        os.remove('%s/testres' % self.ipath)
 
     def testReInstall(self):
         """testReInstall"""
-        mf = makers.interfaces.IMakerFactory(config)
+        mf = makers.interfaces.IMakerFactory(self.config)
         buildout = mf('buildout')
         # must not die ;)
-        buildout.install(ipath)
-        buildout.reinstall(ipath)
+        buildout.install(self.ipath, {"offline":True})
+        buildout.reinstall(self.ipath,{"offline":True})
         self.assertTrue(True)
 
     def testBGetOptions(self):
         """testGetOptions."""
-        sys.argv = [sys.argv[0], '--config',
-                    '%s/etc/minimerge.cfg' % path, 'minibuild-0']
-        opts = cli.do_read_options()
-        minimerge = api.Minimerge(opts)
+        minimerge = self.fminimerge([sys.argv[0], '--config',
+                    '%s/etc/minimerge.cfg' % self.path, 'minibuild-0'])
         open('minibuild', 'w').write("""
 [minibuild]
 install_method=buildout
@@ -143,12 +105,11 @@ install_method=buildout
         minibuild.category = 'eggs'
         minibuild.name = 'toto'
         minibuild.minibuild_config = mconfig()
-        mf = makers.interfaces.IMakerFactory(config)
+        mf = makers.interfaces.IMakerFactory(self.config)
         buildout = mf('buildout')
         pyvers = {'python_versions': ['2.4', '2.5']}
         options = buildout.get_options(minimerge, minibuild, **pyvers)
-        self.assertEquals(options['parts'],
-                          ['site-packages-2.4', 'site-packages-2.5'])
+        self.assertEquals(options['parts'],[])
         minibuild.category = 'dependencies'
         options = buildout.get_options(minimerge, minibuild, **pyvers)
         minibuild.category = 'zope'

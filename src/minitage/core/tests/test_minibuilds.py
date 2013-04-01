@@ -1,32 +1,3 @@
-# Copyright (C) 2009, Mathieu PASQUET <kiorky@cryptelium.net>
-# All rights reserved.
-#
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions are met:
-#
-# 1. Redistributions of source code must retain the above copyright notice,
-#    this list of conditions and the following disclaimer.
-# 2. Redistributions in binary form must reproduce the above copyright
-#    notice, this list of conditions and the following disclaimer in the
-#    documentation and/or other materials provided with the distribution.
-# 3. Neither the name of the <ORGANIZATION> nor the names of its
-#    contributors may be used to endorse or promote products derived from
-#    this software without specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-# POSSIBILITY OF SUCH DAMAGE.
-
-
-
 __docformat__ = 'restructuredtext en'
 
 import ConfigParser
@@ -44,16 +15,19 @@ except:
     from platform import uname
 
 from minitage.core import api, objects
-from minitage.core.tests import test_common
 
-mb_path = os.path.expanduser('~/iamatest-1.0')
+from minitage.core.testing import LAYER
+from minitage.core.tests import base
 
-class testMinibuilds(unittest.TestCase):
+
+class testMinibuilds(base.TestCase):
     """Test cli usage for minimerge."""
+    layer = LAYER
+    mb_path = None
 
     def testValidNames(self):
         """testValidNames"""
-        mb = api.Minibuild(path=mb_path)
+        mb = api.Minibuild(path=self.mb_path)
         valid_names = []
         valid_names.append('meta-toto')
         valid_names.append('test-toto')
@@ -118,8 +92,8 @@ src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewrit
 install_method=buildout
 category=eggs
 """
-        open(mb_path,'w').write(minibuild1)
-        mb = api.Minibuild(path=mb_path).load()
+        open(self.mb_path,'w').write(minibuild1)
+        mb = api.Minibuild(path=self.mb_path).load()
         self.assertTrue('python' in mb.dependencies)
         tuname = uname()[0].lower()
         self.assertTrue(tuname in mb.dependencies)
@@ -134,8 +108,8 @@ src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewrit
 install_method=buildout
 category=eggs
 """
-        open(mb_path,'w').write(minibuild1)
-        mb = api.Minibuild(path=mb_path).load()
+        open(self.mb_path,'w').write(minibuild1)
+        mb = api.Minibuild(path=self.mb_path).load()
         self.assertTrue(True)
 
     def testNoMinibuildSection(self):
@@ -148,8 +122,8 @@ src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewrit
 install_method=buildout
 category=eggs
 """
-        open(mb_path,'w').write(minibuild2)
-        mb = api.Minibuild(path=mb_path)
+        open(self.mb_path,'w').write(minibuild2)
+        mb = api.Minibuild(path=self.mb_path)
         self.assertRaises(objects.NoMinibuildSectionError, mb.load)
 
     def testInvalidConfig(self):
@@ -161,8 +135,8 @@ src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewrit
 install_method=buildout
 category=eggs
 """
-        open(mb_path,'w').write(minibuild3)
-        mb = api.Minibuild(path=mb_path)
+        open(self.mb_path,'w').write(minibuild3)
+        mb = api.Minibuild(path=self.mb_path)
         self.assertRaises(objects.InvalidConfigFileError, mb.load)
 
     def testUriWithoutFetchMethod(self):
@@ -174,8 +148,8 @@ dependencies=python
 install_method=buildout
 src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
 """
-        open(mb_path,'w').write(minibuild)
-        mb = api.Minibuild(path=mb_path)
+        open(self.mb_path,'w').write(minibuild)
+        mb = api.Minibuild(path=self.mb_path)
         self.assertRaises(objects.MissingFetchMethodError, mb.load)
 
     def testInvalidSrcType(self):
@@ -188,8 +162,8 @@ install_method=buildout
 src_type=invalid
 src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
 """
-        open(mb_path,'w').write(minibuild)
-        mb = api.Minibuild(path=mb_path)
+        open(self.mb_path,'w').write(minibuild)
+        mb = api.Minibuild(path=self.mb_path)
         self.assertRaises(objects.InvalidFetchMethodError, mb.load)
     def testSrcOpts(self):
         """testSrcOpts"""
@@ -202,8 +176,8 @@ src_type=hg
 src_uri=https://hg.minitage.org/minitage/buildouts/ultimate-eggs/elementtreewriter-1.0/
 src_opts=-r666
 """
-        open(mb_path,'w').write(minibuild)
-        mb = api.Minibuild(path=mb_path)
+        open(self.mb_path,'w').write(minibuild)
+        mb = api.Minibuild(path=self.mb_path)
         self.assertEquals('-r666', mb.src_opts)
 
     def testMeta(self):
@@ -212,9 +186,9 @@ src_opts=-r666
 [minibuild]
 dependencies=python
 """
-        open(mb_path,'w').write(minibuild)
+        open(self.mb_path,'w').write(minibuild)
         # no tests there, if it has errors in loading, it will fail anyway...
-        mb = api.Minibuild(path=mb_path).load()
+        mb = api.Minibuild(path=self.mb_path).load()
         self.failUnless('python' in mb.dependencies)
 
     def testDefaults(self):
@@ -223,8 +197,8 @@ dependencies=python
 [minibuild]
 dependencies=python
 """
-        open(mb_path,'w').write(minibuild)
-        mb = api.Minibuild(path=mb_path).load()
+        open(self.mb_path,'w').write(minibuild)
+        mb = api.Minibuild(path=self.mb_path).load()
         self.assertTrue(True)
 
     def testCategory(self):
@@ -237,8 +211,8 @@ src_type=hg
 install_method=buildout
 category=eggs
 """
-#        open(mb_path,'w').write(minibuild)
-#        mb = api.Minibuild(path=mb_path).load()
+#        open(self.mb_path,'w').write(minibuild)
+#        mb = api.Minibuild(path=self.mb_path).load()
 #        self.assertEquals(mb.category,'eggs')
 #
 #        minibuild = """
@@ -250,8 +224,8 @@ category=eggs
 #category=invalid
 #"""
 #        mb = None
-#        open(mb_path,'w').write(minibuild)
-#        mb = api.Minibuild(path=mb_path)
+#        open(self.mb_path,'w').write(minibuild)
+#        mb = api.Minibuild(path=self.mb_path)
 #        self.assertRaises(objects.InvalidCategoryError, mb.load)
 
         minibuild = """
@@ -261,8 +235,8 @@ src_type=hg
 install_method=buildout
 """
 #        mb = None
-#        open(mb_path,'w').write(minibuild)
-#        mb = api.Minibuild(path=mb_path)
+#        open(self.mb_path,'w').write(minibuild)
+#        mb = api.Minibuild(path=self.mb_path)
 #        self.assertRaises(objects.MissingCategoryError, mb.load)
 #
 #        minibuild = """
@@ -274,8 +248,8 @@ install_method=buildout
 #category-bypass = true
 #"""
 #        mb = None
-#        open(mb_path,'w').write(minibuild)
-#        mb = api.Minibuild(path=mb_path)
+#        open(self.mb_path,'w').write(minibuild)
+#        mb = api.Minibuild(path=self.mb_path)
 #        self.assertRaises(objects.InvalidCategoryError, mb.load)
 
         minibuild = """
@@ -287,8 +261,8 @@ category=bypassed
 category-bypass = true
 """
         mb = None
-        open(mb_path,'w').write(minibuild)
-        mb = api.Minibuild(path=mb_path)
+        open(self.mb_path,'w').write(minibuild)
+        mb = api.Minibuild(path=self.mb_path)
         self.assertEquals(mb.category, 'bypassed')
 
     def testMinibuildWithoutInstallMethodNeitherDependencies(self):
@@ -297,8 +271,8 @@ category-bypass = true
 [minibuild]
 url=prout
 """
-        open(mb_path,'w').write(minibuild)
-        mb = api.Minibuild(path=mb_path)
+        open(self.mb_path,'w').write(minibuild)
+        mb = api.Minibuild(path=self.mb_path)
         self.assertRaises(objects.EmptyMinibuildError, mb.load)
 
 
@@ -313,8 +287,8 @@ install_method=buildout
 category=eggs
 """
         # minibuild is ok, just trying to get the catgory.
-        open(mb_path,'w').write(minibuild)
-        mb = api.Minibuild(path=mb_path)
+        open(self.mb_path,'w').write(minibuild)
+        mb = api.Minibuild(path=self.mb_path)
         self.assertEquals(mb.category,'eggs')
 
         minibuild = """
@@ -325,8 +299,8 @@ install_method=buildout
 category=eggs
 """
         # minibuild is ok, just trying to get the catgory.
-        open(mb_path,'w').write(minibuild)
-        mbd = api.Minibuild(path=mb_path)
+        open(self.mb_path,'w').write(minibuild)
+        mbd = api.Minibuild(path=self.mb_path)
         self.assertEquals(mbd.dependencies, [])
 #
 #        minibuild = """
@@ -338,17 +312,18 @@ category=eggs
 #category=invalid
 #"""
 #        mb = None
-#        open(mb_path,'w').write(minibuild)
-#        mb = api.Minibuild(path=mb_path)
+#        open(self.mb_path,'w').write(minibuild)
+#        mb = api.Minibuild(path=self.mb_path)
 #        self.assertRaises(objects.MinibuildException, mb.__getattribute__, 'category')
 
     def tearDown(self):
         """."""
-        os.remove(mb_path)
+        os.remove(self.mb_path)
 
     def setUp(self):
         """."""
-        open(mb_path,'w').write('')
+        self.mb_path = os.path.join(self.layer['p'], 'iamatest-1.0')
+        open(self.mb_path,'w').write('')
 
 
     def testInvalidInstallMethod(self):
@@ -361,8 +336,8 @@ install_method=buildoutaaaaaaaaaaaaa
 category=zope
 """
         mb = None
-        open(mb_path,'w').write(minibuild)
-        mb = api.Minibuild(path=mb_path)
+        open(self.mb_path,'w').write(minibuild)
+        mb = api.Minibuild(path=self.mb_path)
         self.assertRaises(objects.InvalidInstallMethodError, mb.load)
 
         minibuild = """
@@ -374,8 +349,8 @@ category=zope
 install-method-bypass = true
 """
         mb = None
-        open(mb_path,'w').write(minibuild)
-        mb = api.Minibuild(path=mb_path)
+        open(self.mb_path,'w').write(minibuild)
+        mb = api.Minibuild(path=self.mb_path)
         self.assertEquals(mb.install_method, 'buildoutaaaaaaaaaaaaa')
 
     def testRevision(self):
@@ -402,8 +377,8 @@ revision=1
                               """, 'revision': 1}]
 
         for minibuild in minibuilds:
-            open(mb_path, 'w').write(minibuild['minibuild'])
-            mb = api.Minibuild(path=mb_path)
+            open(self.mb_path, 'w').write(minibuild['minibuild'])
+            mb = api.Minibuild(path=self.mb_path)
             mb.load()
             self.assertEquals(minibuild['revision'], mb.revision)
 
@@ -415,13 +390,13 @@ revision=1
 category=eggs
 dependencies=python
 install_method=buildout
-src_type=hg 
+src_type=hg
 scm_branch=masterchef
 src_uri=${minitage-eggs}/${minitage-dependencies}
                       """,]
         minibuild = minibuilds[0]
-        open(mb_path, 'w').write(minibuild)
-        mb = api.Minibuild(path=mb_path)
+        open(self.mb_path, 'w').write(minibuild)
+        mb = api.Minibuild(path=self.mb_path)
         mb.load()
         self.assertEquals(mb.scm_branch, 'masterchef')
         minibuilds = ["""
@@ -430,13 +405,13 @@ src_uri=${minitage-eggs}/${minitage-dependencies}
 category=eggs
 dependencies=python
 install_method=buildout
-src_type=hg 
+src_type=hg
 scm_branch=
 src_uri=${minitage-eggs}/${minitage-dependencies}
                       """,]
         minibuild = minibuilds[0]
-        open(mb_path, 'w').write(minibuild)
-        mb = api.Minibuild(path=mb_path)
+        open(self.mb_path, 'w').write(minibuild)
+        mb = api.Minibuild(path=self.mb_path)
         mb.load()
         self.assertEquals(mb.scm_branch, None)
         minibuilds = ["""
@@ -445,12 +420,12 @@ src_uri=${minitage-eggs}/${minitage-dependencies}
 category=eggs
 dependencies=python
 install_method=buildout
-src_type=hg 
+src_type=hg
 src_uri=${minitage-eggs}/${minitage-dependencies}
                       """,]
         minibuild = minibuilds[0]
-        open(mb_path, 'w').write(minibuild)
-        mb = api.Minibuild(path=mb_path)
+        open(self.mb_path, 'w').write(minibuild)
+        mb = api.Minibuild(path=self.mb_path)
         mb.load()
         self.assertEquals(mb.scm_branch, None)
 
@@ -479,26 +454,26 @@ src_uri=${minitage-eggs}/${minitage-dependencies}
             src_md5 = 'foo10',
             scm_branch = 'foo11',
         )
-        open(mb_path, 'w').write(minibuild)
-        mb = api.Minibuild(path=mb_path)
+        open(self.mb_path, 'w').write(minibuild)
+        mb = api.Minibuild(path=self.mb_path)
         mb.load()
         self.assertNotEquals(mb.category, 'foo7')
         mb.write(**data)
         self.assertEquals(
-            open(mb_path).read(), 
+            open(self.mb_path).read(),
             '\n[minibuild]\n#comment\ncategory=foo7\ndependencies=foo bar\ninstall_method=\nsrc_type=svn\nsrc_uri=foo2\nrevision = 666\ndescription = foo3\nsrc_md5 = foo10\nurl = foo5\nsrc_opts = foo9\nscm_branch = foo11\n\n',
         )
         self.assertEquals(mb.category, 'foo7')
         del data['description']
         del data['dependencies']
         del data['scm_branch']
-        open(mb_path, 'w').write(minibuild)
-        mb = api.Minibuild(path=mb_path)
-        mb.load() 
+        open(self.mb_path, 'w').write(minibuild)
+        mb = api.Minibuild(path=self.mb_path)
+        mb.load()
         mb.write(**data)
         self.assertEquals(
-            open(mb_path).read(), 
-            '\n[minibuild]\n#comment\ncategory=foo7\ndependencies=python\ninstall_method=\nsrc_type=svn\nsrc_uri=foo2\nrevision = 666\nsrc_md5 = foo10\nurl = foo5\nsrc_opts = foo9\n\n' 
+            open(self.mb_path).read(),
+            '\n[minibuild]\n#comment\ncategory=foo7\ndependencies=python\ninstall_method=\nsrc_type=svn\nsrc_uri=foo2\nrevision = 666\nsrc_md5 = foo10\nurl = foo5\nsrc_opts = foo9\n\n'
         )
 
 
@@ -514,21 +489,23 @@ src_uri=${minitage-eggs}/${minitage-dependencies}
 src_opts=${minitage-misc}
 """
         configs = """
+[minimerge]
+prefix=%(p)s
 [minitage.variables]
 minitage-dependencies = http://hg.minitage.org/minitage/buildouts/dependencies
 minitage-misc = ${minitage-eggs}/${minitage-dependencies}
 minitage-eggs = http://hg.minitage.org/minitage/buildouts/eggs
-"""
-        s = tempfile.mkstemp()[1]
+""" % self.layer
+        s = self.layer['p']+'/iamatest'
         f = open(s, 'w')
         f.write(configs)
         f = open(s, 'r')
         config = ConfigParser.ConfigParser()
         config.readfp(f)
-        open(mb_path,'w').write(minibuild)
-        mb = api.Minibuild(path=mb_path,
+        open(self.mb_path,'w').write(minibuild)
+        mb = api.Minibuild(path=self.mb_path,
                            minitage_config=config
-                           )
+                          )
         mb.load()
         self.assertEquals('http://hg.minitage.org'
                           '/minitage/buildouts/eggs'
@@ -544,9 +521,4 @@ def test_suite():
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(testMinibuilds))
     return suite
-
-if __name__ == '__main__':
-    suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(testMinibuilds))
-    unittest.TextTestRunner(verbosity=2).run(suite)
 

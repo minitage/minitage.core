@@ -1,6 +1,10 @@
 Test of minitage Static fetcher
 =================================
 
+::
+
+    >>> globals().update(layer['globs'])
+
 This fetcher can fetch something over urllib and manage some md5 mecanism to avoid useless redownload
 All you need to do is to have something like that::
 
@@ -16,7 +20,7 @@ Initial imports::
     >>> from minitage.core.fetchers import static as staticm
     >>> n = 'minitage.static.fetcher'
 
-Install some magic to get the fetcher logs
+Install some magic to get the fetcher logs::
 
     >>> from zope.testing.loggingsupport import InstalledHandler
     >>> log_handler = InstalledHandler(n)
@@ -37,6 +41,10 @@ Make a file available for download::
 Download it::
 
     >>> d = os.path.join(p, 'result')
+    >>> p1 = os.path.join(p, 'result/p1')
+    >>> p2 = os.path.join(p, 'result/p2')
+    >>> p3 = os.path.join(p, 'result/p3')
+    >>> wc = os.path.join(p, 'result/wc')
     >>> static.fetch(d, 'file://%s' % testfile)
     >>> print log_handler; log_handler.clear()
     minitage.static.fetcher ...
@@ -156,7 +164,7 @@ Test that the unpack mecanism just ovverides what's already there but not delete
 
     - As we can see, the previous files have not been wiped out, good :).
 
-    - Now change the archive content and see if our changes are there:
+    - Now change the archive content and see if our changes are there::
 
         >>> touch(os.path.join(td, 'file1'), **{'data': 'tutu'})
         >>> touch(os.path.join(td, 'file2'), **{'data': 'titi'})

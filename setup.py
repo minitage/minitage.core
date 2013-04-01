@@ -18,11 +18,11 @@ setup(
     version = version,
     description="A meta package-manager to deploy projects on UNIX Systemes sponsored by Makina Corpus.",
     long_description = (
-        read('README.txt')
+        read('README.rst')
         + '\n' +
-        read('INSTALL.txt')
+        read('INSTALL.rst')
         + '\n' +
-        read('CHANGES.txt')
+        read('CHANGES.rst')
         + '\n'
     ),
     classifiers=[
@@ -43,7 +43,14 @@ setup(
     include_package_data = True,
     packages = find_packages('src'),
     package_dir = {'': 'src'},
-    extras_require={'test': ['IPython', 'zope.testing', 'mocker', 'httplib2']},
+    extras_require={'test': ['plone.testing', 
+                             'mocker', 
+                             'httplib2', 
+                             'zc.buildout', 
+                             'minitage.recipe.scripts',
+                             'minitage.recipe.egg',
+                             'minitage.recipe.common',
+                             ]},
     data_files = [
         ('etc', ['src/etc/minimerge.cfg']),
         ('minilays', []),
@@ -52,10 +59,9 @@ setup(
     entry_points = {
         'console_scripts': [
             'minimerge = minitage.core.launchers.minimerge:launch',
-            'minitagify = minitage.core.minitagize:main',
+            'minitagify = minitage.core.launchers.minitagize:main',
         ],
     }
 
 )
-
 

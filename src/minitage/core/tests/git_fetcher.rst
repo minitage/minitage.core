@@ -1,6 +1,9 @@
-
 Test of minitage Git fetcher
 =================================
+
+::
+
+    >>> globals().update(layer['globs'])
 
 This fetcher can fetch something over git.
 
@@ -13,7 +16,7 @@ Initial imports::
     >>> from minitage.core.fetchers import scm as scmm
     >>> n = scmm.__logger__
 
-Install some magic to get the fetcher logs
+Install some magic to get the fetcher logs::
 
     >>> from zope.testing.loggingsupport import InstalledHandler
     >>> log_handler = InstalledHandler(n)
@@ -24,8 +27,11 @@ Instantiate our fetcher::
 
 Make a file available for download::
 
-    >>> dest = os.path.join(p, 'd')
-    >>> path = os.path.join(p, 'p')
+    >>> dest = os.path.join(p, 'git/d')
+    >>> path = os.path.join(p, 'git/p')
+    >>> path2 = os.path.join(p, 'git/p2')
+    >>> path3 = os.path.join(p, 'git/p3')
+    >>> wc = os.path.join(p, 'git/wc')
     >>> gituri = 'file://%s' % path2
     >>> gituri2= 'file://%s' % path3
     >>> opts = {'path': path, 'dest': dest, 'wc': wc}
@@ -47,9 +53,8 @@ Make a file available for download::
 
 Checking our working copy is up and running
 Fine.
-Beginning simple, checkouting the code somewhere:
+Beginning simple, checkouting the code somewhere::
 
-    >>> ls(wc)
     >>> git.fetch(wc, gituri)
     >>> ls(wc)
     .git
@@ -64,7 +69,7 @@ Beginning simple, checkouting the code somewhere:
     <BLANKLINE>
 
 
-Calling fetch on an already fetched clone.
+Calling fetch on an already fetched clone.::
 
     >>> touch(os.path.join(wc, 'foo'))
     >>> git.fetch(wc, gituri)
@@ -84,7 +89,7 @@ Calling fetch on an already fetched clone.
     ('...wc/wc.old...', None)
 
 
-Calling fetch from another repository
+Calling fetch from another repository::
 
     >>> git.fetch(wc, gituri2)
     >>> print log_handler; log_handler.clear()
@@ -95,7 +100,7 @@ Calling fetch from another repository
     minitage.fetchers.scm INFO
       Checkouted .../wc / file://.../p3 (HEAD) [git].
 
-Going into past, revision 1
+Going into past, revision 1::
 
     >>> commits = [a.replace('commit ', '') for a  in subprocess.Popen(['cd %s;git log'%wc], shell=True, stdout=subprocess.PIPE).stdout.read().splitlines() if 'commit' in a]
     >>> git.get_uri(wc)
@@ -129,7 +134,7 @@ Going into past, revision 1
         initial import
     <BLANKLINE>
 
-Going head, update without arguments sticks to HEAD
+Going head, update without arguments sticks to HEAD::
 
     >>> git.update(wc, gituri2)
     >>> print log_handler; log_handler.clear() # doctest: +REPORT_NDIFF
@@ -151,7 +156,7 @@ Cleaning
 
     >>> shutil.rmtree(wc)
 
-Test the fech or update method which clones or update a working copy
+Test the fech or update method which clones or update a working copy::
 
     >>> git.fetch_or_update(wc, gituri, {"revision": commits[1]})
     >>> sh('cd %s&&git show|head -5|tail -n1'%wc)
@@ -168,7 +173,7 @@ Test the fech or update method which clones or update a working copy
     >>> log_handler.clear()
 
 
-Problem in older version, trailing slash cause API to have troubles
+Problem in older version, trailing slash cause API to have troubles::
 
     >>> shutil.rmtree(wc)
     >>> git.fetch_or_update(wc, '%s/' % gituri)
@@ -184,7 +189,7 @@ Problem in older version, trailing slash cause API to have troubles
     minitage.fetchers.scm INFO
       Updated .../wc / file://.../p2/ (HEAD) [git].
 
-Other problem; update on an empty directory may fail on older version of this code
+Other problem; update on an empty directory may fail on older version of this code::
 
     >>> shutil.rmtree(wc); mkdir(wc)
     >>> git.update(wc, gituri)

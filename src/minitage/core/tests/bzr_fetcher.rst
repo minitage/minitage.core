@@ -4,6 +4,11 @@ Test of minitage Bazaar fetcher
 
 This fetcher can fetch something over mercurial.
 
+::
+
+    >>> globals().update(layer['globs'])
+
+
 Initial imports::
 
     >>> lang, lcall = os.environ.get('LANG', ''), os.environ.get('LC_ALL', '')
@@ -24,9 +29,12 @@ Instantiate our fetcher::
 
 Make a file available for download::
 
-    >>> dest = os.path.join(p, 'd')
-    >>> path = os.path.join(p, 'p')
-    >>> wc = os.path.join(p, 'wc')
+    >>> dest = os.path.join(p, 'bzr§d')
+    >>> path = os.path.join(p, 'bzr§p')
+    >>> path1 = os.path.join(p, 'bzr/p1')
+    >>> path2 = os.path.join(p, 'bzr/p2')
+    >>> path3 = os.path.join(p, 'bzr/p3')
+    >>> wc = os.path.join(p, 'bzr/wc')
     >>> bzruri = 'file://%s' % path2
     >>> bzruri2= 'file://%s' % path3
     >>> opts = {'path': path, 'dest': dest, 'wc': wc}
@@ -47,8 +55,8 @@ Make a file available for download::
 Checking our working copy is up and running
 Fine.
 Beginning simple, checkouting the code somewhere:
+::
 
-    >>> ls(wc)
     >>> bzr.fetch(wc, bzruri)
     >>> ls(wc)
     .bzr
@@ -65,6 +73,7 @@ Beginning simple, checkouting the code somewhere:
 
 
 Calling fetch on an already fetched clone.
+::
 
     >>> touch(os.path.join(wc, 'foo'))
     >>> bzr.fetch(wc, bzruri)
@@ -85,6 +94,7 @@ Calling fetch on an already fetched clone.
 
 
 Calling fetch from another repository
+::
 
     >>> bzr.fetch(wc, bzruri2)
     >>> print log_handler; log_handler.clear()
@@ -97,6 +107,7 @@ Calling fetch from another repository
 
 
 Going into past, revision 1
+::
 
     >>> bzr.get_uri(wc)
     '.../p3'
@@ -121,8 +132,8 @@ Going into past, revision 1
     branch-nick: p3
     <BLANKLINE>
 
-
 Going head, update without arguments sticks to HEAD
+::
 
     >>> bzr.update(wc, bzruri2)
     >>> print log_handler; log_handler.clear()
@@ -141,11 +152,11 @@ Going head, update without arguments sticks to HEAD
     <BLANKLINE>
 
 
-Cleaning
+Cleaning::
 
     >>> shutil.rmtree(wc)
 
-Test the fech or update method which clones or update a working copy
+Test the fech or update method which clones or update a working copy::
 
     >>> bzr.fetch_or_update(wc, bzruri, {"revision": '1'})
     >>> sh('cd %s&&bzr version-info'%wc)
@@ -162,7 +173,7 @@ Test the fech or update method which clones or update a working copy
     >>> log_handler.clear()
 
 
-Problem in older version, trailing slash cause API to have troubles
+Problem in older version, trailing slash cause API to have troubles::
 
     >>> shutil.rmtree(wc)
     >>> bzr.fetch_or_update(wc, '%s/' % bzruri)
@@ -180,7 +191,7 @@ Problem in older version, trailing slash cause API to have troubles
     minitage.fetchers.scm INFO
       Updated .../wc / file://.../p2/ (last:1) [bazaar].
 
-Other problem; update on an empty directory may fail on older version of this code
+Other problem; update on an empty directory may fail on older version of this code::
 
     >>> shutil.rmtree(wc); mkdir(wc)
     >>> bzr.update(wc, bzruri)

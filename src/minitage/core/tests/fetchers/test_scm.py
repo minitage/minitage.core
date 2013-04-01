@@ -1,31 +1,3 @@
-# Gopyright (C) 2009, Mathieu PASQUET <kiorky@cryptelium.net>
-# All rights reserved.
-#
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions are met:
-#
-# 1. Redistributions of source code must retain the above copyright notice,
-#    this list of conditions and the following disclaimer.
-# 2. Redistributions in binary form must reproduce the above copyright
-#    notice, this list of conditions and the following disclaimer in the
-#    documentation and/or other materials provided with the distribution.
-# 3. Neither the name of the <ORGANIZATION> nor the names of its
-#    contributors may be used to endorse or promote products derived from
-#    this software without specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-# POSSIBILITY OF SUCH DAMAGE.
-
-
 __docformat__ = 'restructuredtext en'
 
 import unittest
@@ -36,22 +8,21 @@ import tempfile
 from minitage.core.fetchers import scm, interfaces
 from minitage.core.common import MinimergeError
 
-opts = dict(
-    path=os.path.expanduser(tempfile.mkdtemp()),
-    dest=os.path.expanduser(tempfile.mkdtemp()),
-    wc=os.path.expanduser(tempfile.mkdtemp()),
-)
+from minitage.core.tests import base
 
-prefix = os.getcwd()
-
-class testGit(unittest.TestCase):
+class testGit(base.TestCase):
     """testGit"""
 
     def setUp(self):
         """."""
-        os.chdir(prefix)
-        md = tempfile.mkdtemp()
-        opts.update({'path2': md})
+        prefix = self.layer['p']
+        self.opts = opts = dict(
+            path=os.path.join(prefix, 'git1'),
+            dest=os.path.join(prefix, 'git2'),
+            wc=os.path.join(prefix, 'git3'),
+            path3=os.path.join(prefix, 'git4'),
+            path2=os.path.join(prefix, 'git5'),
+        )
         os.system("""
                   mkdir -p %(path2)s
                   rm -rf %(path)s
@@ -78,6 +49,7 @@ class testGit(unittest.TestCase):
 
     def tearDown(self):
         """."""
+        opts = self.opts
         for dir in [ opts['path'], opts['dest'], opts['path2']]:
             if os.path.isdir(dir):
                 shutil.rmtree(dir)
@@ -85,6 +57,7 @@ class testGit(unittest.TestCase):
     def testSwitchAndGetBranch(self):
         """testUrlChanged"""
         git = scm.GitFetcher()
+        opts = self.opts
         self.assertRaises(interfaces.FetcherRuntimeError,
                           git.fetch,
                           opts['dest'],
@@ -102,6 +75,7 @@ class testGit(unittest.TestCase):
 
     def testUrlChanged(self):
         """testUrlChanged"""
+        opts = self.opts
         git = scm.GitFetcher()
         git.fetch(opts['dest'], 'file://%s' % opts['path'])
         self.assertTrue(os.path.isdir('%s/%s' % (opts['dest'], '.git')))
@@ -115,6 +89,7 @@ class testGit(unittest.TestCase):
 
     def testRemoveVersionnedDirs(self):
         """testRemoveVersionnedDirs"""
+        opts = self.opts
         git = scm.GitFetcher()
         git.fetch(opts['dest'], 'file://%s' % opts['path'])
         self.assertTrue(os.path.isdir('%s/%s' % (opts['dest'], '.git')))
@@ -129,18 +104,21 @@ class testGit(unittest.TestCase):
     def testScmInvalidUri(self):
         """testScmInvalidUri"""
         git = scm.GitFetcher()
+        opts = self.opts
         self.assertRaises(interfaces.InvalidUrlError,
                           git.fetch, 'somewhere', 'invalidsrcuri')
 
 
     def testFetch(self):
         """testFetch"""
+        opts = self.opts
         git = scm.GitFetcher()
         git.fetch(opts['dest'], 'file://%s' % opts['path'])
         self.assertTrue(os.path.isdir('%s/%s' % (opts['dest'], '.git')))
 
     def testFetchToParticularRevision(self):
         """testFetchToParticularRevision"""
+        opts = self.opts
         git = scm.GitFetcher()
         git.fetch(opts['dest'], 'file://%s' % opts['path'], dict(revision='HEAD~'))
         self.assertTrue(os.path.isdir('%s/%s' % (opts['dest'], '.git')))
@@ -148,6 +126,7 @@ class testGit(unittest.TestCase):
 
     def testUpdate(self):
         """testUpdate"""
+        opts = self.opts
         git = scm.GitFetcher()
         git.fetch(opts['dest'], 'file://%s' % opts['path'], dict(revision='HEAD~'))
         self.assertTrue(os.path.isdir('%s/%s' % (opts['dest'], '.git')))
@@ -162,6 +141,7 @@ class testGit(unittest.TestCase):
 
     def testFetchOrUpdate_fetch(self):
         """testFetchOrUpdate_fetch"""
+        opts = self.opts
         git = scm.GitFetcher()
         git.fetch_or_update(opts['dest'], 'file://%s' % opts['path'])
         self.assertTrue(os.path.isfile('%s/%s' % (opts['dest'], 'file2')))
@@ -169,6 +149,7 @@ class testGit(unittest.TestCase):
 
     def testFetchOrUpdate_update(self):
         """testFetchOrUpdate_update"""
+        opts = self.opts
         git = scm.GitFetcher()
         git.fetch(opts['dest'], 'file://%s' % opts['path'], dict(revision='HEAD~'))
         self.assertTrue(os.path.isdir('%s/%s' % (opts['dest'], '.git')))
@@ -182,6 +163,7 @@ class testBzr(unittest.TestCase):
     def setUp(self):
         """."""
         os.chdir(prefix)
+        opts = self.opts
         os.system("""
                  mkdir -p  %(path)s
                  cd %(path)s
@@ -196,12 +178,14 @@ class testBzr(unittest.TestCase):
 
     def tearDown(self):
         """."""
+        opts = self.opts
         for dir in [ opts['path'], opts['dest']]:
             if os.path.isdir(dir):
                 shutil.rmtree(dir)
 
     def testUrlChanged(self):
         """testUrlChanged"""
+        opts = self.opts
         bzr = scm.BzrFetcher()
         bzr.fetch(opts['dest'], 'file://%s' % opts['path'])
         self.assertTrue(os.path.isdir('%s/%s' % (opts['dest'], '.bzr')))
@@ -215,6 +199,7 @@ class testBzr(unittest.TestCase):
 
     def testRemoveVersionnedDirs(self):
         """testRemoveVersionnedDirs"""
+        opts = self.opts
         bzr = scm.BzrFetcher()
         bzr.fetch(opts['dest'], 'file://%s' % opts['path'])
         self.assertTrue(os.path.isdir('%s/%s' % (opts['dest'], '.bzr')))
@@ -228,6 +213,7 @@ class testBzr(unittest.TestCase):
 
     def testScmInvalidUri(self):
         """testScmInvalidUri"""
+        opts = self.opts
         bzr = scm.BzrFetcher()
         self.assertRaises(interfaces.InvalidUrlError,
                           bzr.fetch, 'somewhere', 'invalidsrcuri')
@@ -241,6 +227,7 @@ class testBzr(unittest.TestCase):
 
     def testFetchToParticularRevision(self):
         """testFetchToParticularRevision"""
+        opts = self.opts
         bzr = scm.BzrFetcher()
         bzr.fetch(opts['dest'], 'file://%s' % opts['path'], dict(revision=0))
         self.assertTrue(os.path.isdir('%s/%s' % (opts['dest'], '.bzr')))
@@ -248,6 +235,7 @@ class testBzr(unittest.TestCase):
 
     def testUpdate(self):
         """testUpdate"""
+        opts = self.opts
         bzr = scm.BzrFetcher()
         bzr.fetch(opts['dest'], 'file://%s' % opts['path'], dict(revision=0))
         self.assertTrue(os.path.isdir('%s/%s' % (opts['dest'], '.bzr')))
@@ -258,6 +246,7 @@ class testBzr(unittest.TestCase):
 
     def testFetchOrUpdate_fetch(self):
         """testFetchOrUpdate_fetch"""
+        opts = self.opts
         bzr = scm.BzrFetcher()
         bzr.fetch_or_update(opts['dest'], 'file://%s' % opts['path'])
         self.assertTrue(os.path.isfile('%s/%s' % (opts['dest'], 'file2')))
@@ -265,6 +254,7 @@ class testBzr(unittest.TestCase):
 
     def testFetchOrUpdate_update(self):
         """testFetchOrUpdate_update"""
+        opts = self.opts
         bzr = scm.BzrFetcher()
         bzr.fetch(opts['dest'], 'file://%s' % opts['path'], dict(revision=0))
         self.assertTrue(os.path.isdir('%s/%s' % (opts['dest'], '.bzr')))
@@ -496,8 +486,5 @@ def test_suite():
     #suite.addTest(unittest.makeSuite(testSvn))
     suite.addTest(unittest.makeSuite(testGit))
     return suite
-
-if __name__ == '__main__':
-    unittest.TextTestRunner(verbosity=2).run(test_suite())
 
 # vim:set et sts=4 ts=4 tw=80:

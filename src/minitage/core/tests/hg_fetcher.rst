@@ -2,6 +2,11 @@
 Test of minitage Mercurial fetcher
 ====================================
 
+
+::
+
+    >>> globals().update(layer['globs'])
+
 This fetcher can fetch something over mercurial.
 
 Initial imports::
@@ -13,7 +18,7 @@ Initial imports::
     >>> from minitage.core.fetchers import scm as scmm
     >>> n = scmm.__logger__
 
-Install some magic to get the fetcher logs
+Install some magic to get the fetcher logs::
 
     >>> from zope.testing.loggingsupport import InstalledHandler
     >>> log_handler = InstalledHandler(n)
@@ -24,8 +29,13 @@ Instantiate our fetcher::
 
 Make a file available for download::
 
-    >>> dest = os.path.join(p, 'd')
-    >>> path = os.path.join(p, 'p')
+    >>> dest = os.path.join(p, 'hg/d')
+    >>> path = os.path.join(p, 'hg/p0')
+    >>> path1 = os.path.join(p, 'hg/p1')
+    >>> path2 = os.path.join(p, 'hg/p2')
+    >>> path3 = os.path.join(p, 'hg/p3')
+    >>> path4 = os.path.join(p, 'hg/p4')
+    >>> wc = os.path.join(p, 'hg/wc')
     >>> hguri = 'file://%s' % path2
     >>> hguri2= 'file://%s' % path3
     >>> opts = {'path': path, 'dest': dest, 'wc': wc}
@@ -45,9 +55,8 @@ Make a file available for download::
 
 Checking our working copy is up and running
 Fine.
-Beginning simple, checkouting the code somewhere:
+Beginning simple, checkouting the code somewhere::
 
-    >>> ls(wc)
     >>> hg.fetch(wc, hguri)
     >>> ls(wc)
     .hg
@@ -58,10 +67,9 @@ Beginning simple, checkouting the code somewhere:
       Checkouted .../wc / file://.../p2 (tip) [Mercurial].
     >>> sh('cd %s&&hg id'%wc)
     cd .../wc&&hg id
-    ... tip
-    <BLANKLINE>
+    ... tip...
 
-Calling fetch on an already fetched clone.
+Calling fetch on an already fetched clone::
 
     >>> touch(os.path.join(wc, 'foo'))
     >>> hg.fetch(wc, hguri)
@@ -80,7 +88,7 @@ Calling fetch on an already fetched clone.
     foo
     ('...wc/wc.old...', None)
 
-Calling fetch from another repository
+Calling fetch from another repository::
 
     >>> hg.fetch(wc, hguri2)
     >>> print log_handler; log_handler.clear()
@@ -91,7 +99,7 @@ Calling fetch from another repository
     minitage.fetchers.scm INFO
       Checkouted .../wc / file://.../p3 (tip) [Mercurial].
 
-Going into past, revision 1
+Going into past, revision 1::
 
     >>> hg.get_uri(wc)
     '.../p3'
@@ -114,7 +122,7 @@ Going into past, revision 1
     >>> commits[1] == subprocess.Popen(['cd %s;hg id'%wc], shell=True, stdout=subprocess.PIPE).stdout.read().strip()
     True
 
-Going head, update without arguments sticks to HEAD
+Going head, update without arguments sticks to HEAD::
 
     >>> hg.update(wc, hguri2)
     >>> print log_handler; log_handler.clear() # daoctest: +REPORT_NDIFF
@@ -133,7 +141,7 @@ Cleaning
 
     >>> shutil.rmtree(wc)
 
-Test the fech or update method which clones or update a working copy
+Test the fech or update method which clones or update a working copy::
 
     >>> hg.fetch_or_update(wc, hguri, {"revision": commits[1]})
     >>> commits[1] == subprocess.Popen(['cd %s;hg id'%wc], shell=True, stdout=subprocess.PIPE).stdout.read().strip()
@@ -144,7 +152,7 @@ Test the fech or update method which clones or update a working copy
     >>> log_handler.clear()
 
 
-Problem in older version, trailing slash cause API to have troubles
+Problem in older version, trailing slash cause API to have troubles::
 
     >>> shutil.rmtree(wc)
     >>> hg.fetch_or_update(wc, '%s/' % hguri)
@@ -160,7 +168,7 @@ Problem in older version, trailing slash cause API to have troubles
     minitage.fetchers.scm INFO
       Updated .../wc / file://.../p2/ (tip) [Mercurial].
 
-Other problem; update on an empty directory may fail on older version of this code
+Other problem; update on an empty directory may fail on older version of this code::
 
     >>> shutil.rmtree(wc); mkdir(wc)
     >>> hg.update(wc, hguri)

@@ -5,7 +5,12 @@ Changelog for minitage.core
 2.0.51 (unreleased)
 -------------------
 
-- Nothing changed yet.
+- minitage.core is not tied to sys.prefix, 
+  IOW you can install it in any location, 
+  and the config file will be resolved relative 
+  to the minimerge script.
+- QA release, now you have test statuses on travis ci.
+- tests are now based on plone.testing
 
 
 2.0.50 (2013-03-28)

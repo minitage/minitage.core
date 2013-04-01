@@ -1,32 +1,3 @@
-# Copyright (C) 2009, Mathieu PASQUET <kiorky@cryptelium.net>
-# All rights reserved.
-#
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions are met:
-#
-# 1. Redistributions of source code must retain the above copyright notice,
-#    this list of conditions and the following disclaimer.
-# 2. Redistributions in binary form must reproduce the above copyright
-#    notice, this list of conditions and the following disclaimer in the
-#    documentation and/or other materials provided with the distribution.
-# 3. Neither the name of the <ORGANIZATION> nor the names of its
-#    contributors may be used to endorse or promote products derived from
-#    this software without specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-# POSSIBILITY OF SUCH DAMAGE.
-
-
-
 __docformat__ = 'restructuredtext en'
 
 import os
@@ -82,9 +53,8 @@ def select_fl(fl):
     return ret
 
 def get_offline(opts):
-    offline = (
-        opts.get('offline', False)
-        or opts['minimerge']._offline)
+    minimerge_offline = (True=='minimerge' in opts) and opts['minimerge']._offline or False
+    offline = (opts.get('offline', False) or minimerge_offline)
     return offline
 
 
@@ -102,6 +72,7 @@ class BuildoutMaker(interfaces.IMaker):
             config = {}
         self.logger = logging.getLogger(__logger__)
         self.config = config
+        self.cwd = os.getcwd()
         self.buildout_config = 'buildout.cfg'
         interfaces.IMaker.__init__(self)
 
@@ -196,40 +167,40 @@ class BuildoutMaker(interfaces.IMaker):
         self.logger.info(
             'Running buildout in %s (%s)' % (directory,
                                              self.buildout_config))
-        cwd = os.getcwd()
         os.chdir(directory)
         minibuild = opts.get('minibuild', None)
         installed_cfg = os.path.join(directory, '.installed.cfg')
         if not opts:
             opts = {}
         try:
-            parts = opts.get('parts', False)
-            if isinstance(parts, str):
-                parts = parts.split()
-            category = ''
-            if minibuild: category = minibuild.category
-            # Try to upgrade only if we need to
-            # (we chech only when we have a .installed.cfg file
-            if (not opts.get('upgrade', True)
-                and os.path.exists(installed_cfg)
-                and (not category=='eggs')):
-                self.logger.info(
-                    'Buildout will not run in %s'
-                    ' as there is a .installed.cfg file'
-                    ' indicating us that the software is already'
-                    ' installed but minimerge is running in'
-                    ' no-update mode. If you want to try'
-                    ' to update/rebuild it unconditionnaly,'
-                    ' please relaunch with -uUR.' % directory)
-                return
-            self.buildout_bootstrap(directory, opts)
-            self.buildout(directory, parts, opts)
-        except Exception, instance:
-            trace = traceback.format_exc()
-            os.chdir(cwd)
-            raise BuildoutError(
-                'Buildout failed:\n\t%s' % trace)
-        os.chdir(cwd)
+            try:
+                parts = opts.get('parts', False)
+                if isinstance(parts, str):
+                    parts = parts.split()
+                category = ''
+                if minibuild: category = minibuild.category
+                # Try to upgrade only if we need to
+                # (we chech only when we have a .installed.cfg file
+                if (not opts.get('upgrade', True)
+                    and os.path.exists(installed_cfg)
+                    and (not category=='eggs')):
+                    self.logger.info(
+                        'Buildout will not run in %s'
+                        ' as there is a .installed.cfg file'
+                        ' indicating us that the software is already'
+                        ' installed but minimerge is running in'
+                        ' no-update mode. If you want to try'
+                        ' to update/rebuild it unconditionnaly,'
+                        ' please relaunch with -uUR.' % directory)
+                else:
+                    self.buildout_bootstrap(directory, opts)
+                    self.buildout(directory, parts, opts)
+            except Exception, instance:
+                trace = traceback.format_exc()
+                raise BuildoutError(
+                    'Buildout failed:\n\t%s' % trace)
+        finally:
+            os.chdir(self.cwd)
 
     def buildout_bootstrap(self, directory, opts):
         offline = get_offline(opts)
@@ -265,7 +236,25 @@ class BuildoutMaker(interfaces.IMaker):
         for c in [cache] + downloads_caches:
             if os.path.exists(c) and not c in find_links:
                 find_links.append(c)
-        distribute_setup_places = find_links[:]
+        distribute_setup_places = find_links[:] + downloads_caches + [
+            os.path.join(directory, 'downloads/minitage/eggs'),
+            os.path.join(directory, 'downloads/dist'),
+            os.path.join(directory, 'downloads'),
+            os.path.join(directory, 'download/minitage/eggs'),
+            os.path.join(directory, 'download/dist'),
+            os.path.join(directory, 'download'),
+            os.path.join(directory),
+            os.path.expanduser('~/.buildout'),
+            os.path.expanduser('~/.buildout/download'),
+            os.path.expanduser('~/.buildout/download/dist'),
+            os.path.expanduser('~/.buildout/download/minitage'),
+            os.path.expanduser('~/.buildout/download/minitage/eggs'),
+            os.path.expanduser('~/.buildout/downloads'),
+            os.path.expanduser('~/.buildout/downloads/dist'),
+            os.path.expanduser('~/.buildout/downloads/minitage'),
+            os.path.expanduser('~/.buildout/downloads/minitage/eggs'),
+            os.path.expanduser('~/'),
+        ]
         bootstrap_args = ''
         self.upgrade_bootstrap(minimerge, offline)
         # be sure which buildout bootstrap we have
@@ -277,7 +266,8 @@ class BuildoutMaker(interfaces.IMaker):
             self.logger.warning('Using distribute !')
             bootstrap_args += ' %s' % '--distribute'
         if offline:
-            bootstrap_args += ' -t'
+            if ' --accept-buildout-test-releases' in content:
+                bootstrap_args += ' --accept-buildout-test-releases'
         if ('--setup-source' in content 
             and not "--find-links" in content):
             ds = select_ds(distribute_setup_places)
@@ -324,8 +314,7 @@ class BuildoutMaker(interfaces.IMaker):
         minibuild = opts.get('minibuild', None)
         dependency_or_egg = (getattr(minibuild, 'category', None) 
                              in ['dependencies', 'eggs'])
-        offline = (opts.get('offline', False)
-                   or opts['minimerge']._offline)
+        offline = get_offline(opts)
         argv = []
         if not parts:
             parts = []
@@ -379,8 +368,9 @@ class BuildoutMaker(interfaces.IMaker):
     def choose_python(self, directory, opts):
         python = sys.executable
         mb =  opts.get('minibuild', None)
-        if os.path.exists(mb.python):
-            python = mb.python
+        if mb:
+            if os.path.exists(mb.python):
+                python = mb.python
         return python
 
     def get_options(self, minimerge, minibuild, **kwargs):

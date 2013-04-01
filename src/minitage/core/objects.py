@@ -1,34 +1,3 @@
-#!/usr/bin/env python
-
-# Copyright (C) 2009, Mathieu PASQUET <kiorky@cryptelium.net>
-# All rights reserved.
-#
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions are met:
-#
-# 1. Redistributions of source code must retain the above copyright notice,
-#    this list of conditions and the following disclaimer.
-# 2. Redistributions in binary form must reproduce the above copyright
-#    notice, this list of conditions and the following disclaimer in the
-#    documentation and/or other materials provided with the distribution.
-# 3. Neither the name of the <ORGANIZATION> nor the names of its
-#    contributors may be used to endorse or promote products derived from
-#    this software without specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-# POSSIBILITY OF SUCH DAMAGE.
-
-
-
 __docformat__ = 'restructuredtext en'
 
 import os
@@ -160,9 +129,9 @@ class Minilay(collections.LazyLoadedDict):
     """
 
     def __init__(self, path=None, minitage_config=None, *kw, **kwargs):
-        collections.LazyLoadedDict.__init__(self, *kw, **kwargs)
-        self.path = path
         self.minitage_config = minitage_config
+        self.path = path
+        collections.LazyLoadedDict.__init__(self, *kw, **kwargs)
 
         if not os.path.isdir(self.path):
             message = 'This is an invalid directory: \'%s\'' % self.path
@@ -230,6 +199,7 @@ class Minibuild(object):
         Misc
             Thus we can lazy load minibuilds and save performance.
         """
+        self.minitage_config = minitage_config
         self.path = path
         self.name = self.path.split(os.path.sep).pop()
         self.state = None
@@ -245,7 +215,6 @@ class Minibuild(object):
         self.url = None
         self.revision = None
         self.category = None
-        self.minitage_config = minitage_config
         self.minibuild_config = None
         self.loaded = None
         self.section = None
@@ -253,7 +222,8 @@ class Minibuild(object):
 
     def __getattribute__(self, attr):
         """Lazyload stuff."""
-        lazyloaded = ['config', 'url', 'revision', 'category', 'src_md5',
+        lazyloaded = ['config', 'url', 'minitage_config',
+                      'revision', 'category', 'src_md5',
                       'raw_dependencies', 'scm_branch', 'python',
                       'dependencies', 'description','src_opts',
                       'src_type', 'install_method', 'src_type']
@@ -469,7 +439,8 @@ class Minibuild(object):
     def choose_python(self, pyname=None):
         python = sys.executable
         spys = ['python-%s' % a for a in PYTHON_VERSIONS]
-        prefix = os.path.join(self.minitage_config.get('minimerge', 'prefix'))
+        if self.minitage_config:
+            prefix = os.path.join(self.minitage_config.get('minimerge', 'prefix'))
         if not self.category in ['dependencies']:
             if pyname in spys and not pyname in self.dependencies:
                 self.dependencies.append(pyname)

@@ -1,32 +1,3 @@
-# Copyright (C) 2009, Mathieu PASQUET <kiorky@cryptelium.net>
-# All rights reserved.
-#
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions are met:
-#
-# 1. Redistributions of source code must retain the above copyright notice,
-#    this list of conditions and the following disclaimer.
-# 2. Redistributions in binary form must reproduce the above copyright
-#    notice, this list of conditions and the following disclaimer in the
-#    documentation and/or other materials provided with the distribution.
-# 3. Neither the name of the <ORGANIZATION> nor the names of its
-#    contributors may be used to endorse or promote products derived from
-#    this software without specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-# POSSIBILITY OF SUCH DAMAGE.
-
-
-
 __docformat__ = 'restructuredtext en'
 
 import os
@@ -49,11 +20,11 @@ from iniparse import ConfigParser as WritableConfigParser
 from minitage.core import objects
 from minitage.core.fetchers import interfaces as fetchers
 from minitage.core.makers import interfaces as makers
-from minitage.core.version import __version__
+from minitage.core.version import __version__, version as mm_version
 from minitage.core import update as up
 from minitage.core.common import newline
 from minitage.core.fetchers.interfaces import InvalidUrlError
-from minitage.core.common import PYTHON_VERSIONS
+from minitage.core.common import PYTHON_VERSIONS, get_install_root
 
 try:
     from os import uname
@@ -62,6 +33,7 @@ except:
 
 DEFAULT_BINARIES_URL = 'http://distfiles.minitage.org/public/externals/minitage/packages'
 CORE_MINILAYS_URLBASE = 'https://github.com/minitage/minilays'
+
 
 class MinimergeError(Exception):
     """General Minimerge Error"""
@@ -86,6 +58,7 @@ class TooMuchActionsError(MinimergeError):
 class CliError(MinimergeError):
     """General command line error"""
 
+
 class ActionError(MinimergeError):
     """General action error"""
 
@@ -96,9 +69,6 @@ class MinibuildNotFoundError(MinimergeError):
 
 class CircurlarDependencyError(MinimergeError):
     """There are circular dependencies in the dependency tree"""
-
-
-
 
 
 def get_default_arch():
@@ -112,6 +82,7 @@ def get_default_arch():
     if '64' in arch:
         binary_arch = '64'
     return binary_arch
+
 
 class Minimerge(object):
     """Minimerge object."""
@@ -165,6 +136,7 @@ class Minimerge(object):
         """
         self.verbose = options.get('verbose', False)
         self.history_dir = '.minitage'
+        self.version = mm_version
         self._config_path = os.path.expanduser(options.get('config'))
         self.PYTHON_VERSIONS = copy.copy(PYTHON_VERSIONS)
         if not os.path.isfile(self._config_path):
@@ -178,8 +150,7 @@ class Minimerge(object):
             options = {}
         # first try to read the config in
         # - command line
-        # - exec_prefix
-        # - ~/.minimerge.cfg
+        # - install_root
         # We have the corresponding file allready filled in option._config, see
         # `minimerge.core.cli`
         #
@@ -193,12 +164,13 @@ class Minimerge(object):
         except:
             message = 'The config file is invalid: %s' % self._config_path
             raise InvalidConfigFileError(message)
-
         # prefix is setted in the configuration file
         # it defaults to sys.exec_prefix
-        self._prefix = self._config._sections.get('minimerge', {}) \
-                                .get('prefix', sys.exec_prefix)
-
+        _marker = []
+        self._prefix = self._config._sections.get(
+            'minimerge', {}).get('prefix', _marker)
+        if self._prefix is _marker:
+            self._prefix = get_install_root()
         self.backup_path = os.path.join(self._prefix, 'backups')
         # modes
         # for offline and debug mode, we see too if the flag is not set in the
@@ -1128,7 +1100,7 @@ class Minimerge(object):
         # install our default minilays
         self.logger.info('Syncing minilays.')
         if not minilays_to_sync: minilays_to_sync = []
-        version = '.'.join( __version__.split('.')[:2])
+        version = '.'.join( mm_version.split('.')[:2])
 
 
         default_minilays = self.get_default_minilays()

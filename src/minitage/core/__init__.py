@@ -3,6 +3,3 @@ try:
 except:
     # bootstrapping
     pass
-
-
-

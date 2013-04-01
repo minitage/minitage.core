@@ -1,19 +1,20 @@
 __docformat__ = 'restructuredtext en'
+
 import unittest
-from minitage.core.tests.fetchers import (
+from minitage.core.tests.unpackers import (
     test_interfaces,
-    test_scm,
-    test_static,)
+    test_tar,
+    test_zip,
+)
+
 
 def test_suite():
     suite = unittest.TestSuite()
     for m in (test_interfaces,
-              test_scm,
-              test_static,
+              test_tar,
+              test_zip,
              ):
         suite.addTest(m.test_suite())
     return suite
 
-if __name__ == '__main__':
-    unittest.TextTestRunner(verbosity=2).run(test_suite())
 # vim:set et sts=4 ts=4 tw=80:

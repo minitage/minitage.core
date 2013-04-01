@@ -8,3 +8,13 @@ bin
 *pyo
 *pyc
 build
+a/
+etc/
+logs/
+minilays/
+parts/
+t/
+test.env
+.mr.developer.cfg
+src.others/
+
