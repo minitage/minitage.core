@@ -54,7 +54,7 @@ setup(
     data_files = [
         ('etc', ['src/etc/minimerge.cfg']),
         ('minilays', []),
-        ('share/minitage', ['README.txt', 'INSTALL.txt', 'CHANGES.txt']),
+        ('share/minitage', ['README.rst', 'INSTALL.rst', 'CHANGES.rst']),
     ],
     entry_points = {
         'console_scripts': [

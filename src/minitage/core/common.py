@@ -562,10 +562,10 @@ You seem to be running minitage for the first time.
             'etc/minimerge.cfg')
         changelog = resource_filename(Requirement.parse(
             'minitage.core == %s' % mm_version),
-            'share/minitage/CHANGES.txt')
+            'share/minitage/CHANGES.rst')
         readme = resource_filename(Requirement.parse(
             'minitage.core == %s' % mm_version),
-            'share/minitage/README.txt')
+            'share/minitage/README.rst')
         prefixed = re.sub('%PREFIX%', prefix, open(tconfig, 'r').read())
         fic = open(config, 'w')
         fic.write(prefixed)
