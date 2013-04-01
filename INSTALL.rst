@@ -5,129 +5,26 @@ The whole doc is not there
 -----------------------------------
 but on http://www.minitage.org
 
+The installation instructions are there:
 
-Check your Python
----------------------
-You need a python with setuptools, zlib, bz2 and ssl support.
+Automatic installation
+------------------------------------------
 
-Try that in your interpretery::
+    See http://www.minitage.org/installation_new.html
 
-    >>> import tarfile
-    >>> import zipfile
-    >>> import bz2
-    >>> import _ssl
-    >>> import zlib
-    >>> import setuptools
-    >>>
+Using virtualenv (deprecated)
+++++++++++++++++++++++++++++++++++
 
-If you do not have that, you can give a try to my pyboostrapper that bootstrap
-a python somewhere::
-
-    wget http://git.minitage.org/git/minitage/shell/plain/PyBootstrapper.sh
-    chmod -x PyBootstrapper.sh
-    bash ./PyBootstrapper.sh /path/to/pythonPrefix
-
-Using virtualenv
--------------------
-You 'd better to use `virtualenv <http://pypi.python.org/pypi/virtualenv>`_ ,
-minitage fits well with it.
-
-virtualenv is a tool that allow you to create isolated Python
-environments.
-
-
-    Here is how to set up an environment with it:
-
-    - Install virtualenv::
-
-        easy_install virtualenv #(maybe use sudo ;))
-
-    - Install minitage prefix::
-
-        virtualenv --no-site-packages  ~/minitage
-
-    - activate it::
-
-        source ~/minitage/bin/activate
-
-
-    KEEP IN MIND THAT YOU MUST ACTIVATE VIRTUALENV AT ANY TIME YOU USE IT.
-
-minitage installation
-----------------------
-The whole doc is not there but on http://www.minitage.org/installation.html.
-
-Minitage is a classical python egg, you can get it throught easy_install.
-
-To install minitage in a stable version, follow those steps:
-
-- Install minitage::
-
-    easy_install -U mercurial minitage.core
-
-- Sync its packages (all its minilays in minitage terminology).::
-
-    minimerge -s
-
+    See http://www.minitage.org/installation_old.html
 
 Syncing packages
 ----------------------
 
-    To sync all your minilays
-
-        If you need to, fire your virtualenv::
-
-            source ~/minitage/bin/activate
-
-        Sync::
-
-            minimerge -s
+    See http://www.minitage.org/usecases/using_minimerge.html#update-your-minilays
 
 
 Integrate your existing python project base on buildout
 --------------------------------------------------------
 
-Idea is to make buildoutrs to all buildouts in the top directory to wrap the underlying minitage environment.
-
-We will also make a a minilay with minibuilds pointing to those wrappers.
-
-This will help you fastly integrating minitage !
-
-If you project layout is something like::
-
-    .
-    | base.cfg
-    | buildout.cfg
-    | otherbuildout.cfg
-    | foo
-         |  bar
-
-You want it to be installed a a zope project, do the following::
-
-    cd ~/minitage
-    . bin/activate
-    mkdir -p zope
-    SCM clone URL zope/yourproject
-    minitagify -d zope/yourproject
-    . Wraping ~/minitage/zope/yourpoject/otherbuildout.cfg (minitage27.cfg) in ~/minitage/zope/yourpoject/minitage.otherbuildout.cfg->~/minitage/zope/yourpoject/.minitagecfg/otherbuildout.cfg
-    . Wraping ~/minitage/zope/yourpoject/buildout.cfg (minitage27.cfg) in ~/minitage/zope/yourpoject/minitage.buildout.cfg->~/minitage/zope/yourpoject/.minitagecfg/buildout.cfg
-    . Wraping ~/minitage/zope/yourpoject/base.cfg (minitage27.cfg) in ~/minitage/zope/yourpoject/minitage.base.cfg->~/minitage/zope/yourpoject/.minitagecfg/base.cfg
-    . Wroted minibuild yourpoject-otherbuildout in ~/minitage/minilays/05d75df848d13853578095d08f5c7253a/yourpoject-otherbuildout
-    . Wroted minibuild yourpoject-buildout in ~/minitage/minilays/05d75df848d13853578095d08f5c7253a/yourpoject-buildout
-    . Wroted minibuild yourpoject-base in ~/minitage/minilays/05d75df848d13853578095d08f5c7253a/yourpoject-base
-    . Wroted minibuild yourpoject in ~/minitage/minilays/05d75df848d13853578095d08f5c7253a/yourpoject
-
-
-Yu will then have to use
-
-    - minitage.buildout.cfg for buildout.cfg
-    - minitage.otherbuildout.cfg for otherbuildout.cfg
-
-Like::
-
-    cd zope/yourproject
-    python bootstrap.py
-    bin/buildout -vvvvvvvNc minitage.buildout.cfg
-    bin/buildout -vvvvvvvNc minitage.otherbuildout.cfg
-
+    See http://www.minitage.org/usecases/maintain_project.html
 
