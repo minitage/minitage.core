@@ -27,7 +27,7 @@ setup(
     license = 'BSD',
     namespace_packages = [],
     install_requires = ['minitage'],
-    zip_safe = False,
+    extras_require={'test': ['minitage[test]'],},
     include_package_data = True,
     packages = find_packages('src'),
     package_dir = {'': 'src'},
