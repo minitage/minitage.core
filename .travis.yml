@@ -1,7 +1,7 @@
 language: python
 python: 2.7
 env:
-  - TARGET=test CONFIG=buildout.cfg
+  - TARGET=test CONFIG=test.cfg
 #  - TARGET=python-validation.sh
 
 install:
