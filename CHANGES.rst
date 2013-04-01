@@ -2,7 +2,7 @@ Changelog for minitage.core
 ===============================
 
 
-2.0.51 (unreleased)
+2.0.51 (2013-04-01)
 -------------------
 
 - minitage.core is not tied to sys.prefix, 
