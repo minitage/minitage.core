@@ -25,7 +25,7 @@ setup(
     author_email = 'kiorky@cryptelium.net',
     url = 'http://cheeseshop.python.org/pypi/%s' % name,
     license = 'BSD',
-    namespace_packages = [ 'minitage', name, ],
+    namespace_packages = [],
     install_requires = ['minitage'],
     zip_safe = False,
     include_package_data = True,
