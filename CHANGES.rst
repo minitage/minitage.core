@@ -5,14 +5,7 @@ Changelog for minitage.core
 2.0.56 (unreleased)
 -------------------
 
-- Nothing changed yet.
-
-
-2.0.55 (2013-04-01)
--------------------
-
-- Nothing changed yet.
-
+- moved to minitage
 
 2.0.54 (2013-04-01)
 -------------------
