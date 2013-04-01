@@ -2,7 +2,7 @@ Changelog for minitage.core
 ===============================
 
 
-2.0.53 (unreleased)
+2.0.53 (2013-04-01)
 -------------------
 - Documentation
 
