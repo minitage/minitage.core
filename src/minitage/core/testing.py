@@ -144,10 +144,11 @@ def install(dist, destination):
         destination = J(destination,
                                    os.path.basename(dist.location),
                                    )
-        if os.path.isdir(dist.location):
-            shutil.copytree(dist.location, destination)
-        else:
-            shutil.copyfile(dist.location, destination)
+        if not os.path.exists(destination):
+            if os.path.isdir(dist.location):
+                shutil.copytree(dist.location, destination)
+            else:
+                shutil.copyfile(dist.location, destination)
     else:
         open(J(
             destination, dist.project_name + '.egg-link'), 'w'
