@@ -26,7 +26,7 @@ setup(
     url = 'http://cheeseshop.python.org/pypi/%s' % name,
     license = 'BSD',
     namespace_packages = [],
-    install_requires = ['minitage'],
+    install_requires = ['minitage', 'setuptools'],
     extras_require={'test': ['minitage[test]'],},
     include_package_data = True,
     packages = find_packages('src'),
