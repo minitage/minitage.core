@@ -21,8 +21,8 @@ setup(
         + '\n'
     ),
     classifiers=[ ],
-    author = 'Mathieu Le Marec - Pasquet',
-    author_email = 'kiorky@cryptelium.net',
+    author = 'Makina Corpus',
+    author_email = 'freesoftware@makina-corpus.com',
     url = 'http://cheeseshop.python.org/pypi/%s' % name,
     license = 'BSD',
     namespace_packages = [],
